@@ -1,12 +1,107 @@
 # Open Question 02 — Streaming, Event Model & Surface Delivery
 
-> **Purpose of this document.** Self-contained briefing for a dedicated deep-dive
-> session. Nothing here is decided.
->
-> Source research: `docs/research/streaming.md`, `docs/research/auth.md` §3,
-> `docs/research/session.md`.
-> Related: `04-durable-execution.md` (run lifecycle), `03-tenancy-and-scoping.md`
-> (who may subscribe to a stream).
+> **Status: 🟢 Fully resolved for v1 (2026-09-12).** The original briefing
+> (§1–§7 below) is preserved as the historical record. **§0 summarises the
+> resolutions** — locked as **D29–D36** in
+> [`../DECISION-REGISTER.md`](../DECISION-REGISTER.md) — reached in an
+> interview session that also live-verified Grafana's own Grafana Live
+> documentation and reviewed a sibling project (`vikshana-graft-app`) as
+> comparative evidence. Nothing in this track blocks moving on; remaining
+> items are implementation-time verification spikes, not open architectural
+> questions.
+
+---
+
+## 0. Resolution summary
+
+### 0.1 What changed the shape of this question
+
+Two things emerged during the interview that weren't anticipated in the
+original briefing:
+
+- **"Chat" and "RCA investigation" turned out to be the same architectural
+  primitive.** The original briefing implicitly assumed RCA-style long runs
+  were the hard case and quick chat Q&A would need a lighter path. That
+  turned out to be wrong: chat here also triggers multi-minute workflows
+  (building dashboards, creating alerts), needs the same tool-call
+  verification/approval gates, needs end-to-end audit, and needs to be
+  resumable later — i.e. it needs everything a durable run needs. A draft
+  two-tier split (lightweight/undurable chat vs. heavy/durable RCA runs) was
+  proposed, tested against these requirements, and **rejected** in favour of
+  one unified "run" model for every agent interaction. See **D36**.
+- **Two pieces of comparative evidence, both confirming the same thing —
+  differently:**
+  - `vikshana-graft-app` ("Graft"), a materially simpler existing Grafana
+    AI-assistant plugin, was inspected directly (source on GitHub). It runs
+    **entirely client-side** — no Grafana Live, no SSE, no durable backend
+    event log, chat history in `localStorage`, non-streaming
+    `llm.chatCompletions()` calls with a browser-side agent loop. This works
+    *because* its use case has none of our requirements (no audit, no
+    resumability guarantee, no tool-approval gates, personal/ephemeral
+    sessions). It is evidence for *why* the full architecture below is
+    needed here, not a template to copy.
+  - Grafana's own **Grafana Assistant** product documentation independently
+    confirms the same "chat vs. investigation" split exists at Grafana Labs
+    too — their on-prem/OSS tier explicitly excludes "Assistant
+    investigations and related investigation memory features," which stay
+    Cloud-backend-only. Useful confirmation that this is a real, recognised
+    fork in this problem space — we've just resolved it differently (one
+    unified backend for both, D36) given our stricter audit/persistence
+    requirements even for plain chat.
+
+### 0.2 Resolutions, per original question
+
+| # | Question | Resolution | Decision |
+|---|---|---|---|
+| **B1** | Event schema: AG-UI or own? | **Own internal model**, versioned (`event_version`), additive-only. AG-UI is at most a future adapter for the custom web frontend — never Grafana (no natural bridge between AG-UI's SSE/React client and Grafana Live's channel/DataFrame model, verified by reasoning about both architectures) or Slack. Taxonomy extended with `plan_updated`, `budget_consumed` (distinct from `budget_warning`), `sub_agent_spawned`. | **D29** |
+| **B2** | Durable log substrate | **Postgres-only — no Redis.** One event table, `LISTEN/NOTIFY` fan-out, indexed replay. Rejected the initially-proposed Redis-Streams-hot + Postgres-archive split: Postgres alone gives transactional consistency with run state and needs no trimming/retention/fallback design at expected scale. | **D30** |
+| **B3** | Grafana delivery: Live vs SSE-through-proxy | **Grafana Live**, confirmed via live verification of Grafana's own docs. `@grafana/ui` frontend, no AG-UI. **OSS self-hosted is the primary deployment target** — Grafana Live's HA/Redis requirement (`ha_engine`) only bites customers running multiple Grafana instances behind a load balancer, not the common single-instance OSS case; `max_connections` default of 100 must be raised by the customer admin (install-doc callout). Message-size/throughput limits are undocumented — flagged as a pre-build verification spike. | **D31** |
+| **B4** | Multi-viewer in v1? | **Yes — soft-lock "driver" model** (screen-share analogy). New viewers join live from "now" with an explicit scroll-back action. **Only activates when a run is explicitly shared** — see D36. | **D32** |
+| **B5** | Back-channel transport | **Plain REST**, idempotency-keyed (locks R7). Signal delivery: **Postgres signal table + `LISTEN/NOTIFY`**, reusing B2's substrate — explicitly provisional pending `04-durable-execution.md`. Cancel/signal checked **at every tool-call boundary**. | **D33** |
+| **B6** | Streaming granularity per surface | **Token-level narrative on all surfaces, including Grafana Live** (deliberately overriding an initial "coarser for Grafana" instinct, given chat is now a frequent interaction per D36). Step-level for everything else except Slack (always batched). Raw tool output never streamed — on-demand `GET /runs/{id}/events/{event_id}/artifact`, rendered per type, with a **diff view** specifically for proposed dashboard/alert changes. | **D34** |
+| **B7** | Run lifecycle when unwatched | Slack bot posts a completion summary; Grafana/web surface an in-app badge/inbox. **No escalation** for unanswered `hitl_required` in v1. | **D35** |
+| *(new)* | Chat vs. investigation architecture | **Same "run" primitive for both** — one event log, one audit trail, one tool-approval mechanism. **User-owned by default, promotable to workspace-shared** (activates D32). Refines R4 (see `open-questions/03-tenancy-and-scoping.md`). | **D36** |
+
+### 0.3 Verified facts (Grafana Live, live-checked 2026-09-12 against Grafana's own docs)
+
+These replace several "verify, don't assume" items from the original §7:
+
+- Grafana Live is **enabled by default**, WebSocket-based, Pub/Sub, channel
+  format `scope/namespace/path` (max 160 chars).
+- Default **`max_connections = 100`** per Grafana server instance — one
+  WebSocket connection per browser tab, multiplexing all channel
+  subscriptions. Must be raised for any real team size; not something we
+  control from the plugin.
+- Default in-memory pub/sub is **single-instance-scoped**. Multi-instance
+  Grafana deployments (behind a load balancer) require Grafana's own
+  `ha_engine = redis` config to fan out correctly across instances — this is
+  a **customer Grafana-infra prerequisite**, not our system's Redis (which
+  we explicitly decided against, D30). Not a default concern for OSS
+  self-hosted single-instance deployments, which we're targeting primarily.
+- **No documented per-message size limit.** Data must be JSON-encoded over
+  WebSocket channels. Treated as a verification spike, not an assumption.
+- Channel authorization: enforced in our own `SubscribeStream` handler using
+  the plugin context's authenticated user/org — architecturally confirmed,
+  exact request/context shape still to confirm against the plugin SDK at
+  implementation time.
+
+### 0.4 Remaining action items (implementation-time, not open questions)
+
+- Prototype the largest expected event payload through a Grafana Live test
+  channel to establish real size/throughput limits (D31).
+- Confirm the exact `SubscribeStream` request/context shape against the
+  Grafana plugin SDK (D31).
+- Design the driver-disconnect fallback for D32's soft-lock (auto-release
+  timeout vs. explicit hand-off requirement) — not yet decided, just flagged.
+- Confirm exact Grafana Live channel-naming convention for app plugins
+  (`plugin/<id>/run/<run_id>` proposed, the verified example was for
+  `ds`-scope data source plugins specifically).
+- `open-questions/03-tenancy-and-scoping.md` should reconcile R4 against
+  D36's refined ownership model when that session runs.
+- `open-questions/04-durable-execution.md` inherits two constraints from
+  D33: a signal-check hook at every tool-call boundary, and a provisional
+  Postgres-table signal mechanism to confirm or replace depending on
+  orchestrator choice.
 
 ---
 
@@ -25,7 +120,7 @@ Output must reach **three human surfaces** with very different transport
 characteristics:
 
 | Surface                | Transport reality                                                                                                                                                                                        |
-|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Custom web frontend    | Full control. SSE or WebSocket both viable.                                                                                                                                                              |
 | **Grafana App Plugin** | Go plugin backend. Either proxy a stream through it, or use **Grafana Live** (Grafana's own WebSocket infra) via the backend plugin `StreamHandler` (`SubscribeStream` / `RunStream` / `PublishStream`). |
 | **Slack**              | Not a stream. Message post + update, or (per research doc) Slack's 2026 streaming APIs (`chat.startStream` / `appendStream` / `stopStream`). Must be batched/throttled either way.                       |
@@ -42,6 +137,7 @@ characteristics:
 - **D1** Grafana traffic goes through the plugin backend, not browser → API.
 - **R4** (pending) Investigations are **workspace-owned**, not user-owned — which
   makes multi-viewer fan-out a product requirement rather than a bonus.
+  **Refined by D36** — see §0.2.
 
 ---
 
@@ -62,9 +158,9 @@ Back-channel (cancel, steer, approve) is a **separate path** — see B5.
 
 ---
 
-## 4. Open questions
+## 4. Open questions *(historical — see §0 for resolutions)*
 
-### B1 — Event schema: adopt AG-UI, or define our own?
+### B1 — Event schema: adopt AG-UI, or define our own? *(resolved — D29, §0.2)*
 
 `AG-UI` (Agent–User Interaction Protocol) appears in the capability braindump. It
 standardises agent↔UI event streams and has LangGraph integration plus React
@@ -90,7 +186,7 @@ do not assume from the braindump**).
 
 ---
 
-### B2 — Durable log substrate
+### B2 — Durable log substrate *(resolved — D30, §0.2)*
 
 Requirements: monotonic `event_id` per run; reconnect/replay from
 `Last-Event-ID`; multi-consumer fan-out; survives worker crash; retained long
@@ -115,7 +211,7 @@ with WORM audit requirements from `01-identity-and-access.md` A6.
 
 ---
 
-### B3 — Grafana delivery: Grafana Live vs SSE through the plugin proxy
+### B3 — Grafana delivery: Grafana Live vs SSE through the plugin proxy *(resolved — D31, §0.2/§0.3)*
 
 | Option | Pros | Cons |
 |---|---|---|
@@ -133,7 +229,7 @@ customers use (**verify, incl. Grafana Cloud**).
 
 ---
 
-### B4 — Multi-viewer / shared live investigations in v1?
+### B4 — Multi-viewer / shared live investigations in v1? *(resolved — D32, §0.2)*
 
 Follows from investigations being workspace-owned. Two engineers on the same
 incident — one in Grafana, one in the web UI, one watching in Slack — should see
@@ -150,7 +246,7 @@ or join live from now?
 
 ---
 
-### B5 — Back-channel transport (cancel, steer, approve, follow-up)
+### B5 — Back-channel transport (cancel, steer, approve, follow-up) *(resolved — D33, §0.2)*
 
 SSE is one-way. The braindump lists "Agent Steering" and "Split Conversation" as
 capabilities, so mid-run interaction is in scope.
@@ -173,7 +269,7 @@ Phase-2 sandboxes).
 
 ---
 
-### B6 — Streaming granularity per surface
+### B6 — Streaming granularity per surface *(resolved — D34, §0.2)*
 
 *Current leaning:* token-level streaming for the **final narrative only**;
 step/event-level for everything else. Slack is batched/throttled regardless.
@@ -190,7 +286,7 @@ artefact should feed both the LLM context and the UI.
 
 ---
 
-### B7 — Run lifecycle when no one is watching
+### B7 — Run lifecycle when no one is watching *(resolved — D35, §0.2)*
 
 A run is a **job, not a connection** — it continues when all viewers disconnect.
 That implies a completion-notification path.
@@ -217,25 +313,36 @@ actually matters), and escalation if an approval goes unanswered.
 
 ---
 
-## 6. What a good outcome looks like
+## 6. What a good outcome looks like *(met — see §0)*
 
-1. A decided event taxonomy and schema-ownership stance (B1).
-2. A chosen log substrate with retention and archival policy (B2).
-3. A Grafana delivery mechanism (B3) with verified constraints.
-4. A multi-viewer interaction model, including steering conflicts (B4).
-5. A back-channel design with idempotency and signal-delivery mechanics (B5).
-6. A per-surface granularity matrix (B6).
-7. A notification design for unattended runs and blocked approvals (B7).
+1. A decided event taxonomy and schema-ownership stance (B1). ✅
+2. A chosen log substrate with retention and archival policy (B2). ✅
+3. A Grafana delivery mechanism (B3) with verified constraints. ✅
+4. A multi-viewer interaction model, including steering conflicts (B4). ✅
+5. A back-channel design with idempotency and signal-delivery mechanics (B5). ✅
+6. A per-surface granularity matrix (B6). ✅
+7. A notification design for unattended runs and blocked approvals (B7). ✅
 
 ---
 
-## 7. Things to verify before deciding (do not assume)
+## 7. Things to verify before deciding — status, see §0.3/§0.4 for the current list
+
+Superseded by §0.3 (live-verified) and §0.4 (remaining implementation-time
+items). Kept briefly here for continuity with the original briefing:
 
 - Grafana Live: message size limits, throughput, auth model for channels,
-  availability across Grafana OSS / Enterprise / Cloud.
+  availability across Grafana OSS / Enterprise / Cloud. **Partially verified
+  (§0.3)** — auth model and single-instance default confirmed; message-size
+  limit remains an implementation-time spike; OSS self-hosted confirmed as the
+  primary target (not Cloud/Enterprise) so cross-mode availability is
+  deprioritised.
 - Slack streaming APIs asserted in `streaming.md` (`chat.startStream` etc.) —
   confirm they exist, their rate limits, and SDK support, before designing around
-  them. Have a `chat.update`-batching fallback either way.
+  them. Have a `chat.update`-batching fallback either way. **Still open** —
+  not addressed in this session; Slack remains batched-only regardless (D34),
+  so this only affects *how* batching is implemented, not whether it's needed.
 - AG-UI protocol maturity, stability, and actual LangGraph integration quality.
+  **Still open** — moot for v1 since AG-UI has no role outside a possible
+  future web-frontend adapter (D29).
 - Redis Streams behaviour under consumer-group failure and trimming during an
-  active reconnect.
+  active reconnect. **Moot** — Redis Streams rejected for our event log (D30).
