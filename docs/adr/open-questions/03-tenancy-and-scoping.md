@@ -1,7 +1,9 @@
 # Open Question 03 — Tenancy, Scoping & Ownership
 
 > **Purpose of this document.** Self-contained briefing for a dedicated deep-dive
-> session. Nothing here is decided.
+> session. Nothing here is decided, **except C1 (deployment model), which was
+> resolved as a side effect of `01-identity-and-access.md`'s identity work —
+> see §0 below.**
 >
 > Related: `01-identity-and-access.md` (who the principal is),
 > `02-streaming-and-events.md` (who may subscribe to a run).
@@ -10,6 +12,36 @@
 > audit records. If the scoping columns and the enforcement mechanism aren't
 > settled early, retrofitting isolation is one of the genuinely expensive
 > rewrites. It is cheap now and brutal later.
+
+---
+
+## 0. What's already resolved, carried in from `01-identity-and-access.md`
+
+- **C1 (deployment model) is resolved: option (a)/(c) shape.** D21 confirms
+  **the platform owns and operates a single, shared Grafana instance;
+  customers are orgs within it.** This is much closer to "internal platform,
+  many teams" (option (c) below) than a per-customer-deployment or classic
+  multi-tenant-SaaS-with-full-isolation shape — `Tenant` is real but the
+  Grafana layer specifically is not siloed per customer. Model `tenant_id` in
+  the schema regardless (per the original leaning below), but the "which of
+  (a)/(b)/(c) is true" question no longer needs arguing from scratch in that
+  session.
+- **New input for C2 (Grafana Org ↔ Workspace mapping): Slack Enterprise Grid
+  needs a second scoping dimension.** Confirmed live against `docs.slack.dev`
+  (2026-09-12, D28): Enterprise Grid workspaces expose a constant
+  `enterprise_id`, and **a single human can hold distinct per-workspace
+  identities within the same Grid org**, reconciled by Slack via "global user
+  IDs." This means `slack_workspace_id` (`team_id`) alone is not a stable
+  enough key for a Slack-linked principal once a customer's Slack is on Grid.
+  **When this session runs, R3's scope model (`Tenant → Workspace → Group →
+  Principal`) needs `enterprise_id` recognised as a first-class scoping
+  dimension for Slack-linked principals** — keyed by `enterprise_id` (+
+  global user id) where present, falling back to `team_id` (+ user id) for
+  non-Grid, single-workspace installs. This is additive to the existing model
+  (an extra identity key, not a new tree layer) but should be designed in from
+  the start of this session rather than retrofitted.
+
+Everything else below is unchanged and still open.
 
 ---
 
@@ -37,7 +69,9 @@ Tenant            — isolation & billing boundary. Separate data, possibly
        └─ Group   — supplied by the IdP (AD group / Keycloak group / Auth0 org /
                     Entra group). Grants roles within a workspace.
             └─ Principal — the human. Also service principals (webhooks, Slack bot,
-                    scheduled runs).
+                    scheduled runs). **For Slack-linked principals on Enterprise
+                    Grid, keyed by `enterprise_id` + global user id, not
+                    `team_id` + user id — see §0.**
 ```
 
 Why each layer earns its place:
@@ -45,6 +79,9 @@ Why each layer earns its place:
 - **Tenant** — only meaningful if one deployment serves parties who must never
   see each other's data. Determines whether row-level security, per-tenant
   encryption keys, and noisy-neighbour quotas are real requirements or theatre.
+  **Per §0, the Grafana layer itself is a single shared instance (D21) — so
+  `Tenant` isolation, where it matters, is enforced in our own data layer
+  (RLS), not by separate Grafana deployments.**
 - **Workspace** — almost certainly needed. It is the unit that **owns
   credentials**, and it maps naturally onto a Grafana Org. It is also the unit of
   cost attribution.
@@ -56,7 +93,7 @@ Why each layer earns its place:
 
 ## 3. Open questions
 
-### C1 — What is the actual deployment model for v1?
+### C1 — What is the actual deployment model for v1? — **resolved, see §0**
 
 | Option | Consequence |
 |---|---|
@@ -69,9 +106,14 @@ multi-cloud context (GCP + AliCloud, active-active per cloud to avoid log egress
 costs) interacts strongly with (b) — data residency may force per-region tenancy
 regardless.
 
-*Current leaning:* model `tenant_id` in the schema from day one and enforce it,
-but ship v1 in whichever of (a)/(c) is true, with exactly one auto-provisioned
-tenant. The cost of the column is near zero; the cost of adding it later is not.
+**Resolved (§0): the Grafana layer is (a)/(c)-shaped — one shared, platform-owned
+instance, multi-org (D21).** Still model `tenant_id` in the schema from day
+one and enforce it via RLS (the cost of the column is near zero; the cost of
+adding it later is not) — but the "which deployment model is real" argument
+for the Grafana-facing part of the system is settled. Whether the **rest** of
+the stack (harness API, Tool Gateway, Postgres, secret store) is deployed
+single-tenant-per-customer or shared-SaaS is a separate, still-open
+deployment-topology question (tracked in the Decision Register §7).
 
 ---
 
@@ -88,6 +130,9 @@ Proposed: a Grafana Org maps to a harness Workspace.
   credential-owning entities.)
 - How do the **custom frontend** and **Slack** select a workspace, given neither
   has a Grafana org context? Slack channel → workspace mapping? User default?
+  **Now sharper per §0: if the Slack workspace is on Enterprise Grid, this
+  mapping needs to consider `enterprise_id`, not just `team_id`/channel, since
+  the same human may have different identities per Grid workspace.**
 - Can an investigation ever legitimately span workspaces (e.g. a cross-cloud
   incident touching two orgs' datasources)? If yes, the "never cross workspaces"
   rule needs a deliberate, audited exception.
@@ -161,7 +206,8 @@ Do budgets reset periodically or per-incident?
 
 - **Data model:** `tenant_id` + `workspace_id` on every row, event, span, and
   audit record. Enforced with **Postgres row-level security**, not application
-  code alone.
+  code alone. **Slack-linked principal rows additionally carry `enterprise_id`
+  where the source workspace is on Grid (§0).**
 - **Secrets:** namespaced per workspace. A workspace's datasource/cluster/repo
   credentials must be unreachable from another workspace's run, including via a
   compromised agent.
@@ -191,9 +237,12 @@ Do budgets reset periodically or per-incident?
 
 ## 6. What a good outcome looks like
 
-1. A definitive answer on the deployment model (C1) and therefore how real
-   `Tenant` is.
-2. A workspace-resolution rule for all four surfaces (C2).
+1. ~~A definitive answer on the deployment model (C1) and therefore how real
+   `Tenant` is.~~ **Resolved for the Grafana layer by D21 — see §0.** Still
+   need the equivalent answer for the rest of the stack (harness API, Tool
+   Gateway, secret store deployment topology).
+2. A workspace-resolution rule for all four surfaces (C2), **now including the
+   Grid `enterprise_id` dimension (§0).**
 3. An ownership + visibility + approval-authority model for investigations (C3).
 4. A role/permission vocabulary and where mappings live (C4).
 5. A budget enforcement matrix with defined at-cap behaviour (C5).

@@ -1,8 +1,8 @@
 # Multi-Tenancy for the Grafana MCP Server
 
-> **Status: 🟢 Blocking verification resolved (2026-09-12).** Answers: is
-> `grafana-mcp` one shared server using the SA token handed to it, and what
-> happens with multiple concurrent users?
+> **Status: 🟢 Resolved (2026-09-12).** Answers: is `grafana-mcp` one shared
+> server using the SA token handed to it, and what happens with multiple
+> concurrent users?
 >
 > Related: D7/D7a/D7b (Tool Gateway shape), `grafana-mcp-provisioning.md` (where
 > the SA token comes from), `grafana-authz-delegation.md` (check-then-act).
@@ -11,9 +11,10 @@
 > was cloned and read directly. It **does** support per-request credential
 > forwarding via `GRAFANA_FORWARD_HEADERS`, and its internal Grafana client
 > cache is genuinely keyed by credential (`url, apiKey, username, password,
-> orgID, forwardedHeaders`) rather than being a single global client. This is
-> better than the "personal single-instance tool" shape this document worried
-> about — see §4 for the full result and the one new constraint it surfaced.
+> orgID, forwardedHeaders`) rather than being a single global client. The one
+> constraint this surfaced (both hop A and hop B in §2 wanting the
+> `Authorization` header) is now a **locked decision** — see §4 item 2 and §5
+> decision 2.
 
 ---
 
@@ -30,7 +31,48 @@ that is not actually multi-tenant-safe.
 
 ---
 
-## 2. Why "single central server, SA token passed in" is the right shape
+## 2. Two hops, two credentials — the shape that matters here
+
+It's worth being precise about *which* credential is being discussed at each
+point in this document, because there are two distinct hops, each with its own
+credential, and (per §4) they collide on HTTP header choice if not deliberately
+separated:
+
+```
+Tool Gateway ──MCP call (hop A)──▶ grafana-mcp ──REST call (hop B)──▶ Grafana API
+```
+
+- **Hop B (`grafana-mcp` → Grafana)** is "the downstream Grafana credential"
+  referenced throughout this document and `01-identity-and-access.md`/D11. It
+  is a **Grafana Service Account (SA) token**, sent as `Authorization: Bearer
+  glsa_...` — confirmed directly against Grafana's own docs (the SA-token
+  debugging guide uses exactly this header). One SA per workspace, provisioned
+  per D12/D22. No ambiguity here: MCP-to-Grafana auth **is** the SA token, full
+  stop.
+- **Hop A (Tool Gateway → `grafana-mcp`)** is a separate, optional concern:
+  `grafana-mcp` can itself demand proof that its *caller* (the Tool Gateway) is
+  allowed to talk to it at all, via `MCP_GRAFANA_SERVER_TOKEN` — a static
+  shared secret checked with `Authorization: Bearer <token>`, unrelated to
+  Grafana. This is about protecting `grafana-mcp`'s own network endpoint, not
+  about which workspace's data is being accessed.
+
+Since `grafana-mcp` is **one shared process serving every workspace**, hop B's
+SA token must vary **per call** — the Tool Gateway has to hand `grafana-mcp`
+the correct workspace's SA token on every request, for `grafana-mcp` to then
+forward on to Grafana. The only header Grafana's own API will accept a bearer
+SA token on is `Authorization` — `grafana-mcp` forwards header names supplied
+via `GRAFANA_FORWARD_HEADERS` **verbatim**, it does not translate a
+custom-named header into `Authorization` for Grafana's benefit.
+
+**This means hop A and hop B both want to use the `Authorization` header on
+the same MCP request (Tool Gateway → `grafana-mcp`), for two different
+purposes** — hop A wants a static shared secret there; hop B wants the
+per-workspace SA token forwarded through it. They cannot coexist in one
+header on one request. §4 resolves this.
+
+---
+
+## 3. Why "single central server, SA token passed in" is the right shape
 
 D7a already states the reasoning that applies here: **stdio MCP is
 single-identity by construction — no per-user RBAC, no central throttling
@@ -39,24 +81,23 @@ would reproduce even over HTTP: a process that reads one Grafana URL and one
 token from its environment at startup can only ever act as one workspace,
 forever, for every caller.
 
-The correct shape, consistent with D7a/D7b, and **now confirmed as what the
-real implementation actually does (§4)**:
+The correct shape, consistent with D7a/D7b, and **confirmed as what the real
+implementation actually does (§4)**:
 
 - **One logical `grafana-mcp` service** (scaled horizontally as needed — this is
   an ordinary stateless-service scaling question, not an identity one).
-- **No credential baked into the process at startup**, or — more precisely, per
-  §4 — a startup credential may exist as a *default*, but it is not the only
-  credential the process can act with; a per-request forwarded header can
-  override it for that call.
-- **The credential is supplied per call**, resolved by the Tool Gateway from the
-  workspace-scoped secret store (per `grafana-mcp-provisioning.md`), and attached
-  to that specific outbound MCP request.
+- **No credential baked into the process at startup** as the *only* credential
+  it can act with — a startup default (`GRAFANA_SERVICE_ACCOUNT_TOKEN`) may
+  still exist for single-workspace/dev use, but production, multi-workspace
+  calls override it per request.
+- **The credential (hop B's SA token) is supplied per call**, resolved by the
+  Tool Gateway from the workspace-scoped secret store (per
+  `grafana-mcp-provisioning.md`), and attached to that specific outbound MCP
+  request's `Authorization` header.
 
 This is precisely why D7a mandates streamable-HTTP: the transport carries a
-request, and a request can carry an `Authorization` header (or, as confirmed
-in §4, another forwarded header, since `Authorization` is reserved for a
-different purpose in this implementation). stdio has no equivalent — the
-process's identity is fixed for its entire lifetime.
+request, and a request can carry an `Authorization` header. stdio has no
+equivalent — the process's identity is fixed for its entire lifetime.
 
 ```mermaid
 sequenceDiagram
@@ -71,8 +112,8 @@ sequenceDiagram
     Note over TG: R1 resolves to workspace_id=W1
     TG->>SEC: get_credential(W1, "grafana-mcp")
     SEC-->>TG: SA token for graft-harness-W1
-    TG->>GMCP: MCP tool call<br/>Authorization: Bearer <W1 token>
-    GMCP->>GF: Query, using that token
+    TG->>GMCP: MCP tool call (hop A, network-isolated, no caller-auth header)<br/>Authorization: Bearer <W1 SA token>
+    GMCP->>GF: (hop B) Query, forwarding Authorization verbatim
     GF-->>GMCP: Result (scoped to W1's org, by the token itself)
     GMCP-->>TG: Result
     TG-->>AGENT: Result
@@ -82,42 +123,33 @@ sequenceDiagram
     Note over TG: R2 resolves to workspace_id=W2
     TG->>SEC: get_credential(W2, "grafana-mcp")
     SEC-->>TG: SA token for graft-harness-W2
-    TG->>GMCP: MCP tool call<br/>Authorization: Bearer <W2 token>
+    TG->>GMCP: MCP tool call<br/>Authorization: Bearer <W2 SA token>
     GMCP->>GF: Query, using W2's token
     GF-->>GMCP: Result (scoped to W2's org)
 ```
 
-**Note (2026-09-12):** the diagram above shows `Authorization` carrying the
-downstream Grafana credential. §4 found this collides with the real
-implementation's use of `Authorization` for **caller** authentication
-(`MCP_GRAFANA_SERVER_TOKEN`) when that feature is enabled. In practice the
-downstream credential must ride on a different forwarded header (e.g.
-`Cookie`) if caller authentication via `Authorization` is also in use — see §4
-for the resolved mechanics.
-
-**The isolation guarantee comes entirely from the credential attached per
-call, never from which process happened to handle the request.** Grafana
-itself enforces the org boundary based on the credential it's given —
-`grafana-mcp` doesn't need to know anything about our tenancy model at all. It
-just has to be honest about not caching or reusing credentials across
-requests, which §4 confirms it is (the client cache key includes the
-forwarded-header set).
+**The isolation guarantee comes entirely from the SA token attached per call,
+never from which process happened to handle the request.** Grafana itself
+enforces the org boundary based on the token it's given — `grafana-mcp`
+doesn't need to know anything about our tenancy model at all. It just has to
+be honest about not caching or reusing credentials across requests, which §4
+confirms it is (the client cache key includes the forwarded-header set).
 
 ---
 
-## 3. What "multiple users" actually resolves to
+## 4. What "multiple users" actually resolves to
 
 Worth being precise about *which* multiplicity is being asked about — there are
 two, and they're handled at different layers.
 
-### 3.1 Multiple workspaces (orgs) — handled above
+### 4.1 Multiple workspaces (orgs) — handled above
 
-Covered by §2: different credential per call, resolved by `run_id →
+Covered by §3: different SA token per call, resolved by `run_id →
 workspace_id`. `grafana-mcp` never sees two workspaces' credentials conflated,
 because it never sees "a workspace" at all — only "a credential for this one
-call," and (per §4) its own client cache is keyed on exactly that credential.
+call," and its own client cache is keyed on exactly that credential.
 
-### 3.2 Multiple human users within the *same* workspace — handled upstream, not here
+### 4.2 Multiple human users within the *same* workspace — handled upstream, not here
 
 This is the more interesting case, and the answer is: **`grafana-mcp` never
 knows which human triggered the call, and it shouldn't.**
@@ -144,7 +176,7 @@ user-aware would mean re-implementing authorisation at the execution layer,
 which is exactly the drift-from-Grafana's-own-model problem check-then-act was
 adopted to avoid.
 
-### 3.3 Concurrency correctness — confirmed by source inspection (2026-09-12)
+### 4.3 Concurrency correctness — confirmed by source inspection (2026-09-12)
 
 Given many simultaneous calls across many workspaces hit one shared service, it
 must hold **no mutable state that survives past a single request** — no global
@@ -165,7 +197,7 @@ reference implementation might have.
 
 ---
 
-## 4. Verified 2026-09-12 — the load-bearing unknown, resolved
+## 5. Verified 2026-09-12 — the load-bearing unknown, resolved
 
 The reference OSS `grafana-mcp` was cloned (`github.com/grafana/mcp-grafana`,
 current `main`) and read directly, rather than assumed. Findings:
@@ -173,40 +205,36 @@ current `main`) and read directly, rather than assumed. Findings:
 1. **Per-request credential override — supported, via `GRAFANA_FORWARD_HEADERS`.**
    This environment variable takes a comma-separated allow-list of header
    names to copy from the **incoming** request to every outbound Grafana API
-   request (documented use case: forwarding a `Cookie` session so a gateway
-   sitting in front of SSO can associate calls with the right user). This *is*
-   the per-request credential-attachment mechanism this document called for —
-   it is not limited to a single startup-time token. It's designed for
-   SSE/streamable-HTTP transports specifically (no effect in stdio mode,
-   consistent with D7a's reasoning for banning stdio).
-2. **New constraint, not previously known: `Authorization` is reserved for
-   caller authentication, and cannot simultaneously carry the downstream
-   credential.** The server supports its own caller-auth middleware
-   (`RequireBearerToken`, gated by `MCP_GRAFANA_SERVER_TOKEN`) that
-   authenticates *who is calling the MCP server* via `Authorization: Bearer
-   <token>`, constant-time-compares it, and then **strips the header** before
-   the request proceeds further — specifically so the caller's credential can
-   never leak downstream to Grafana or into a cache key. The codebase
-   explicitly checks for and **refuses to start** if `GRAFANA_FORWARD_HEADERS`
-   is *also* configured to forward `Authorization` while caller auth is
-   enabled (`ForwardsAuthorizationHeader()`), since the two purposes for that
-   header conflict.
-   - **Practical consequence for our design:** if the Tool Gateway needs to (a)
-     authenticate itself to `grafana-mcp` as a caller, **and** (b) attach a
-     distinct, per-workspace Grafana credential to that same call, it cannot
-     do both via the `Authorization` header. Two workable options:
-     - **(preferred) Forward a different header for the downstream credential**
-       — e.g. `Cookie` carrying a per-workspace Grafana session, or a custom
-       header the deployment is comfortable mapping to Grafana session/API-key
-       semantics — while `Authorization` continues to carry the Tool
-       Gateway's own caller-auth token to `grafana-mcp`.
-     - **(alternative) Skip `grafana-mcp`'s built-in caller auth** and rely on
-       network isolation (private link / mTLS / service mesh policy) between
-       the Tool Gateway and `grafana-mcp`, freeing `Authorization` to carry the
-       per-workspace Grafana SA token directly. Weaker defence-in-depth at
-       that specific hop, but simpler, and consistent with the general shape
-       of internal-service-to-internal-service calls elsewhere in this system.
-3. **Client cache is genuinely credential-scoped** — see §3.3. No further
+   request, verbatim (same header name, same value) — confirming hop B's SA
+   token can indeed vary per call, exactly as this document's design requires.
+2. **The `Authorization`-header collision is real, and is now resolved as a
+   locked decision, not an open question.** `grafana-mcp` supports its own
+   caller-auth for hop A (`RequireBearerToken`, gated by
+   `MCP_GRAFANA_SERVER_TOKEN`), which authenticates the *caller* via
+   `Authorization: Bearer <token>`, constant-time-compares it, and then
+   **strips the header** so it can never leak downstream or into a cache key.
+   The codebase explicitly detects and **refuses to start** if
+   `GRAFANA_FORWARD_HEADERS` is *also* configured to forward `Authorization`
+   while this caller-auth is enabled (`ForwardsAuthorizationHeader()`), since
+   the two purposes for that header conflict on the same request.
+   - Since Grafana's own API only accepts SA-token bearer auth on
+     `Authorization` (confirmed against Grafana's docs — SA tokens are always
+     `Authorization: Bearer glsa_...`, never an arbitrary custom header), and
+     since `grafana-mcp` forwards header names verbatim rather than
+     translating them, there is **no way to route hop B's SA token through a
+     differently-named header and still have it work against Grafana**.
+     Cookie-based forwarding (`GRAFANA_FORWARD_HEADERS=Cookie`) is a *different*
+     use case — a live Grafana **user session**, not an SA token — and would
+     mean provisioning and refreshing a Grafana session per workspace, which
+     contradicts the SA-token provisioning model already locked in D12/D22.
+   - **Locked decision: drop `grafana-mcp`'s built-in hop-A caller-auth
+     (`MCP_GRAFANA_SERVER_TOKEN`) and protect the Tool Gateway↔`grafana-mcp`
+     hop with network-level isolation instead** (private network / mTLS /
+     service-mesh authorization policy — the same pattern already assumed for
+     other internal-service-to-internal-service calls in this architecture).
+     This frees `Authorization` to carry only hop B's per-workspace Grafana SA
+     token, forwarded verbatim end-to-end. See §5 decision 2.
+3. **Client cache is genuinely credential-scoped** — see §4.3. No further
    verification needed on isolation correctness at the caching layer.
 4. **Multi-org support exists natively**, including a `--dynamic-multi-org`
    flag that lets a single connection target different orgs **per tool call**
@@ -217,39 +245,32 @@ current `main`) and read directly, rather than assumed. Findings:
    multi-tenancy as a first-class concern, which lowers the risk of relying on
    it going forward.
 5. **Not yet verified:** whether attaching a different forwarded-header value
-   per call defeats HTTP/2 connection reuse in a way worth caring about
-   (§6 item 3 in the original open-questions list) — no measurement was taken
-   this session; likely negligible next to LLM inference latency, but still
-   just an assumption.
+   per call defeats HTTP/2 connection reuse in a way worth caring about — no
+   measurement was taken this session; likely negligible next to LLM inference
+   latency, but still just an assumption. See §7 item 1.
 
 ---
 
-## 5. Decision
+## 6. Decision
 
 | # | Decision |
 |---|---|
-| 1 | **One logical `grafana-mcp` service**, horizontally scaled as an ordinary stateless service — not one process per workspace. **Confirmed compatible with the real implementation (§4).** |
-| 2 | **Every credential is resolved per call by the Tool Gateway and attached to that call** via `GRAFANA_FORWARD_HEADERS`-forwarded headers — **not** necessarily `Authorization`, since that header is reserved for `grafana-mcp`'s own caller-auth when `MCP_GRAFANA_SERVER_TOKEN` is set (§4 item 2). |
-| 3 | **Isolation between workspaces is enforced by the credential Grafana receives, per call**, and confirmed at the `grafana-mcp` layer by its credential-keyed client cache (§3.3/§4 item 3) — not by which process or instance handled the request. |
+| 1 | **One logical `grafana-mcp` service**, horizontally scaled as an ordinary stateless service — not one process per workspace. **Confirmed compatible with the real implementation (§5).** |
+| 2 | **`grafana-mcp`'s built-in caller-auth (`MCP_GRAFANA_SERVER_TOKEN`) is not used.** The Tool Gateway↔`grafana-mcp` hop (hop A) is protected by network-level isolation (private network / mTLS / service-mesh authorization policy) instead. This frees the `Authorization` header, on every MCP call to `grafana-mcp`, to carry only the per-workspace Grafana SA token (hop B), forwarded verbatim to Grafana via `GRAFANA_FORWARD_HEADERS=Authorization`. **Locked 2026-09-12** — resolves the collision found in §5 item 2. |
+| 3 | **Isolation between workspaces is enforced by the SA token Grafana receives, per call**, and confirmed at the `grafana-mcp` layer by its credential-keyed client cache (§4.3/§5 item 3) — not by which process or instance handled the request. |
 | 4 | **`grafana-mcp` never receives or reasons about which human triggered a call.** Per-user authorisation is fully resolved before dispatch; the service only ever acts as "the workspace." |
-| 5 | **If the Tool Gateway needs both caller-auth to `grafana-mcp` and a distinct per-workspace downstream credential, use a header other than `Authorization` for the downstream credential** (e.g. `Cookie`), or forgo `grafana-mcp`'s built-in caller auth in favour of network-level isolation for that hop (§4 item 2). |
 
 ---
 
-## 6. Open questions
+## 7. Open questions
 
-1. ~~Resolve §4.1 by inspecting the actual `grafana-mcp` implementation we
-   intend to run~~ — **done, 2026-09-12, see §4.**
-2. **Which of §4 item 2's two options do we take** — forward a non-`Authorization`
-   header for the downstream credential (keeping `grafana-mcp`'s own caller
-   auth active), or rely on network isolation and skip it? This is now a live
-   design decision, not a research gap. Leaning towards the former (defence in
-   depth costs little here), but not yet decided.
-3. Does per-call credential attachment have a **performance cost** worth
-   caring about (e.g., losing HTTP/2 connection reuse if credentials must vary
-   per request on the same connection)? Still not measured — see §4 item 5.
-   Likely negligible next to LLM inference latency, but worth a note rather
-   than an assumption.
-4. **Who owns the deployment configuration for `GRAFANA_FORWARD_HEADERS` and
-   `MCP_GRAFANA_SERVER_TOKEN`** long-term, and is it captured in
-   `grafana-mcp-provisioning.md` or here? Not yet assigned.
+1. Does per-call credential attachment have a **performance cost** worth
+   caring about (e.g., losing HTTP/2 connection reuse if the `Authorization`
+   header must vary per request on the same connection)? Not measured — see
+   §5 item 5. Likely negligible next to LLM inference latency, but worth a
+   note rather than an assumption.
+2. **Who owns the deployment configuration** (network-isolation policy between
+   Tool Gateway and `grafana-mcp`, and the absence of
+   `MCP_GRAFANA_SERVER_TOKEN`) long-term, and is it captured in
+   `grafana-mcp-provisioning.md` or here? Not yet assigned — a small piece of
+   platform/infra work, not a design gap.

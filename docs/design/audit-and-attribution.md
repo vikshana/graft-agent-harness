@@ -2,7 +2,10 @@
 
 > **Status: 🟡 In review.** Design proposal. §7 and open question 1 updated —
 > compliance regime confirmed as **PCI-DSS**, which resolves retention and adds
-> a scrubbing requirement (§7.1).
+> a scrubbing requirement (§7.1). **2026-09-12: the PAN-scrubbing
+> implementation itself (not the requirement) is deferred to the Evals &
+> Benchmarks deep-dive session** — see §7.1 item 1 and the Decision Register
+> §7.
 >
 > **Problem:** answer, months later and under scrutiny, the question
 > *"who caused this change to production, what did the agent do to reach it, on
@@ -226,9 +229,12 @@ didn't previously carry:
    it's investigating production systems it doesn't control the content of),
    that value must be detected and stripped **before** it's written into any
    `tool_call` or `inference` payload, not sampled-and-hoped-clean afterward.
-   **New decision needed:** a PAN-detection pattern (Luhn-check-backed, not
-   just regex) in the scrubbing layer, applied to both the audit chain and the
-   eval sink.
+   **The requirement is locked (D25); the implementation (a PAN-detection
+   pattern, Luhn-check-backed, not just regex, in the scrubbing layer, applied
+   to both the audit chain and the eval sink) is deferred to the Evals &
+   Benchmarks deep-dive session (2026-09-12 decision)** — that session already
+   owns the eval-sink design this scrubbing pipeline must also apply to (§9
+   item 2), so it's the same piece of work, not two.
 2. **MFA for administrative access** (PCI-DSS 8.4.2) — reinforces the
    step-up-authentication requirement already designed into
    `ux-mcp-tool-configuration.md` for enabling write-capable tools; now has a
@@ -286,7 +292,8 @@ system go on to do?"*
    there — otherwise the eval sink becomes an unscrubbed PCI-DSS liability
    sitting next to the compliant chain. Still creates the D8b tension
    (eval sink becomes load-bearing for forensics); not resolved by this
-   answer, just made more urgent.
+   answer, just made more urgent. **Both this item and §7.1 item 1's scrubbing
+   implementation are deferred together to the Evals & Benchmarks session.**
 3. **Chain anchoring frequency.** Per-run at close, or on a timer? A run open
    for six hours is unanchored for six hours.
 4. **Is `record_hash` signed, or only hashed?** Signing needs a key the

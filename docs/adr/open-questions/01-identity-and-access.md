@@ -1,11 +1,10 @@
 # Open Question 01 — Identity, Authentication & Downstream Access
 
-> **Status: 🟢 Mostly resolved, third pass.** The original briefing (§1–§7
-> below) is preserved as the historical record; §0 summarises resolutions,
-> §0.5 the interview round, and **§0.6 a live-verification pass (2026-09-12)**
-> that closed most of the remaining technical unknowns by actually running
-> Grafana OSS, reading the real `mcp-grafana`/`langchain-mcp-adapters` source,
-> and fetching current `docs.slack.dev` pages — not by recollection.
+> **Status: 🟢 Fully resolved for v1 (fourth pass, 2026-09-12).** The original
+> briefing (§1–§7 below) is preserved as the historical record; §0 summarises
+> resolutions, §0.5 the interview round, §0.6 a live-verification pass, and
+> **§0.7 records the final stakeholder decisions that closed every remaining
+> item** — nothing in this track blocks moving on.
 
 ---
 
@@ -36,11 +35,11 @@ individually:
 | **A1** | How does the Grafana plugin authenticate to the harness? | **(a) Grafana ID token via JWKS (`X-Grafana-Id`, feature toggle `idForwarding`) as primary**, running on the **latest Grafana release** since we operate the instance ourselves (§0.5 Q2) — no customer-version negotiation. (b) plugin-signed JWT as an explicit, audit-visible fallback — **fallback trust cannot approve destructive actions.** (c) `oauthPassThru` reclassified as A4. | `../../design/grafana-authz-delegation.md` |
 | **A2** | Internal harness session token? | **Yes.** Short-lived (~10 min), run-scoped, audience-restricted to the Tool Gateway (formalised as an OAuth 2.1 / RFC 8707 token — D19), independently validated. | `../../design/audit-and-attribution.md` §5.1, `../../design/mcp-authorization-server.md` |
 | **A3** | Slack identity and approval ceiling | **Restrictive.** Slack triggers, converses, *launches* approval via a signed single-use deep link — **approval always happens in Grafana.** Account linking upgraded to **Sign in with Slack (OIDC)**. Verified against current `docs.slack.dev` (§0.6 item 5). | `../../diagrams/c4-l1-system-context.md` J4, `../../design/slack-identity-and-surface.md` |
-| **A4** | Downstream credential strategy | **Hybrid, service-identity-by-default.** User identity is an upgrade via **check-then-act**, performed by the **Tool Gateway itself** (not the plugin backend — resolved in the interview, §0.5 Q7). Slack-initiated and system-initiated runs are always bounded by the workspace SA's own role — no per-user check for either, by deliberate choice pending PoC feedback (§0.5 Q8). | `../../design/grafana-authz-delegation.md` §3 |
+| **A4** | Downstream credential strategy | **Hybrid, service-identity-by-default.** User identity is an upgrade via **check-then-act**, performed by the **Tool Gateway itself** (not the plugin backend — resolved in the interview, §0.5 Q7). Slack-initiated and system-initiated runs are always bounded by the workspace SA's own role — no per-user check for either. **The revisit trigger metric is now accepted (§0.7 item 1).** | `../../design/grafana-authz-delegation.md` §3 |
 | **A5** | Operate while the user is offline? | **Yes, confirmed.** `system_initiated` runs are structurally read-only — the capability token is minted without any write tool class. | `../../design/audit-and-attribution.md` §2 |
-| **A6** | Audit actor model | **Full schema defined.** Retention **resolved to 12 months minimum / 3 months hot**, driven by the confirmed compliance regime, **PCI-DSS** (§0.5 Q3) — which also adds a PAN-scrubbing requirement not previously in scope. | `../../design/audit-and-attribution.md` §7 |
-| **(new)** | Grafana-side service account provisioning | **Fully platform-internal, synchronous at workspace creation**, using a platform-level Grafana Server Admin credential — not a customer admin's session at all, now that the platform-owns-Grafana fact is confirmed. Eliminates the cold-start gap outright. | `../../design/grafana-mcp-provisioning.md` |
-| **(new)** | One shared `grafana-mcp` server across workspaces? | **Yes**, credential attached per call, never baked in at startup. **Confirmed against the real implementation, not just the design intent (§0.6 item 3).** | `../../design/grafana-mcp-multi-tenancy.md` |
+| **A6** | Audit actor model | **Full schema defined.** Retention **resolved to 12 months minimum / 3 months hot**, driven by the confirmed compliance regime, **PCI-DSS** (§0.5 Q3) — which also adds a PAN-scrubbing requirement, **implementation now deferred to the Evals & Benchmarks session (§0.7 item 3)**. | `../../design/audit-and-attribution.md` §7 |
+| **(new)** | Grafana-side service account provisioning | **Fully platform-internal, synchronous at workspace creation**, using a platform-level Grafana Server Admin credential — not a customer admin's session at all, now that the platform-owns-Grafana fact is confirmed. Eliminates the cold-start gap outright. **Blast-radius/rotation policy for that credential is the platform team's concern, not the harness's (§0.7 item 2).** | `../../design/grafana-mcp-provisioning.md` |
+| **(new)** | One shared `grafana-mcp` server across workspaces? | **Yes**, credential attached per call, never baked in at startup. **Confirmed against the real implementation, and the header-collision it surfaced is now a locked decision (§0.6 item 3).** | `../../design/grafana-mcp-multi-tenancy.md` |
 | **(new)** | Where does the MCP Authorization Server live? | **Separate logical component from the Tool Gateway** (which is Resource-Server-only), co-located with the harness API in v1. Harness-owned broker in front of the pluggable IdP. | `../../design/mcp-authorization-server.md` |
 
 ### 0.3 Canonical identity model (§5) — resolved, with one Grid caveat
@@ -53,7 +52,7 @@ is not a stable enough key — Grid introduces a constant `enterprise_id` and
 "global user IDs" valid across every workspace in the org. The model should key
 Grid-linked principals by `enterprise_id` (+ global user id) where present,
 falling back to `team_id` (+ user id) for non-Grid workspaces. Feeds
-`03-tenancy-and-scoping.md`.
+`03-tenancy-and-scoping.md`, where this has now been flagged directly (D28).
 
 ### 0.4 Deployment fact that supersedes several "must verify" items
 
@@ -81,15 +80,14 @@ shared instance.** Confirmed in the interview round (§0.5 Q1, Q5). This means:
 | Q5 | Block onboarding on SA provisioning, or lazy-provision? | **"Whatever makes the journey better"** — combined with Q1's platform-ownership fact, this made **synchronous provisioning at workspace creation** the obvious answer, not a trade-off | Eliminates the cold-start gap; simplifies `grafana-mcp-provisioning.md` substantially |
 | Q6 | SA lifecycle on tool/server disable? | **Full removal (SA + token deleted) when the whole Grafana MCP server is disabled**; role recomputed to minimum on individual tool disable | `grafana-mcp-provisioning.md` §4 |
 | Q7 | Check-then-act: harness or plugin backend? | **Harness (Tool Gateway)** | Resolves former open question 1 in `grafana-authz-delegation.md`; also the only option compatible with Slack-triggered runs having no plugin in the path |
-| Q8 | Slack-initiated Grafana access: per-user check or workspace-SA-ceiling? | **Workspace-SA-ceiling — simpler path, revisit after PoC feedback** | `grafana-authz-delegation.md` §3.6; a concrete revisit trigger is still needed (§0.7 item 1) |
+| Q8 | Slack-initiated Grafana access: per-user check or workspace-SA-ceiling? | **Workspace-SA-ceiling — simpler path, revisit after PoC feedback** | `grafana-authz-delegation.md` §3.6; revisit trigger **accepted 2026-09-12, §0.7 item 1** |
 
 ### 0.6 Live-verification pass (2026-09-12) — tested, not researched
 
 Rather than rely on documentation alone, this pass actually ran Grafana OSS
 `latest` in a disposable container, cloned and read the real `mcp-grafana` and
 `langchain-mcp-adapters` (+ its `mcp` SDK dependency) source, and fetched
-current `docs.slack.dev` pages. This closed four of the eight items in the
-prior "still genuinely open" list outright, and materially sharpened a fifth.
+current `docs.slack.dev` pages.
 
 1. **`idForwarding` reachability — confirmed.** Grafana OSS `latest` resolves
    to **v13.0.2**, and ships with `featureToggles.idForwarding: true` enabled
@@ -98,28 +96,39 @@ prior "still genuinely open" list outright, and materially sharpened a fifth.
    (404s). `grafana-authz-delegation.md` and D9 should name the correct
    endpoint.
 2. **`/api/access-control/user/permissions` reachability in OSS — confirmed**,
-   200 with full RBAC data — **but only with session-cookie auth** (`/login`
-   then cookie jar); Basic Auth against it 404s, worth knowing before anyone
-   wires this up expecting Basic Auth to work. Separately, `POST
-   /api/access-control/roles` (custom role creation) **404s in OSS** —
-   confirms **custom-role evaluation is Enterprise-only**, validating the
-   doc's planned fallback to basic-role (Viewer/Editor/Admin) checks as not
-   just a fallback but the only option available to us in OSS.
-3. **Does OSS `grafana-mcp` support per-call credential override? — resolved,
-   more favourably than assumed.** The real implementation already supports
-   `GRAFANA_FORWARD_HEADERS` (forwards an allow-listed set of headers from
-   each **incoming** request to every outbound Grafana call, e.g. `Cookie`),
-   and its internal Grafana client cache is genuinely keyed by
-   `{url, apiKey, username, password, orgID, forwardedHeaders}` — not a single
-   global client. **New constraint found, not previously known:** the server
-   reserves the `Authorization` header for its own caller-authentication
-   (`MCP_GRAFANA_SERVER_TOKEN`) and **refuses to start** if that same header is
-   also configured for forwarding a distinct downstream Grafana credential.
-   Practical consequence: per-call SA-token attachment must either ride on a
-   different header (e.g. `Cookie`, session-based) or the Tool
-   Gateway↔`grafana-mcp` hop must rely on network isolation (private link /
-   mTLS) instead of a bearer caller-auth token if `Authorization` is needed for
-   the downstream credential. Feeds `grafana-mcp-multi-tenancy.md` §4 / D18.
+   200 with full RBAC data. Reachable via **either SA-token Bearer auth or
+   session-cookie auth** (confirmed against Grafana's own SA-token debugging
+   docs, which use exactly this endpoint with `Authorization: Bearer
+   glsa_...`); plain Basic Auth (username/password) specifically 404s.
+   Separately, `POST /api/access-control/roles` (custom role creation) **404s
+   in OSS** — confirms **custom-role evaluation is Enterprise-only**,
+   validating the doc's planned fallback to basic-role (Viewer/Editor/Admin)
+   checks as not just a fallback but the only option available to us in OSS.
+3. **Does OSS `grafana-mcp` support per-call credential override? — resolved
+   and locked, including the header-collision it surfaced.** The real
+   implementation supports `GRAFANA_FORWARD_HEADERS` (forwards an
+   allow-listed set of headers from each **incoming** request to every
+   outbound Grafana call, verbatim), and its internal Grafana client cache is
+   genuinely keyed by `{url, apiKey, username, password, orgID,
+   forwardedHeaders}` — not a single global client.
+   **The downstream Grafana credential is, as expected, a Service Account
+   token sent as `Authorization: Bearer glsa_...`** (confirmed against
+   Grafana's own docs) — there was never any doubt that MCP-to-Grafana auth
+   works via SA token; the open question was purely about *how a different
+   SA token reaches `grafana-mcp` on each call*, given `grafana-mcp`'s own
+   optional caller-authentication (`MCP_GRAFANA_SERVER_TOKEN`) **also** wants
+   the `Authorization` header, for the unrelated purpose of authenticating the
+   Tool Gateway's own calls into `grafana-mcp`. Because Grafana only accepts
+   an SA token on `Authorization` (never a custom header — `grafana-mcp`
+   forwards header names verbatim, it doesn't translate them), the two uses
+   of `Authorization` cannot coexist on one request; the codebase itself
+   detects this and refuses to start if both are configured.
+   **Locked decision (2026-09-12):** drop `grafana-mcp`'s built-in caller-auth
+   and protect the Tool Gateway↔`grafana-mcp` hop via **network isolation**
+   instead (private network / mTLS / service-mesh policy), freeing
+   `Authorization` to carry only the per-workspace Grafana SA token,
+   forwarded verbatim end-to-end. See `grafana-mcp-multi-tenancy.md` §5/§6
+   decision 2 and D18.
 4. **Does `langchain-mcp-adapters` perform RFC 9728 discovery? — resolved.**
    The library itself does not implement discovery — it exposes a generic
    `auth: httpx.Auth | None` hook. Its dependency, the official `mcp` Python
@@ -139,25 +148,30 @@ prior "still genuinely open" list outright, and materially sharpened a fifth.
    distinct from `team_id`, plus "global user IDs" valid across every
    workspace in the org — see §0.3's caveat.
 
-### 0.7 Still genuinely open
+### 0.7 Final stakeholder decisions (2026-09-12) — closes this track
 
-1. **PoC feedback trigger for Q8's simplification** — what usage signal
-   would tell us "always workspace-SA-ceiling for Slack" is costing UX
-   (e.g. Viewers denied actions an Editor could take, often enough to notice)?
-   Not verifiable by any tool — a product-judgement call. Proposed concrete
-   metric: track denials where a Slack-triggered action would have succeeded
-   under the *linked user's* actual Grafana role but failed at the workspace
-   SA's role; revisit if that rate exceeds an agreed threshold or a customer
-   explicitly complains.
+All three items that remained after the live-verification pass were resolved
+by direct product/stakeholder decision this session, not further research:
+
+1. **PoC feedback trigger for Q8's simplification — accepted as
+   recommended.** Metric: track denials where a Slack-triggered action would
+   have succeeded under the *linked user's* actual Grafana role but failed at
+   the workspace SA's role; revisit the always-workspace-SA-ceiling decision
+   (D24) if that rate exceeds an agreed threshold or a customer explicitly
+   complains. Locked in `grafana-authz-delegation.md` §7 and D24.
 2. **Blast radius / rotation policy for the platform Grafana Server Admin
-   credential** — arising directly from the platform-owns-Grafana fact: this
-   is now the single highest-value secret in the system. Not a technical fact
-   to verify — an org security-policy decision (secret manager choice,
-   rotation cadence, break-glass procedure) still to be made.
-3. **PAN-scrubbing implementation** — Luhn-check-backed detection in the
-   OTel Collector scrubbing layer, per `audit-and-attribution.md` §7.1. Net
-   new engineering work, not a verification task; no existing library for
-   this was found vendored anywhere in this repo.
+   credential — out of scope for the harness.** This is already handled by
+   the platform team as part of their existing credential/secret-management
+   practice; it is not a harness-project decision or open item. Removed from
+   this track's open questions; noted as explicitly out of scope in D22 and
+   the Decision Register §7.
+3. **PAN-scrubbing implementation — deferred to the Evals & Benchmarks
+   deep-dive session.** The *requirement* (D25, driven by PCI-DSS) remains
+   locked; only the Luhn-check-backed detector's design and build are
+   deferred to that session, alongside the related D8b eval-sink-scrubbing
+   tension, since they're the same piece of work.
+
+**Nothing remains open in this track that blocks proceeding to L2 Containers.**
 
 ---
 
@@ -219,7 +233,7 @@ app user) with no consistent RBAC and no coherent audit trail.
 
 ---
 
-## 4. Open questions *(original briefing — see §0.2/§0.5/§0.6 for resolutions)*
+## 4. Open questions *(original briefing — see §0.2/§0.5/§0.6/§0.7 for resolutions)*
 
 ### A1 — How does the Grafana plugin backend authenticate to the harness?
 
@@ -238,10 +252,11 @@ linking, verified against current Slack docs.
 
 ### A4 — Downstream credential strategy, per target
 
-**Resolved — see §0.2, §0.5 Q7/Q8, §0.6 item 3.** Hybrid; check-then-act
-performed by the Tool Gateway; Slack/system-initiated always at
-workspace-SA ceiling; per-call credential attachment to `grafana-mcp` confirmed
-feasible against the real implementation.
+**Resolved — see §0.2, §0.5 Q7/Q8, §0.6 item 3, §0.7 item 1.** Hybrid;
+check-then-act performed by the Tool Gateway; Slack/system-initiated always at
+workspace-SA ceiling with an accepted revisit trigger; per-call SA-token
+attachment to `grafana-mcp` confirmed feasible and its one header collision
+resolved by a locked network-isolation decision.
 
 ### A5 — Must the harness operate while the user is offline?
 
@@ -249,7 +264,8 @@ feasible against the real implementation.
 
 ### A6 — Audit actor model
 
-**Resolved — see §0.2, §0.5 Q3/Q6.** Full schema; retention set by PCI-DSS.
+**Resolved — see §0.2, §0.5 Q3/Q6, §0.7 item 3.** Full schema; retention set
+by PCI-DSS; PAN-scrubbing implementation deferred to the Evals session.
 
 ---
 
@@ -278,8 +294,8 @@ Principal (canonical)
 
 ## 7. Things to verify before deciding — status, see §0.6/§0.7 for the current list
 
-Superseded by §0.6 (now live-verified) and §0.7 (still open). Kept briefly here
-for continuity with the original briefing:
+Superseded by §0.6 (live-verified) and §0.7 (final decisions). Kept briefly
+here for continuity with the original briefing:
 
 - Grafana ID-token forwarding: **verified this session (§0.6 item 1)** —
   enabled by default on latest OSS, correct endpoint identified.
@@ -289,3 +305,5 @@ for continuity with the original briefing:
 - Kubernetes impersonation specifics: still open.
 - MCP authorisation spec status: resolved by D19; `langchain-mcp-adapters`
   discovery support **verified this session (§0.6 item 4)**.
+- PoC feedback trigger, credential blast-radius, PAN-scrubbing: **all closed
+  by stakeholder decision, §0.7.**
