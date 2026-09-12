@@ -24,12 +24,12 @@ ran with what inputs. "Thinking out loud" is a feature, not debug output.
 Output must reach **three human surfaces** with very different transport
 characteristics:
 
-| Surface | Transport reality |
-|---|---|
-| Custom web frontend | Full control. SSE or WebSocket both viable. |
+| Surface                | Transport reality                                                                                                                                                                                        |
+|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Custom web frontend    | Full control. SSE or WebSocket both viable.                                                                                                                                                              |
 | **Grafana App Plugin** | Go plugin backend. Either proxy a stream through it, or use **Grafana Live** (Grafana's own WebSocket infra) via the backend plugin `StreamHandler` (`SubscribeStream` / `RunStream` / `PublishStream`). |
-| **Slack** | Not a stream. Message post + update, or (per research doc) Slack's 2026 streaming APIs (`chat.startStream` / `appendStream` / `stopStream`). Must be batched/throttled either way. |
-| Direct API consumers | Expect an LLM-provider-shaped SSE endpoint: `GET /runs/{id}/stream`. |
+| **Slack**              | Not a stream. Message post + update, or (per research doc) Slack's 2026 streaming APIs (`chat.startStream` / `appendStream` / `stopStream`). Must be batched/throttled either way.                       |
+| Direct API consumers   | Expect an LLM-provider-shaped SSE endpoint: `GET /runs/{id}/stream`.                                                                                                                                     |
 
 ---
 

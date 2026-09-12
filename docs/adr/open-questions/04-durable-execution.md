@@ -16,15 +16,15 @@
 
 ## 1. The workload being orchestrated
 
-| Property | Value |
-|---|---|
-| Chat runs | seconds |
-| Simple RCA | 30–90 seconds |
-| **Multi-agent deep investigation** | **up to ~30 minutes** |
-| **HITL pause awaiting human approval** | **minutes to many hours** |
-| Concurrency | tens of simultaneous runs; bursty (incident cascades fire many alerts at once) |
-| Structure | LangGraph + DeepAgents, with **sub-agent fan-out** (planner → workers → validator) |
-| Side effects | tool calls against production systems, some of them **writes** (PRs, Jira tickets, alert silences, and later remediations) |
+| Property                               | Value                                                                                                                      |
+|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| Chat runs                              | seconds                                                                                                                    |
+| Simple RCA                             | 30–90 seconds                                                                                                              |
+| **Multi-agent deep investigation**     | **up to ~30 minutes**                                                                                                      |
+| **HITL pause awaiting human approval** | **minutes to many hours**                                                                                                  |
+| Concurrency                            | tens of simultaneous runs; bursty (incident cascades fire many alerts at once)                                             |
+| Structure                              | LangGraph + DeepAgents, with **sub-agent fan-out** (planner → workers → validator)                                         |
+| Side effects                           | tool calls against production systems, some of them **writes** (PRs, Jira tickets, alert silences, and later remediations) |
 
 Triggers: user in UI, user in Slack, or an unattended webhook — including at 03:00
 with no human present.
@@ -49,16 +49,16 @@ LangGraph's Postgres checkpointer (`AsyncPostgresSaver`) is frequently assumed t
 solve this. It does not. It gives **state durability** — the graph state is
 recoverable. It does **not** give **execution durability**:
 
-| Capability | LangGraph checkpointer | Needed here? |
-|---|---|---|
-| Recover graph state after crash | ✅ | ✅ |
-| **Work rediscovery** — something re-queues an orphaned run | ❌ Checkpoint sits there forever; nothing resumes it | ✅ Critical — a pod OOM-killed at minute 22 must not silently lose a 30-minute investigation |
-| **Durable timers** — wait 6h for approval, then time out and escalate | ❌ A blocked coroutine dies with the pod | ✅ HITL pauses span hours |
-| **Cancellation propagation** — kill sub-agents, drain in-flight tool calls, tear down resources | ❌ | ✅ "Cancel RCA" is an explicit requirement in `critique.md` |
-| **Per-step retry with backoff** | ❌ | ✅ Flaky infra APIs during an outage is the normal case, not the exception |
-| **Fan-out / fan-in with partial-failure semantics** | Partial | ✅ DeepAgents sub-agents |
-| **Per-queue rate limiting / concurrency caps** | ❌ | ✅ Directly mitigates the control-plane-DDoS risk from `critique.md` |
-| Visibility into in-flight runs | ❌ | ✅ Ops requirement |
+| Capability                                                                                      | LangGraph checkpointer                               | Needed here?                                                                                 |
+|-------------------------------------------------------------------------------------------------|------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| Recover graph state after crash                                                                 | ✅                                                   | ✅                                                                                           |
+| **Work rediscovery** — something re-queues an orphaned run                                      | ❌ Checkpoint sits there forever; nothing resumes it | ✅ Critical — a pod OOM-killed at minute 22 must not silently lose a 30-minute investigation |
+| **Durable timers** — wait 6h for approval, then time out and escalate                           | ❌ A blocked coroutine dies with the pod             | ✅ HITL pauses span hours                                                                    |
+| **Cancellation propagation** — kill sub-agents, drain in-flight tool calls, tear down resources | ❌                                                   | ✅ "Cancel RCA" is an explicit requirement in `critique.md`                                  |
+| **Per-step retry with backoff**                                                                 | ❌                                                   | ✅ Flaky infra APIs during an outage is the normal case, not the exception                   |
+| **Fan-out / fan-in with partial-failure semantics**                                             | Partial                                              | ✅ DeepAgents sub-agents                                                                     |
+| **Per-queue rate limiting / concurrency caps**                                                  | ❌                                                   | ✅ Directly mitigates the control-plane-DDoS risk from `critique.md`                         |
+| Visibility into in-flight runs                                                                  | ❌                                                   | ✅ Ops requirement                                                                           |
 
 Building all of the above by hand is approximately reimplementing a durable
 execution engine.

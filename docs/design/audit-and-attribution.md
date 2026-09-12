@@ -1,6 +1,8 @@
 # Audit & Attribution Chain
 
-> **Status: 🟡 In review.** Design proposal. Nothing locked.
+> **Status: 🟡 In review.** Design proposal. §7 and open question 1 updated —
+> compliance regime confirmed as **PCI-DSS**, which resolves retention and adds
+> a scrubbing requirement (§7.1).
 >
 > **Problem:** answer, months later and under scrutiny, the question
 > *"who caused this change to production, what did the agent do to reach it, on
@@ -208,8 +210,42 @@ what we did".
 | Queryable index | Append-only Postgres table, RLS by `tenant_id`/`workspace_id` | Joins, filters, the UI needs it |
 | Durable record | Object storage with object-lock, periodic export + signed chain head | Immutability that survives a compromised database |
 | Mutability | **Insert-only.** No `UPDATE`, no `DELETE`. Enforced by grants, not convention | A revision is a new record causally linked to the old one |
-| Retention | Configurable per tenant; default long | Depends on compliance answer |
+| Retention | **12 months minimum, with the most recent 3 months immediately queryable (hot)** | Compliance regime is **PCI-DSS** (confirmed) — mirrors PCI-DSS 10.5.1's "at least 12 months, 3 immediately available" audit-log retention requirement |
 | Sampling | **Never** | Distinct from telemetry, which is sampled freely |
+
+### 7.1 PCI-DSS implications beyond retention — new, must be designed for
+
+Confirming PCI-DSS as the compliance target adds requirements this document
+didn't previously carry:
+
+1. **PAN/cardholder-data scrubbing, specifically.** The existing PII/secret
+   scrubbing at the OTel Collector (D8) was framed generically. PCI-DSS
+   requires that primary account numbers **never appear in logs at all**, not
+   merely that they're redacted after the fact. If the agent ever queries a
+   log line or dashboard that happens to contain a PAN (entirely plausible —
+   it's investigating production systems it doesn't control the content of),
+   that value must be detected and stripped **before** it's written into any
+   `tool_call` or `inference` payload, not sampled-and-hoped-clean afterward.
+   **New decision needed:** a PAN-detection pattern (Luhn-check-backed, not
+   just regex) in the scrubbing layer, applied to both the audit chain and the
+   eval sink.
+2. **MFA for administrative access** (PCI-DSS 8.4.2) — reinforces the
+   step-up-authentication requirement already designed into
+   `ux-mcp-tool-configuration.md` for enabling write-capable tools; now has a
+   compliance citation, not just a design preference.
+3. **Immutable, tamper-evident logs** (PCI-DSS 10.5.2) — already satisfied by
+   §5.3's hash chain + WORM anchor design; no new work, just confirmation this
+   requirement is met by what's already designed.
+4. **Quarterly access review / least privilege** — reinforces D16's
+   authorisation-filter-at-call-time model and the SA role-recomputation
+   behaviour in `grafana-mcp-provisioning.md` §4; again, confirms rather than
+   changes existing design.
+5. **Network segmentation** — if the harness or its tool servers can reach
+   systems inside a customer's cardholder data environment (CDE), the
+   deployment topology may itself need to be treated as in-scope for PCI-DSS,
+   which is a **deployment/infrastructure** decision, not an audit-chain one —
+   flagged here so it isn't lost, but tracked properly once deployment
+   topology (§7, capability inventory) gets its own session.
 
 ---
 
@@ -235,18 +271,29 @@ system go on to do?"*
 
 ## 9. Open questions
 
-1. **Retention period and compliance regime.** Drives §7 and whether approval
-   signatures must be independently verifiable or an append-only log suffices.
-2. **Do we store raw prompts in the audit chain, or only hashes?** Hashes are
-   safer for PII; raw prompts are far better for incident forensics. Current
-   proposal is hash-in-audit, content-in-eval-sink under D8a — but that makes the
-   eval sink load-bearing for forensics, which contradicts its "never a runtime
-   dependency" framing.
-3. **Chain anchoring frequency.** Per-run at close, or on a timer? A run open for
-   six hours is unanchored for six hours.
-4. **Is `record_hash` signed, or only hashed?** Signing needs a key the harness
-   cannot silently rotate, which is a real key-management commitment.
-5. **Who can read the audit trail?** Workspace admins for their own workspace is
-   obvious; the harder question is whether an approver can see the inference
-   records behind a proposal they are being asked to approve. I would say yes —
-   approving without seeing the reasoning is theatre.
+1. ~~Retention period and compliance regime.~~ **Resolved: PCI-DSS, 12 months
+   minimum retention, 3 months hot.** Whether approval signatures must be
+   independently verifiable beyond the hash chain, or the chain itself
+   suffices for a PCI-DSS audit, is worth confirming with whoever owns
+   compliance sign-off — the hash-chain + WORM design (§5.3) is believed
+   sufficient for 10.5.2, but "believed" should become "confirmed" before
+   this is load-bearing in an actual audit.
+2. **Do we store raw prompts in the audit chain, or only hashes?** Now sharper
+   given PCI-DSS: raw prompts risk carrying PAN data if the agent ever quotes
+   from a log or query result containing one (§7.1). Leaning further toward
+   **hash-only in the audit chain**, with the eval sink's raw-prompt storage
+   *also* subject to the same PAN-scrubbing pipeline (§7.1) before it lands
+   there — otherwise the eval sink becomes an unscrubbed PCI-DSS liability
+   sitting next to the compliant chain. Still creates the D8b tension
+   (eval sink becomes load-bearing for forensics); not resolved by this
+   answer, just made more urgent.
+3. **Chain anchoring frequency.** Per-run at close, or on a timer? A run open
+   for six hours is unanchored for six hours.
+4. **Is `record_hash` signed, or only hashed?** Signing needs a key the
+   harness cannot silently rotate, which is a real key-management commitment
+   — and PCI-DSS's key-management requirements (3.5, 3.6) likely apply
+   directly if we go this route. Worth resolving alongside item 1.
+5. **Who can read the audit trail?** Workspace admins for their own workspace
+   is obvious; the harder question is whether an approver can see the
+   inference records behind a proposal they are being asked to approve. I
+   would say yes — approving without seeing the reasoning is theatre.
