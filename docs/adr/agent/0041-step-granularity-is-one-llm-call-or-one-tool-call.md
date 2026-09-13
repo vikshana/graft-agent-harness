@@ -25,7 +25,13 @@ legacy_id: D41
 
 ## 1. Context
 
-<!-- TODO(migration): extract the forces from the Decision text below. The register did not separate them. -->
+ADR-0039/ADR-0040 put the durability boundary above LangGraph, driven by DBOS
+step checkpoints — but at what granularity? Too coarse (one step per graph
+run) loses crash-resume precision and bounds nothing; too fine adds write
+overhead for no benefit. ADR-0033 separately requires a cancellation check at
+every tool-call boundary, and ADR-0034 already routes large artifacts to
+object storage rather than inline payloads — both of which the granularity
+rule must satisfy rather than contradict.
 
 ## 2. Decision
 
@@ -33,12 +39,19 @@ legacy_id: D41
 
 ## 3. Considered options
 
-<!-- TODO(migration): several register cells name the rejected option inline ("considered and rejected", "chosen over"). Lift them here. -->
+| Option | Verdict | Why |
+|---|---|---|
+| **One LLM call = one step; one tool call = one step; one sub-agent = one child workflow; one run = one parent workflow** | ✅ Chosen | Bounds retry waste to a single call; satisfies ADR-0033's cancel-check-at-every-tool-call-boundary structurally, since every tool call is a step and cancel preempts at step boundaries |
+| One step per graph node | ❌ Rejected | Coarser than the actual LLM/tool call boundary — a node making multiple calls would lose per-call crash isolation |
+| One step per whole graph run | ❌ Rejected | No crash-resume benefit inside a run; defeats the purpose of durable execution |
 
 ## 4. Consequences
 
-<!-- TODO(migration): lift "accepted tension" / revisit metrics here. -->
+- **Positive —** retry waste is bounded to a single LLM call (accepted in session, Q6); ADR-0033's cancellation guarantee falls out of the granularity rule rather than needing a bespoke hook.
+- **Negative / accepted trade —** write amplification of one ~1–2 ms Postgres write per step, accepted in session (Q3b) against DBOS's published >40K steps/sec single-Postgres benchmark.
+- **Follow-on work —** steps must return pointers, never large payloads — artifacts go to object storage per ADR-0034.
+- **Revisit trigger —** none observed; granularity was confirmed achievable in practice by spike S1 (see Verification).
 
 ## 5. Verification
 
-<!-- Claims marked "verified live" in the register carry their date inline in section 2; restate them here when this ADR is next touched. -->
+- Confirmed by **spike S1** (2026-09-13, experiments E2/E6): `list_workflow_steps()` returns exactly one entry per LLM call and one per tool call — named for the call-wrapper function, not the graph node — for both an in-process fake tool and a real streamable-HTTP MCP tool call (ADR-0070). Mechanism and the full experiment log: [`../../design/durable-execution.md`](../../design/durable-execution.md) section 4.4.

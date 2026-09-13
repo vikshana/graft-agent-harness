@@ -164,13 +164,15 @@ L2-denied** and need their own decision, never a phase.
 
 ## 6. Decision gates — what must be clarified before each phase
 
-**Yes, four items gate Phase 1.** Two are real spikes; two are cheap.
-Each has a self-contained brief in [`spikes/`](./spikes/README.md), written to
+**Three items gate Phase 1.** One is a real spike; two are cheap. S1 closed on
+2026-09-13 (see [ADR-0039](../adr/agent/0039-the-run-is-the-durable-workflow.md),
+[ADR-0040](../adr/agent/0040-langgraph-is-compiled-with-no-checkpointer.md),
+[ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md)).
+Each remaining item has a self-contained brief in [`spikes/`](./spikes/README.md), written to
 be taken into its own session.
 
 | #      | Item                                                                                                   | Gates           | Why it blocks                                                                                                                                                                                                                  | Cost        |
 |--------|--------------------------------------------------------------------------------------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
-| **S1** | DBOS × async LangGraph × `langchain-mcp-adapters` ergonomics                                           | **Phase 1**     | ADR-0039 concedes DBOS's Pattern-B references are framework-free Python loops, not LangGraph. If the combination is unworkable, ADR-0039/ADR-0041 — the least reversible decisions — are wrong, and so is Phase 1's core shape | Spike, days |
 | **[S2](./spikes/S2-dbos-system-db-rls-pci.md)** | DBOS system-DB migrations vs `FORCE ROW LEVEL SECURITY`; whether the DBOS system DB falls in PCI scope | **Phase 1**     | Determines the Phase 1 schema and whether the system DB needs the scrubbing/retention treatment. Retrofitting RLS onto a third-party schema is not cheap                                                                       | Spike, days |
 | **S3** | Langfuse vs Phoenix for the eval sink                                                                  | **Phase 1**     | "Start testing and evaluating" requires somewhere to *look at* trajectories from day one                                                                                                                                       | ~1 day      |
 | **S4** | Provisional model + serving choice                                                                     | **Phase 1**     | Phase 1 needs a model. ADR-0057 forbids mid-run degradation but picks nothing. A provisional choice is enough; the full routing session is Phase 2                                                                             | ~1 day      |
@@ -180,15 +182,14 @@ be taken into its own session.
 | **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link                                | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                                               |             |
 | **S9** | Tenant Directory substrate                                                                             | **Phase 4**     | Single region until then                                                                                                                                                                                                       |             |
 
-**S1 and S2 are the only genuine blockers.** They are already flagged as blocking for C4 L3 — the same two spikes gate
-both, so resolving them unblocks the container-level design and Phase 1 together. S3 and S4 are a day's work and can run
-in parallel.
+**S2 is the only remaining genuine blocker.** It is already flagged as blocking for C4 L3 too, so resolving it
+unblocks the container-level design and Phase 1 together. S3 and S4 are a day's work and can run in parallel.
 
 Everything else resolves inside the phase that needs it. **The backlog does not need clearing before the roadmap is
-finalised** — it needs exactly two spikes run, which is a week, not a planning round.
+finalised** — it needs exactly one spike run (S2), not a planning round.
 
 ## 7. What this roadmap deliberately does not do
 
-- **No estimates.** Phase content is decided; duration is not, and S1 can change Phase 1's shape.
+- **No estimates.** Phase content is decided; duration is not, and S2 can change Phase 1's shape.
 - **No parallel tracks.** Phases 1–3 are strictly ordered by the sequencing rules.
 - **No "Phase 0".** Section 3's foundations are not a phase; they are the definition of done for every phase.

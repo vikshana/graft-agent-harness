@@ -25,7 +25,14 @@ legacy_id: D40
 
 ## 1. Context
 
-<!-- TODO(migration): extract the forces from the Decision text below. The register did not separate them. -->
+ADR-0039 puts the durability boundary above the LangGraph graph, using DBOS
+step checkpoints as the workflow's execution record. If LangGraph also kept
+its own checkpointer for agent state, a run would carry two independent state
+stores that could diverge after a crash — the double-checkpointing hazard the
+durable-execution deep-dive (referenced as `04` section 6.7) flagged.
+Conversational, multi-turn runs (ADR-0036) still need somewhere for chat
+state to live, and the eval pipeline (ADR-0071) needs a queryable trajectory
+to compare prompt versions against historical incidents.
 
 ## 2. Decision
 
@@ -33,12 +40,19 @@ legacy_id: D40
 
 ## 3. Considered options
 
-<!-- TODO(migration): several register cells name the rejected option inline ("considered and rejected", "chosen over"). Lift them here. -->
+| Option | Verdict | Why |
+|---|---|---|
+| **No LangGraph checkpointer; DBOS step checkpoints are the sole execution record** | ✅ Chosen | Eliminates the double-checkpointing hazard by construction rather than by reconciliation |
+| Keep `PostgresSaver` alongside DBOS's step checkpoints | ❌ Rejected | Two independent state stores with no defined precedence on divergence after a crash |
+| Rely on the LangGraph checkpointer as the eval trajectory source | ❌ Rejected | Per ADR-0071 the eval sink was never fed by the checkpointer (a state-snapshot store, not a trajectory store) — it needs OTel spans (ADR-0008) and the event log (ADR-0030), which DBOS's `list_workflow_steps()`/`fork_workflow` serve directly |
 
 ## 4. Consequences
 
-<!-- TODO(migration): lift "accepted tension" / revisit metrics here. -->
+- **Positive —** eval impact is net positive, not a loss: DBOS's `list_workflow_steps()` gives an ordered, SQL-queryable trajectory, and `fork_workflow(id, from_step=N)` re-runs a historical incident under a new prompt version as a new workflow ID with history copied — strictly better than in-place checkpointer time-travel.
+- **Negative / accepted trade —** conversational state for multi-turn runs must be carried explicitly through our own run-state tables into the graph (ADR-0003's "no framework types in node signatures"), rather than relying on LangGraph's built-in state persistence.
+- **Follow-on work —** the `runtime` seam's `fork()` helper must always pin `application_version` when calling `fork_workflow` — the SDK's own default silently strands the forked run (see Verification).
+- **Revisit trigger —** none observed.
 
 ## 5. Verification
 
-<!-- Claims marked "verified live" in the register carry their date inline in section 2; restate them here when this ADR is next touched. -->
+- Confirmed by **spike S1** (2026-09-13, experiments E1/E3/E5): no LangGraph checkpointer was needed for correct crash/resume or cancellation. `fork_workflow` correctly reuses steps before the fork point and re-executes from it — but only when `application_version=DBOS.application_version` is passed explicitly; its default (`None`) is inserted as a literal `NULL` and the forked run never resumes. Mechanism and the full experiment log: [`../../design/durable-execution.md`](../../design/durable-execution.md) section 4.4.

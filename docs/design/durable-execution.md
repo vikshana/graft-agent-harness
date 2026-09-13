@@ -5,7 +5,11 @@
 >
 > All DBOS behaviour described here was **verified live against `docs.dbos.dev`
 > on 2026-09-12**, not recalled. Where a claim is load-bearing, the source page is
-> named inline.
+> named inline. **The DBOS/LangGraph integration boundary (section 4) was
+> additionally confirmed empirically by spike S1 on 2026-09-13 — see the
+> Verification sections of [ADR-0039](../adr/agent/0039-the-run-is-the-durable-workflow.md),
+> [ADR-0040](../adr/agent/0040-langgraph-is-compiled-with-no-checkpointer.md) and
+> [ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md).**
 
 ---
 
@@ -250,6 +254,67 @@ Consequences worth stating explicitly:
   storage, with the step returning a reference — required by DBOS for write-size
   reasons, and independently required by ADR-0034, which already routes artifacts to
   object storage and fetches them on demand.
+
+### 4.4 Confirmed by spike S1 (2026-09-13)
+
+Sections 4.1–4.3 above were, until 2026-09-13, an untested assumption — ADR-0039
+conceded openly that DBOS's Pattern B references are framework-free Python
+loops, not LangGraph. **Spike S1** closed that gap with a throwaway prototype
+(`dbos==2.31.1`, `langgraph==1.2.11`, `langchain-mcp-adapters==0.3.2`,
+Postgres 16) and eight experiments; its confirmation is recorded in the
+Verification sections of [ADR-0039](../adr/agent/0039-the-run-is-the-durable-workflow.md),
+[ADR-0040](../adr/agent/0040-langgraph-is-compiled-with-no-checkpointer.md) and
+[ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md).
+Result: **outcome (a), works as designed, no wrapper needed for the boundary itself.**
+
+**Integration pattern.** `graph.ainvoke()` (or `astream()`) called directly from
+inside a `@DBOS.workflow()` function is the pattern — there is no need to
+decompose the graph and drive it node-by-node from the workflow function.
+DBOS's step context (`contextvars`-based) survives being invoked through
+LangGraph's Pregel executor, so ordinary `@DBOS.step()`-decorated functions
+called from graph node bodies are correctly recorded as individual steps, in
+call order, named for the step-wrapper function rather than the graph node.
+This was confirmed under crash/resume at three kill points (mid-LLM-call,
+mid-tool-call, between steps: no duplicated tool calls on any of them),
+cancellation at the next step boundary (ADR-0043), child workflows spawned
+from inside a graph node, and a real streamable-HTTP MCP tool call
+(ADR-0070) — not only against the in-process fakes used for the other
+experiments.
+
+**Pool-size finding.** Connection count does **not** scale with concurrent
+workflow count. DBOS opens a fixed-size SQLAlchemy pool
+(`pool_size=20, max_overflow=0`, the SDK default) at `DBOS.launch()` time and
+reuses it across every workflow started in that process, on both a direct
+Postgres connection and a pgbouncer transaction-mode pooler. **The binding
+scale constraint is therefore the process's configured pool size, not
+connections × concurrent runs** — a materially smaller capacity-planning
+number, but also a hard ceiling with no warning signal from run count alone.
+Pool checkout wait time should be instrumented directly rather than inferred
+from workflow concurrency.
+
+**pgbouncer configuration note.** Standing up a transaction-mode pooler in
+front of DBOS is not a five-minute `DATABASE_URL` swap. DBOS needs *two*
+Postgres databases (the app database and `<app>_dbos_sys`), and Postgres 16's
+`scram-sha-256` password storage does not survive pgbouncer's usual wildcard
+`[databases]` auto-configuration — the auto-generated config sources the
+backend credential from a password hash in `userlist.txt`, which cannot
+complete a SCRAM handshake (`wrong password type`). The fix: a hand-written
+`pgbouncer.ini` with the plaintext password given directly in the wildcard
+`[databases]` line, plus `auth_type = any` (`trust` still requires the
+connecting user to exist in an auth file, which a wildcard config with no
+`userlist.txt` does not provide). Anyone standing up pgbouncer in front of DBOS
+in Phase 1 should budget real time for this.
+
+**`fork_workflow` caller discipline (normative).** `fork_workflow`/
+`fork_workflow_async`'s `application_version` keyword defaults to `None`,
+which is inserted as a literal `NULL` rather than "use the calling process's
+own version." A forked workflow with a `NULL` `application_version` matches no
+running executor's recovery/dequeue scan and sits `ENQUEUED` forever —
+silently, with no error or timeout. **Every call to `fork_workflow[_async]`
+must pass `application_version=DBOS.application_version` explicitly.** This is
+enforced at the `runtime` seam (section 10.5): the seam's `fork(graft_run_id,
+step)` helper always supplies it, so application code cannot omit it.
+
 
 ---
 
@@ -569,7 +634,11 @@ flows, so that domain and agent code never imports `dbos` directly:
 - `await_human(graft_run_id, timeout)` → `recv`
 - `signal(graft_run_id, message)` → `send`
 - `sleep_until(...)` → `DBOS.sleep`
-- `cancel(graft_run_id)`, `resume(graft_run_id)`, `fork(graft_run_id, step)`
+- `cancel(graft_run_id)`, `resume(graft_run_id)`,
+  `fork(graft_run_id, step)` → `fork_workflow`, **always passing
+  `application_version=DBOS.application_version` explicitly** (see section
+  4.4 — the SDK's own default silently produces a permanently
+  `ENQUEUED`, un-recoverable forked workflow)
 - `list_runs(...)`, `list_steps(graft_run_id)`
 
 This is worth doing **regardless of migration**: it is the natural chokepoint for
