@@ -1,24 +1,24 @@
 # Tenancy, Scoping & Authorization
 
-> **Status: 🟢 Resolved for v1 (2026-09-13).** Locked as **D49–D58** in
-> [`../adr/DECISION-REGISTER.md`](../adr/DECISION-REGISTER.md). Resolves
-> [`../adr/open-questions/03-tenancy-and-scoping.md`](../adr/open-questions/03-tenancy-and-scoping.md)
-> (C1–C5) and discharges **R3**, **R4** and risk **X6**.
+> **Status: 🟢 Resolved for v1 (2026-09-13).** Locked as **ADR-0049–ADR-0058** in
+> [`../adr/DECISION-INDEX.md`](../adr/DECISION-INDEX.md). Resolves
+> Decisions: [ADR-0049 … ADR-0058](../adr/DECISION-INDEX.md#tenancy).
+> (C1–C5) and discharges **ADR-0051**, **ADR-0054** and risk **X6**.
 >
-> Vocabulary is normative per [`../GLOSSARY.md`](../GLOSSARY.md) (D52).
+> Vocabulary is normative per [`../GLOSSARY.md`](../GLOSSARY.md) (ADR-0052).
 >
-> ⚠️ **Partially superseded 2026-09-13 by D65/D66.** §4.1a and §4.2 below were
-> written under **D55's initiator-only approval**, which has been **withdrawn**.
+> ⚠️ **Partially superseded 2026-09-13 by ADR-0065/ADR-0066.** §4.1a and §4.2 below were
+> written under **ADR-0055's initiator-only approval**, which has been **withdrawn**.
 > **Approval now follows the driver.** Those two sections are updated in place;
-> everything else in this document (D49–D54, D56–D58) stands unchanged.
+> everything else in this document (ADR-0049–ADR-0054, ADR-0056–ADR-0058) stands unchanged.
 
 ---
 
-## 1. Deployment topology (C1′ — D49)
+## 1. Deployment topology (C1′ — ADR-0049)
 
 ```
    ┌─────────────────── GCP deployment ───────────────────┐   ┌───── AliCloud deployment ─────┐
-   │  Grafana (OSS, latest, shared, multi-org)  D21       │   │  Grafana (OSS, latest, …)     │
+   │  Grafana (OSS, latest, shared, multi-org)  ADR-0021       │   │  Grafana (OSS, latest, …)     │
    │  Harness API · Tool Gateway · DBOS workers           │   │  Harness API · Tool Gateway   │
    │  Postgres (runs, events, audit, DBOS system DB)      │   │  Postgres                     │
    │  Object storage (artifacts, WORM audit anchors)      │   │  Object storage               │
@@ -39,31 +39,31 @@
   home region.** Cross-region access is a **read-path proxy** — the local API
   looks up `home_region` in the directory, forwards the request under the
   caller's identity, and returns the response **without persisting it outside
-  the home region**. Audit chains (D15) are wholly in-region and anchor to
+  the home region**. Audit chains (ADR-0015) are wholly in-region and anchor to
   in-region WORM storage.
-- **Consequence for D48's X5** (multi-cloud worker/system-database placement):
+- **Consequence for ADR-0048's X5** (multi-cloud worker/system-database placement):
   resolved by construction — each region has its own workers and its own DBOS
   system database. No cross-region workflow recovery, ever.
 
-### 1.1 Isolation is not thread-level (D50)
+### 1.1 Isolation is not thread-level (ADR-0050)
 
 Parallel execution for hundreds of Principals is a **scheduling** problem, not
 an isolation one. Thread and async-task boundaries are **not** a security
 boundary — Python threads share a heap, and the primary threat (indirect prompt
-injection, D7) does not respect them.
+injection, ADR-0007) does not respect them.
 
 Isolation comes from three mechanisms already locked:
 
 | Mechanism | Decision | What it stops |
 |---|---|---|
-| Run-scoped capability token | D10 | A Run cannot *name* another Tenant's credentials |
-| Tool Gateway resolves credentials by Tenant, never ambient | D7, D7a, D18 | A compromised agent cannot reach another Tenant's connections |
-| Postgres RLS on `graft_tenant_id` | D51 | A query bug cannot return another Tenant's rows |
+| Run-scoped capability token | ADR-0010 | A Run cannot *name* another Tenant's credentials |
+| Tool Gateway resolves credentials by Tenant, never ambient | ADR-0007, ADR-0070, ADR-0018 | A compromised agent cannot reach another Tenant's connections |
+| Postgres RLS on `graft_tenant_id` | ADR-0051 | A query bug cannot return another Tenant's rows |
 
 Two hard implementation rules:
 
 - **No ambient or thread-local Tenant context — ever.** Scope travels as an
-  explicit argument through the `runtime` seam (D48), which is the natural
+  explicit argument through the `runtime` seam (ADR-0048), which is the natural
   chokepoint. Thread-locals plus async task switching is *the* classic
   cross-tenant leak.
 - **RLS is established per transaction with `SET LOCAL`**, never `SET`:
@@ -77,16 +77,16 @@ Two hard implementation rules:
 
   A transaction-mode pooler reassigns connections between Tenants; a
   session-level `SET` would leak scope across that boundary. This matters
-  directly because D48 identified **Postgres connection count (the pooler)** as
+  directly because ADR-0048 identified **Postgres connection count (the pooler)** as
   the binding scale constraint.
 
 Concurrency itself is handled by **DBOS partitioned queues keyed by
-`graft_tenant_id`** (D44) over the worker StatefulSet (D38) — a native
-implementation of D17's ceiling chain.
+`graft_tenant_id`** (ADR-0044) over the worker StatefulSet (ADR-0038) — a native
+implementation of ADR-0017's ceiling chain.
 
 ---
 
-## 2. The scope model (C2 — D51)
+## 2. The scope model (C2 — ADR-0051)
 
 **One scoping layer.** The four-layer `Tenant → Workspace → Group → Principal`
 tree proposed in the briefing collapsed, because Tenant and Workspace were
@@ -123,7 +123,7 @@ simplifying in the reversible direction.
 |---|---|---|
 | **Grafana app plugin** | **Follows the active GrafanaOrg.** Switch org in Grafana, the Tenant changes. | The Grafana surface contains *no* Tenant-resolution logic at all |
 | **Slack — channel** | Admin-configured **SlackChannel → Tenant** binding | Load-bearing in v1: one SlackWorkspace serves all Tenants |
-| **Slack — DM** | Per-Principal **default Tenant**, set at account-link time (D20), switchable by slash command | |
+| **Slack — DM** | Per-Principal **default Tenant**, set at account-link time (ADR-0020), switchable by slash command | |
 | **Slack — neither resolves** | Bot **asks** which Tenant | Fallback only |
 | **Webhook / alert** | Derived from the alert's source GrafanaOrg | |
 | **Schedule** | The Tenant that owns the Schedule | |
@@ -134,15 +134,15 @@ no exception to get wrong.
 
 ### 2.4 Slack in v1
 
-Single **SlackEnterprise**, single **SlackWorkspace** (D52). `slack_enterprise_id`
+Single **SlackEnterprise**, single **SlackWorkspace** (ADR-0052). `slack_enterprise_id`
 and `slack_workspace_id` are recorded on the `PrincipalIdentity` row for provenance and
-for D28's key-selection rule, and scope **nothing**.
+for ADR-0028's key-selection rule, and scope **nothing**.
 
 ---
 
-## 3. Tenant lifecycle and brownfield onboarding (D53)
+## 3. Tenant lifecycle and brownfield onboarding (ADR-0053)
 
-Hundreds of GrafanaOrgs already exist. D22 requires service-account
+Hundreds of GrafanaOrgs already exist. ADR-0022 requires service-account
 provisioning to be **synchronous and a precondition of readiness** — never
 lazy. Both are satisfied by a lifecycle:
 
@@ -150,7 +150,7 @@ lazy. Both are satisfied by a lifecycle:
 discovered ──────▶ provisioning ──────▶ ready ──────▶ suspended
      │                   │                 │
      │                   │                 └─ SAs exist · roles minimal · tokens valid
-     │                   └─ synchronous, atomic, D22 semantics
+     │                   └─ synchronous, atomic, ADR-0022 semantics
      └─ shell row only. NO service accounts. NO credentials. NO cost.
         Created by the reconciler for every existing GrafanaOrg.
 ```
@@ -158,9 +158,9 @@ discovered ──────▶ provisioning ──────▶ ready ──
 - **Every existing GrafanaOrg gets a `discovered` Tenant row.** Free and
   credential-less, so the capability is one admin action away for all teams —
   matching the expectation that most teams will want it.
-- **`discovered → ready` is the explicit admin act**, and *that* is where D22's
+- **`discovered → ready` is the explicit admin act**, and *that* is where ADR-0022's
   synchronous SA provisioning fires. We never hold hundreds of unused
-  credentials, and D22 is untouched.
+  credentials, and ADR-0022 is untouched.
 - **One code path.** Backfill reconciler and new-org hook call the same
   idempotent provisioner. No special-case migration script to rot.
 - **`suspended`** revokes tokens and rejects new Runs without deleting history.
@@ -174,23 +174,23 @@ the **control**.
 - **Reserved naming:** `graft-platform-enforcement` and `graft-platform-mcp`,
   with a display name stating *"Managed by the Graft platform — do not
   modify."* Any SA under the `graft-platform-` prefix is platform-owned.
-- **Drift reconciler** (a scheduled DBOS workflow, D47) asserts, per Tenant:
-  SA exists · role == minimum required across enabled tools (D22) · token
+- **Drift reconciler** (a scheduled DBOS workflow, ADR-0047) asserts, per Tenant:
+  SA exists · role == minimum required across enabled tools (ADR-0022) · token
   present and unexpired. Divergence triggers re-provision, and always an audit
   record.
 - **Rotation** is a scheduled workflow, not a calendar reminder. Tokens always
-  carry an expiry (D12); rotation runs well inside it.
+  carry an expiry (ADR-0012); rotation runs well inside it.
 - **Metrics, per SA:** token age, time-to-expiry, last successful use, drift
   events detected, re-provisions performed, reconciler lag. These are the
   monitoring surface for the platform team.
 
 ---
 
-## 4. Run ownership, visibility and approval (C3 — D54, D55)
+## 4. Run ownership, visibility and approval (C3 — ADR-0054, ADR-0055)
 
 ### 4.1 Ownership and visibility
 
-**D36 supersedes R4.** Ownership is a per-Run property, not a blanket rule for
+**ADR-0036 supersedes ADR-0054.** Ownership is a per-Run property, not a blanket rule for
 a run-type.
 
 | Case | Ownership at birth | Notes |
@@ -201,32 +201,32 @@ a run-type.
 - **Sharing is irreversible.** A tenant-shared Run cannot be made private
   again — un-sharing after the fact is security theatre and complicates the
   audit story. It can be **archived**, not un-shared.
-- **Sharing activates D32's soft-lock driver model.** A private Run has no
+- **Sharing activates ADR-0032's soft-lock driver model.** A private Run has no
   multi-viewer concern by construction.
 - **Archival does not change visibility** — it is a storage-tier and
   mutability change (read-only), not an access-control change.
 - **De-provisioned Principals:** their private Runs become **inaccessible
   in-product**. Audit records are unaffected and retained for the full 12
-  months (D15, insert-only) — the end-to-end audit trail, not the product UI,
+  months (ADR-0015, insert-only) — the end-to-end audit trail, not the product UI,
   is the forensic path.
 
 ### 4.1a Driving a shared Run, and the Run list
 
-**One driver, everyone else watches, handover is explicit** (D64). The driver
+**One driver, everyone else watches, handover is explicit** (ADR-0064). The driver
 holds `run:steer` and `run:cancel`; other viewers are read-only until control is
 handed over.
 
-- **`viewer` can never drive** — it holds no `run:steer` verb (D56).
+- **`viewer` can never drive** — it holds no `run:steer` verb (ADR-0056).
   `responder` and `tenant_admin` may request control.
 - **Explicit handover is the normal path.** Two escape hatches stop a
   disconnected driver deadlocking the Run, and they are governed by **three
-  independent server-side clocks** (D66), not one vague timeout:
+  independent server-side clocks** (ADR-0066), not one vague timeout:
 
   | Clock | Anchored on | Default | Reset by | On expiry |
   |---|---|---|---|---|
   | **Idle** | `last_interaction_at` | 10 min | An *interactive act* | Warn at T−60s, then release |
   | **Disconnect** | `disconnected_at` | 2 min | Transport reconnect | Release |
-  | **Approval** | the `action_proposed` event | ≥72h | **Never** | Run closes `expired` (D47) |
+  | **Approval** | the `action_proposed` event | ≥72h | **Never** | Run closes `expired` (ADR-0047) |
 
   An **interactive act** is sending a prompt, steering, cancelling, requesting /
   granting / releasing control, approving or rejecting, or clicking "keep
@@ -240,9 +240,9 @@ handed over.
   **On release, control goes to nobody** — never auto-handed to a specific
   viewer. Both escape hatches emit an audit record. This closes the
   driver-disconnect item left open in
-  `../adr/open-questions/02-streaming-and-events.md` §0.4.
-- **Driving *is* approving — the wheel carries the authority** (D65, superseding
-  D64's framing). A handover or force-release therefore **does** transfer
+  [`streaming-and-events.md`](./streaming-and-events.md) §7 (closed by ADR-0066).
+- **Driving *is* approving — the wheel carries the authority** (ADR-0065, superseding
+  ADR-0064's framing). A handover or force-release therefore **does** transfer
   approval authority, which is why every transfer is an audit record and why
   **`tenant_admin` force-release is restricted and `platform_admin` does not
   have it at all**. We chose **detection over friction**: no cool-down, because
@@ -252,24 +252,24 @@ handed over.
 
 **Run list filters: "Mine" and "Tenant".** Deliberately *not* the originally
 proposed "mine / my team / all": there is no "my team" because **Group is not a
-scoping layer** (D51), and no "all" because cross-Tenant listing does not exist
-(D51).
+scoping layer** (ADR-0051), and no "all" because cross-Tenant listing does not exist
+(ADR-0051).
 
 ### 4.2 Approval authority
 
-**Approval belongs to the current driver** (D65, superseding D55's
+**Approval belongs to the current driver** (ADR-0065, superseding ADR-0055's
 initiator-only rule), on top of the existing constraints: approval is a distinct,
-re-authenticated act that always happens in Grafana (D14), and the action must
+re-authenticated act that always happens in Grafana (ADR-0014), and the action must
 independently pass **check-then-act** against **the approver's own** Grafana
-permission (D23).
+permission (ADR-0023).
 
 ```
 may_approve(principal, run, action) =
-        principal == run.control.driver                 (D65)
-    AND re-authenticated in Grafana                     (D14)
-    AND check-then-act passes for this action           (D23, D26 basic roles)
-    AND run.origin == user_initiated                    (D13, D66)
-    AND principal's Role holds action:approve           (D56)
+        principal == run.control.driver                 (ADR-0065)
+    AND re-authenticated in Grafana                     (ADR-0014)
+    AND check-then-act passes for this action           (ADR-0023, ADR-0026 basic roles)
+    AND run.origin == user_initiated                    (ADR-0013, ADR-0066)
+    AND principal's Role holds action:approve           (ADR-0056)
 ```
 
 Three properties make this safe, and all three are structural rather than
@@ -279,7 +279,7 @@ procedural:
    participant, who is the driver, so driver-based approval *is* initiator-only
    there — with no special case to write or get wrong.
 2. **`viewer` can never drive, so `viewer` can never approve.** The Role lattice
-   already excludes the dangerous case (D56).
+   already excludes the dangerous case (ADR-0056).
 3. **Approval binds to `proposal_hash`, never to intent.** A driver who inherits
    a pending proposal approves exactly the artefact that was reviewed. A
    proposal is therefore **not** invalidated by a control change — regenerating
@@ -290,25 +290,25 @@ procedural:
    approved but **how they came to be allowed to**.
 
 **Claiming control on a `system_initiated` Run is the moment a human attaches,
-and is therefore the upgrade point to `user_initiated`** (D66) — refining D13,
+and is therefore the upgrade point to `user_initiated`** (ADR-0066) — refining ADR-0013,
 which located the upgrade at approval. Until someone claims, such a Run has no
 driver and nobody can approve, which is correct: it is structurally read-only
 until exactly that moment.
 
-**What changed, and what it cost.** D55 made approval non-transferable and
+**What changed, and what it cost.** ADR-0055 made approval non-transferable and
 accepted that an offline initiator meant an expired Run — deliberately trading
-R4's "Bob approves when Alice is offline" rationale for unambiguous attribution.
-**That trade is withdrawn.** D65 restores the handover and pays a different,
+ADR-0054's "Bob approves when Alice is offline" rationale for unambiguous attribution.
+**That trade is withdrawn.** ADR-0065 restores the handover and pays a different,
 smaller price: **control is now authority**, so taking the wheel is an
 authority-bearing act and must be audited as one.
 
-The property D55 was actually protecting was never *"only Alice may approve"* —
+The property ADR-0055 was actually protecting was never *"only Alice may approve"* —
 it was *"a named, re-authenticated human, acting within their own permissions,
 approved this exact artefact, and we can prove how they came to be allowed to."*
 All four clauses survive. Only the one that was an implementation convenience
 was dropped.
 
-**Revisit metric** (same pattern as D24) is now the **force-release-then-
+**Revisit metric** (same pattern as ADR-0024) is now the **force-release-then-
 self-approve rate** — a `tenant_admin` taking the wheel from a live driver and
 approving in the same Run. If that is common rather than exceptional, the answer
 is friction after all: a cool-down, or a second approver for force-released
@@ -325,7 +325,7 @@ Tenant must not also be able to authorise writes in every Tenant. Break-glass
 covers incident containment, not action authorisation.
 
 Every break-glass access emits an audit record naming the `platform_admin`, the
-Tenant entered, and the action taken — non-sampled (D15).
+Tenant entered, and the action taken — non-sampled (ADR-0015).
 
 ### 4.4 Two-person rule
 
@@ -334,7 +334,7 @@ exclusive by definition. Deferred to the HITL & write-action session.
 
 ---
 
-### 4.5 Custom instructions (D62)
+### 4.5 Custom instructions (ADR-0062)
 
 Custom instructions exist at **two levels**, because they answer two different
 questions:
@@ -345,64 +345,64 @@ questions:
 | **Principal** | Personal preference for *how* the agent replies | "Be terse. Lead with the conclusion, then evidence." |
 
 **Precedence follows the prompt-layer hierarchy** in
-`../research/context-management.md` — platform system/safety text, then Tenant,
+[`context-assembly.md`](./context-assembly.md) — platform system/safety text, then Tenant,
 then Principal. **The higher layer wins on conflict**, so a Principal cannot
 opt out of a Tenant convention.
 
 **The hard rule: custom instructions are prompt text, never policy.** They
 cannot enable a tool, widen a Role, alter a budget or bypass an approval. An
 instruction reading *"you may restart pods without asking"* has **literally no
-effect** — capability comes from the run capability token (D10/D63 layer 4),
+effect** — capability comes from the run capability token (ADR-0010/ADR-0063 layer 4),
 which is minted before the instruction is ever read. This matters because
 custom instructions are user-authored text flowing into the model's context,
 i.e. a prompt-injection channel by construction; the mitigation is structural,
 not a filter.
 
 Both levels are **versioned**, and the versions in force are recorded on the
-Run — required for audit attribution (D15) and for D40's `fork_workflow` eval
+Run — required for audit attribution (ADR-0015) and for ADR-0040's `fork_workflow` eval
 replay to be reproducible.
 
 ---
 
-## 5. Roles and authorization (C4 — D56)
+## 5. Roles and authorization (C4 — ADR-0056)
 
 **The IdP authenticates; the harness authorizes.** The IdP establishes *who the
 Principal is* and nothing more. Role assignment, permission verbs and their
 evaluation are entirely ours, in our own tables. This satisfies the
 IdP-independence requirement (Entra / Keycloak / Auth0 / AD interchangeable
-with zero code change) and is unaffected by D26's finding that fine-grained
+with zero code change) and is unaffected by ADR-0026's finding that fine-grained
 RBAC is Grafana-Enterprise-only.
 
 ### 5.1 Roles
 
-| Role | Scope | Default source (D56/Q16) | Capabilities |
+| Role | Scope | Default source (ADR-0056/Q16) | Capabilities |
 |---|---|---|---|
 | `platform_admin` | Platform | **GrafanaServerAdmin** | Tenant lifecycle, platform ceilings, quota overrides, break-glass read/cancel/suspend (§4.3). **Cannot approve.** |
-| `tenant_admin` | Tenant | **GrafanaOrgAdmin** | Connections, tool policy (D16), budgets, Schedules, Group→Role mapping, quota-increase requests. Plus everything `responder` can do. |
+| `tenant_admin` | Tenant | **GrafanaOrgAdmin** | Connections, tool policy (ADR-0016), budgets, Schedules, Group→Role mapping, quota-increase requests. Plus everything `responder` can do. |
 | `responder` | Tenant | **Grafana Editor** | Create / steer / cancel / share own Runs; propose actions; **approve any Run they are driving**, subject to §4.2 |
 | `viewer` | Tenant | **Grafana Viewer** | Read tenant-shared Runs. No Run creation. |
 
-**`operator` was considered and removed.** Under D55 the argument was a
+**`operator` was considered and removed.** Under ADR-0055 the argument was a
 deadlock: a separate approve-granting role meant an Editor-mapped `responder`
 could start a Run whose proposed action nobody was permitted to approve.
-**D65 dissolves that particular deadlock** — a `responder` can now approve any
+**ADR-0065 dissolves that particular deadlock** — a `responder` can now approve any
 Run they are driving — but the conclusion is unchanged and the reason is now
 cleaner: a standing approve-granting role is **redundant**, because approval
 authority is already resolved per action at call time from *who holds the wheel*
 plus check-then-act. A fifth role would add a second, stale source of truth for
 a question that is answered live. Approval
-authority is instead resolved **per action, at call time, by D23** — which is
-exactly D16's "per-user variation is an authorisation filter at call time,
+authority is instead resolved **per action, at call time, by ADR-0023** — which is
+exactly ADR-0016's "per-user variation is an authorisation filter at call time,
 never a separate configuration". An Editor may approve a dashboard change
 because Grafana says they may edit dashboards.
 
 **Non-Grafana write classes** (K8s restart, GitHub PR, Jira) have no Grafana
 permission to check against. For these, the **required Role is declared
-explicitly in the tool policy** (D16), defaulting to `tenant_admin`.
+explicitly in the tool policy** (ADR-0016), defaulting to `tenant_admin`.
 
 **Extensibility:** Roles and permission verbs are **rows, not code**. Adding a
 role, or splitting `responder`, is a data change plus a policy version bump
-(D16) — no deploy, no Grafana Enterprise licence.
+(ADR-0016) — no deploy, no Grafana Enterprise licence.
 
 ### 5.2 Permission verbs
 
@@ -422,7 +422,7 @@ member:manage            tenant:provision         tenant:breakglass
 3. Default mapping from Grafana basic role        ─┘  (§5.1, zero-config)
 ⇒ harness Role
 ⇒ AND, at call time, check-then-act against the Principal's Grafana
-   permission for Grafana-scoped actions (D23)
+   permission for Grafana-scoped actions (ADR-0023)
 ```
 
 Layer 3 is what makes brownfield onboarding viable: a newly-`ready` Tenant is
@@ -431,23 +431,23 @@ admin overrides with Group mappings only when they want something different.
 
 The call-time Grafana check is **not** a role source — it is an independent
 ceiling and a safety net. Our Role can never cause an action Grafana itself
-would refuse. (D24 remains the stated exception: Slack-initiated and
+would refuse. (ADR-0024 remains the stated exception: Slack-initiated and
 `system_initiated` Runs are bounded solely by the Tenant's service-account
 role.)
 
 ### 5.4 De-provisioning
 
 **TTL-only.** A Principal removed at the IdP loses access when their harness
-token expires (~10 min, D10). The D10 deny-list remains available for
+token expires (~10 min, ADR-0010). The ADR-0010 deny-list remains available for
 immediate revocation in an incident. No SCIM and no polling in v1.
 
 ---
 
-## 6. Budgets, quotas and schedule ceilings (C5, X6 — D57, D58)
+## 6. Budgets, quotas and schedule ceilings (C5, X6 — ADR-0057, ADR-0058)
 
 ### 6.1 The ceiling chain
 
-D17's chain loses a layer with the scope collapse:
+ADR-0017's chain loses a layer with the scope collapse:
 
 ```
 platform  ≥  tenant  ≥  principal  ≥  run
@@ -456,13 +456,13 @@ platform  ≥  tenant  ≥  principal  ≥  run
 Effective limit is the **minimum across scopes**. Platform ceilings are **not
 customer-raisable**. Per-connection throttles (protecting *customer*
 infrastructure, e.g. a shared K8s control plane) are keyed by connection and
-remain **independent** of Tenant quota (D44).
+remain **independent** of Tenant quota (ADR-0044).
 
 ### 6.2 At-cap behaviour
 
 | Cap | Behaviour at cap |
 |---|---|
-| **Per-run** — tokens, cost, graph depth, wall clock | **Graceful terminate.** Emit the best hypothesis formed so far plus `budget_consumed` (D29). Never a bare failure. |
+| **Per-run** — tokens, cost, graph depth, wall clock | **Graceful terminate.** Emit the best hypothesis formed so far plus `budget_consumed` (ADR-0029). Never a bare failure. |
 | **Per-principal** — monthly | **Hard stop.** New Runs rejected; in-flight Runs finish. Surfaced in the UI *before* it is reached (§6.4). |
 | **Per-tenant** — monthly | **Hard stop.** New Runs rejected; in-flight Runs finish. The billing boundary. |
 | **Per-connection** | **Throttle / queue.** Protects customer infrastructure; never fails the Run outright. |
@@ -483,7 +483,7 @@ about to act on.
   consumption, and the triggering `graft_run_id`, under an idempotency key so a
   double-click does not open two tickets. A `platform_admin` applies the new
   ceiling in the admin UI; the change is an audit record and a policy version
-  bump (D16).
+  bump (ADR-0016).
   - *Fallback if ITSM integration slips:* a deep link to the service desk with
     the same context in the URL. Same UX, no API dependency.
 
@@ -492,27 +492,27 @@ about to act on.
 - **In-product quota indicator** — per-Principal and per-Tenant consumption
   against ceiling, always visible (the braindump's "Limits/Quota Indicator" and
   "Show Token Usage/Budget").
-- **Notification at threshold** (proposed: 80%) and at cap, via the D35
+- **Notification at threshold** (proposed: 80%) and at cap, via the ADR-0035
   notification path.
 - **Platform monitoring:** consumption vs ceiling per Tenant and per Principal,
   at-cap rejection rate, quota-increase request rate, and time-to-fulfil. These
   are the signals that tell the platform team the defaults are wrong.
 
-### 6.5 Schedules as a governed resource (X6 — D58)
+### 6.5 Schedules as a governed resource (X6 — ADR-0058)
 
-Schedules (D47) are Tenant-owned, runtime-mutable and cost money, so they get
+Schedules (ADR-0047) are Tenant-owned, runtime-mutable and cost money, so they get
 the same treatment as any other tenant-scoped resource:
 
 - **Ceiling on Schedule count per Tenant** and a **minimum interval**.
   *Proposed defaults, to confirm with cost data:* **10 Schedules per Tenant**,
   **minimum interval 1 hour**. Both are `platform_admin`-customisable per
   Tenant per §6.3.
-- **Versioned policy, never overwritten** (D16). Every create/modify/delete is
+- **Versioned policy, never overwritten** (ADR-0016). Every create/modify/delete is
   an audit record naming the Principal.
 - **Schedule consumption counts against the Tenant's monthly quota** — a
   Schedule is not a budget bypass.
 - **All scheduled Runs are `system_initiated` and therefore structurally
-  read-only** (D13, D47). A Schedule can investigate and report; it can never
+  read-only** (ADR-0013, ADR-0047). A Schedule can investigate and report; it can never
   act. This bounds the risk of Schedules to *cost*, not *blast radius*.
 
 #### What Schedules are for
@@ -523,7 +523,7 @@ the same treatment as any other tenant-scoped resource:
 | **Post-incident follow-up verification** — re-check in 24h that a fix held | `system_initiated` | Tenant |
 | Recurring configuration- or cost-drift reports | `system_initiated` | Tenant |
 | Pre-emptive checks ahead of a known high-traffic event | `system_initiated` | Tenant |
-| **Infrastructure-memory refresh** (`*/15`, D47) | internal | **Platform** — not tenant-configurable, not quota-counted |
+| **Infrastructure-memory refresh** (`*/15`, ADR-0047) | internal | **Platform** — not tenant-configurable, not quota-counted |
 | **SA drift reconciliation and rotation** (§3.1) | internal | **Platform** |
 
 The last two are platform-internal machinery that happens to use the same timer
@@ -557,7 +557,7 @@ CREATE TABLE principal (
 CREATE TABLE principal_identity (              -- the federation table
     graft_principal_id      uuid NOT NULL REFERENCES principal,
     provider          text NOT NULL,           -- grafana|slack|idp
-    external_id       text NOT NULL,           -- D28 decides this for slack
+    external_id       text NOT NULL,           -- ADR-0028 decides this for slack
     slack_enterprise_id     text,                    -- provenance only, scopes nothing
     slack_workspace_id           text,                    -- provenance only, scopes nothing
     PRIMARY KEY (provider, external_id)
@@ -575,7 +575,7 @@ CREATE TABLE group_role_mapping (              -- §5.3 layer 1 — admin config
     graft_tenant_id   text NOT NULL REFERENCES tenant,
     idp_group_claim   text NOT NULL,
     graft_role_id           text NOT NULL REFERENCES role,
-    policy_version    integer NOT NULL,        -- versioned, never overwritten (D16)
+    policy_version    integer NOT NULL,        -- versioned, never overwritten (ADR-0016)
     PRIMARY KEY (graft_tenant_id, idp_group_claim, policy_version)
 );
 
@@ -600,7 +600,7 @@ CREATE TABLE run (
     origin            text NOT NULL,               -- user_initiated|system_initiated
     visibility        text NOT NULL,               -- private|tenant_shared
     status            text NOT NULL,
-    dbos_workflow_id  text NOT NULL,               -- D39
+    dbos_workflow_id  text NOT NULL,               -- ADR-0039
     created_at        timestamptz NOT NULL DEFAULT now()
 );
 
@@ -614,27 +614,27 @@ CREATE POLICY tenant_isolation ON run
 `FORCE ROW LEVEL SECURITY` matters: without it the table owner — which the
 application role often is — silently bypasses every policy.
 
-The identical pattern applies to `run_event` (D30), `audit_record` (D15),
+The identical pattern applies to `run_event` (ADR-0030), `audit_record` (ADR-0015),
 `connection`, `schedule`, `tool_policy` and every other tenant-scoped table.
 
 ### 7.4 Scoping beyond the database
 
 | Carrier | Must carry | Decision |
 |---|---|---|
-| Capability token | `graft_tenant_id`, `graft_run_id`, `graft_principal_id`, tool classes | D10, D19 |
-| Event log rows | `graft_tenant_id`, `graft_run_id`, monotonic `graft_event_id` | D30 |
-| Grafana Live channel | `graft_tenant_id` + `graft_run_id` in the channel path; authorized in `SubscribeStream` | D31 |
-| OTel spans | `graft_tenant_id` resource attribute, tagged at the Collector | D5, D8 |
-| Audit records | `graft_tenant_id`, `graft_principal_id`, `graft_run_id`, `caused_by` | D15 |
-| DBOS queue partition key | `graft_tenant_id` | D44 |
-| Secret store paths | namespaced by `graft_tenant_id` | D7 |
+| Capability token | `graft_tenant_id`, `graft_run_id`, `graft_principal_id`, tool classes | ADR-0010, ADR-0019 |
+| Event log rows | `graft_tenant_id`, `graft_run_id`, monotonic `graft_event_id` | ADR-0030 |
+| Grafana Live channel | `graft_tenant_id` + `graft_run_id` in the channel path; authorized in `SubscribeStream` | ADR-0031 |
+| OTel spans | `graft_tenant_id` resource attribute, tagged at the Collector | ADR-0005, ADR-0008 |
+| Audit records | `graft_tenant_id`, `graft_principal_id`, `graft_run_id`, `caused_by` | ADR-0015 |
+| DBOS queue partition key | `graft_tenant_id` | ADR-0044 |
+| Secret store paths | namespaced by `graft_tenant_id` | ADR-0007 |
 
 ---
 
 ## 8. Open items (implementation-time, not architectural)
 
 1. **Quota numbers.** Per-Principal and per-Tenant monthly token/cost ceilings
-   need real cost data before defaults are set. Same status as D47's expiry
+   need real cost data before defaults are set. Same status as ADR-0047's expiry
    duration: the mechanism is locked, the number is an untaken product
    decision.
 2. **Schedule defaults** (10/Tenant, 1h minimum) to confirm against expected
@@ -646,9 +646,9 @@ The identical pattern applies to `run_event` (D30), `audit_record` (D15),
 5. **Backfill reconciler run-book** — first execution against hundreds of
    existing GrafanaOrgs should be rehearsed; it is idempotent by design, but
    the first run is the one that proves it.
-6. **Force-release-then-self-approve rate** instrumentation, as the D65 revisit
-   trigger; **expired-approval rate** retained as a secondary signal (D55's
+6. **Force-release-then-self-approve rate** instrumentation, as the ADR-0065 revisit
+   trigger; **expired-approval rate** retained as a secondary signal (ADR-0055's
    original trigger, now expected to fall sharply).
-7. **Control-clock defaults are guesses** (D66): 10 min idle, 2 min disconnect,
+7. **Control-clock defaults are guesses** (ADR-0066): 10 min idle, 2 min disconnect,
    30s sweep granularity. These are now *security* parameters rather than UX
    ones, and nothing has measured them. Instrument from day one.

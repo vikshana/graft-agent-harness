@@ -1,0 +1,26 @@
+name: docs
+
+on:
+  pull_request:
+    paths: ['docs/**', 'scripts/**', '.github/workflows/docs.yml']
+  push:
+    branches: [main]
+    paths: ['docs/**', 'scripts/**']
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Documentation hygiene
+        run: python3 scripts/check_docs.py
+
+      - name: Decision index is up to date
+        run: |
+          python3 scripts/gen_adr_index.py
+          git diff --exit-code docs/adr/DECISION-INDEX.md \
+            || { echo "::error::DECISION-INDEX.md is stale. Run scripts/gen_adr_index.py and commit."; exit 1; }

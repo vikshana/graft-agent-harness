@@ -2,34 +2,34 @@
 
 > **Status: 🟡 In review — revision 4.**
 >
-> **Changes in r4 — five decisions taken 2026-09-13 (D65–D69):**
+> **Changes in r4 — five decisions taken 2026-09-13 (ADR-0065–ADR-0069):**
 >
 > | # | Change | Driver |
 > |---|---|---|
-> | 1 | **Approval follows the driver, not the initiator.** J4 and J5 rewritten again; r3's J5 trade is **withdrawn**, and the on-call handover gap it accepted is closed. | D65 |
-> | 2 | **Control is authority**, so every control transfer is an audited authority transfer. Auto-release is now specified as **three independent server-side clocks**, not a single vague "10 minutes". | D66 |
-> | 3 | **Claiming control on a `system_initiated` Run is the upgrade point** to `user_initiated` — refining D13, which located it at approval. | D66 |
-> | 4 | **Paging writes classified rather than deferred wholesale.** v1 is read-only; notification suppression is **permanently hard-denied**. Surfaced and fixed a latent J1 inconsistency: **narration is not a ToolClass**. | D67 |
-> | 5 | **The harness never reaches a customer system directly** — Tool Gateway → MCP, without exception, three named non-agent exceptions. Closes r3 §7 Q1. | D68 |
+> | 1 | **Approval follows the driver, not the initiator.** J4 and J5 rewritten again; r3's J5 trade is **withdrawn**, and the on-call handover gap it accepted is closed. | ADR-0065 |
+> | 2 | **Control is authority**, so every control transfer is an audited authority transfer. Auto-release is now specified as **three independent server-side clocks**, not a single vague "10 minutes". | ADR-0066 |
+> | 3 | **Claiming control on a `system_initiated` Run is the upgrade point** to `user_initiated` — refining ADR-0013, which located it at approval. | ADR-0066 |
+> | 4 | **Paging writes classified rather than deferred wholesale.** v1 is read-only; notification suppression is **permanently hard-denied**. Surfaced and fixed a latent J1 inconsistency: **narration is not a ToolClass**. | ADR-0067 |
+> | 5 | **The harness never reaches a customer system directly** — Tool Gateway → MCP, without exception, three named non-agent exceptions. Closes r3 §7 Q1. | ADR-0068 |
 >
-> *(The AS + Tool Gateway + Tool Registry merge into one deployable, D69, is an
+> *(The AS + Tool Gateway + Tool Registry merge into one deployable, ADR-0069, is an
 > L2 concern and changes nothing here.)*
 >
-> **Changes in r3 — reconciled against the Decision Register (D1–D64) and
+> **Changes in r3 — reconciled against the Decision Register (ADR-0001–ADR-0064) and
 > [`../GLOSSARY.md`](../GLOSSARY.md), which is normative and wins on conflict:**
 >
 > | # | Change | Driver |
 > |---|---|---|
-> | 1 | **"Workspace" removed from the vocabulary entirely.** Everything that said *workspace* now says **Tenant**. **Tenant ≡ GrafanaOrg, 1:1.** | D51, D52 |
-> | 2 | **"Investigation" is no longer a primitive.** Every agent interaction — chat, dashboard/alert building, RCA — is one **Run**. | D36 |
-> | 3 | **Scope chain loses a layer:** `platform ≥ tenant ≥ principal ≥ run`. | D57 |
-> | 4 | **Roles are the four real ones:** `platform_admin`, `tenant_admin`, `responder`, `viewer`. `observer` and `workspace_admin` never existed. | D56 |
-> | 5 | **J5 rewritten.** The old "Alice is offline, Bob approves" ending is **contradicted by initiator-only approval** and has been replaced with what actually happens. | D55 |
-> | 6 | **Run ownership inverted.** `user_initiated` Runs are **private by default**, irreversibly promotable to tenant-shared; `system_initiated` Runs are **born tenant-shared**. | D54 |
-> | 7 | **Grafana is platform-operated, not customer-hosted** — OSS, latest, one shared multi-org instance. New visual class. | D21 |
-> | 8 | **Four of the six r2 open questions are closed** (min Grafana version, approver re-auth, deployment model, compliance regime). | D9, D21, D25, D49, D55 |
-> | 9 | **Two independent regional deployments** (GCP, AliCloud) with a metadata-only Tenant Directory. Drawn as a boundary note; decomposed at L2. | D49 |
-> | 10 | **Identity linking is a precondition, not a convenience.** An unlinked Slack user gets a link prompt, not a Run. | D61 |
+> | 1 | **"Workspace" removed from the vocabulary entirely.** Everything that said *workspace* now says **Tenant**. **Tenant ≡ GrafanaOrg, 1:1.** | ADR-0051, ADR-0052 |
+> | 2 | **"Investigation" is no longer a primitive.** Every agent interaction — chat, dashboard/alert building, RCA — is one **Run**. | ADR-0036 |
+> | 3 | **Scope chain loses a layer:** `platform ≥ tenant ≥ principal ≥ run`. | ADR-0057 |
+> | 4 | **Roles are the four real ones:** `platform_admin`, `tenant_admin`, `responder`, `viewer`. `observer` and `workspace_admin` never existed. | ADR-0056 |
+> | 5 | **J5 rewritten.** The old "Alice is offline, Bob approves" ending is **contradicted by initiator-only approval** and has been replaced with what actually happens. | ADR-0055 |
+> | 6 | **Run ownership inverted.** `user_initiated` Runs are **private by default**, irreversibly promotable to tenant-shared; `system_initiated` Runs are **born tenant-shared**. | ADR-0054 |
+> | 7 | **Grafana is platform-operated, not customer-hosted** — OSS, latest, one shared multi-org instance. New visual class. | ADR-0021 |
+> | 8 | **Four of the six r2 open questions are closed** (min Grafana version, approver re-auth, deployment model, compliance regime). | ADR-0009, ADR-0021, ADR-0025, ADR-0049, ADR-0055 |
+> | 9 | **Two independent regional deployments** (GCP, AliCloud) with a metadata-only Tenant Directory. Drawn as a boundary note; decomposed at L2. | ADR-0049 |
+> | 10 | **Identity linking is a precondition, not a convenience.** An unlinked Slack user gets a link prompt, not a Run. | ADR-0061 |
 >
 > **Method:** the UX comes first. §1–§4 describe what people experience and what
 > they configure. §5 is the diagram those journeys force into existence. §6 states
@@ -43,7 +43,7 @@
 
 Four **Principals**, distinguished by what they are allowed to do, not by job
 title. *Principal* — not "user" — because webhooks and Schedules are actors too
-(D52, Glossary §5).
+(ADR-0052, Glossary §5).
 
 | Principal | What they want | Where they are | Default Role source |
 |---|---|---|---|
@@ -53,14 +53,14 @@ title. *Principal* — not "user" — because webhooks and Schedules are actors 
 | **Platform operator** | "Run this thing. Cap what any customer can consume. Know what it did and why." | Ops tooling, telemetry sinks | GrafanaServerAdmin → `platform_admin` |
 
 Two non-human Principals also exist and are first-class in the audit chain: the
-**alert webhook** and the **Schedule** (D47, D58). Both produce
+**alert webhook** and the **Schedule** (ADR-0047, ADR-0058). Both produce
 `system_initiated` Runs.
 
 There is no "AI user" persona. The agent is not an actor — it is the system
 acting on a Principal's behalf, which is why every journey names the human it is
-attributable to, and why an **unlinked** human cannot start a Run at all (D61).
+attributable to, and why an **unlinked** human cannot start a Run at all (ADR-0061).
 
-**Role resolution order** (D56): explicit Group→Role mapping → explicit
+**Role resolution order** (ADR-0056): explicit Group→Role mapping → explicit
 per-Principal grant → zero-config default derived from the live Grafana basic
 role, computed at token-mint time and never stored. **The IdP authenticates; the
 harness authorizes.**
@@ -84,11 +84,11 @@ Three properties are load-bearing and shape everything downstream:
   with no human present. That is what makes 03:00 useful.
 - **"Approve" is the only place authority is granted.** It is a human act, in
   Grafana, re-authenticated, and it is the boundary between an assistant and a
-  liability (D14). **It belongs to whoever currently holds the wheel** — which
-  makes *taking the wheel* an authority-bearing act in its own right (D65).
+  liability (ADR-0014). **It belongs to whoever currently holds the wheel** — which
+  makes *taking the wheel* an authority-bearing act in its own right (ADR-0065).
 - **The loop is one primitive.** A three-message chat and a 40-minute RCA are
   the same **Run**, with the same durable event log, audit chain and approval
-  gate (D36). There is no "lightweight mode" — it was considered and rejected.
+  gate (ADR-0036). There is no "lightweight mode" — it was considered and rejected.
 
 ---
 
@@ -100,11 +100,11 @@ The diagram in §5 contains nothing that is not justified by a journey here.
 
 1. An alert fires in **Grafana Alerting** or **Alertmanager** and hits the
    harness webhook. The Tenant is derived from the alert's source GrafanaOrg
-   (D51); the trigger is deduplicated by `deduplication_id` so an alert storm
-   re-firing does not open twenty Runs (D42).
+   (ADR-0051); the trigger is deduplicated by `deduplication_id` so an alert storm
+   re-firing does not open twenty Runs (ADR-0042).
 2. A `system_initiated` Run starts with no human attached. It is **born
    tenant-shared** — nobody initiated it, so private-by-default would make it
-   invisible to everyone (D54).
+   invisible to everyone (ADR-0054).
 3. It gathers evidence: queries **Prometheus/Mimir, Loki, Tempo** via the
    Tenant's Grafana datasources; inspects the relevant **Kubernetes** workloads;
    checks recent deploys in **GitHub**.
@@ -116,7 +116,7 @@ The diagram in §5 contains nothing that is not justified by a journey here.
 
 > **Why step 5 is not a write.** Posting to Slack and annotating the alert look
 > like writes from a Run that is structurally read-only. They are not:
-> **surface output is not a ToolClass** (D67). Narration flows from the event log
+> **surface output is not a ToolClass** (ADR-0067). Narration flows from the event log
 > through the surface adapters and **never through the Tool Gateway** — it acts on
 > *us*, not on a customer system. A PagerDuty note, by contrast, *is* a tool call
 > against a customer system and is correctly a `write`, which is exactly why v1
@@ -126,7 +126,7 @@ The diagram in §5 contains nothing that is not justified by a journey here.
 
 **Requires:** running with no human session, and being *structurally* incapable
 of writing in that mode — the Run's capability token never contains a write tool
-class, rather than a policy check that could be talked around (D13).
+class, rather than a policy check that could be talked around (ADR-0013).
 
 ### J2 — On-call picks it up in Slack
 
@@ -134,10 +134,10 @@ class, rather than a policy check that could be talked around (D13).
    memory look like before the deploy?"*
 2. **If their Slack identity is not verifiably linked, they get a link prompt —
    an ephemeral message with a signed single-use "Sign in with Slack" link — not
-   a Run** (D20, D61). A linked Principal with no Role in that Tenant gets an
+   a Run** (ADR-0020, ADR-0061). A linked Principal with no Role in that Tenant gets an
    explicit *"ask your `tenant_admin`"* refusal, not a generic error.
 3. The harness answers in-thread — **batched and throttled, never token-by-token**,
-   because Slack is not a streaming surface (D34) — with a rendered graph.
+   because Slack is not a streaming surface (ADR-0034) — with a rendered graph.
 4. Engineer taps **"Open in Grafana"** → a deep link into the **Grafana plugin**
    with the full trajectory, evidence and tool calls already there. No context
    lost, no re-run.
@@ -153,10 +153,10 @@ started on one surface continues on the other.
 2. Attaches context by reference — *this panel, this dashboard, this alert rule,
    this time range* — rather than describing it in prose.
 3. Asks *"why did this spike?"*; the narrative streams **token by token** over
-   Grafana Live (D31, D34); gets an answer with **jump-to-Explore /
+   Grafana Live (ADR-0031, ADR-0034); gets an answer with **jump-to-Explore /
    jump-to-dashboard** links so every claim is verifiable in one click.
 4. Raw tool output is **never streamed verbatim** — it is reduced inline, with
-   the untruncated artifact fetched on demand from object storage (D34).
+   the untruncated artifact fetched on demand from object storage (ADR-0034).
 
 **Requires:** consuming Grafana object references as structured context; every
 assertion traceable to a query the human can re-run.
@@ -169,7 +169,7 @@ assertion traceable to a query the human can re-run.
    at the same gate J4 uses.
 3. The human sees a **diff view** of the proposed alert rule and confirms.
 
-**Requires:** chat and authoring are not a second-class path. D36 makes them the
+**Requires:** chat and authoring are not a second-class path. ADR-0036 makes them the
 same Run primitive, which is precisely why they get the same audit trail and the
 same approval gate rather than a quieter one.
 
@@ -177,15 +177,15 @@ same approval gate rather than a quieter one.
 
 1. Run concludes: memory limit is too low.
 2. The agent **proposes** a remediation — a **GitHub** PR raising the limit — and
-   pauses on a durable wait that survives restarts and deploys (D45, D47).
+   pauses on a durable wait that survives restarts and deploys (ADR-0045, ADR-0047).
 3. The proposal shows: exact diff, blast radius, what it is based on,
    confidence, and how to reject.
 4. **Approval happens in the Grafana plugin, never in Slack.** A Slack approve
    button produces a signed, single-use, short-lived deep link into the plugin;
-   the human confirms there (D14). Slack has no per-action re-authentication
+   the human confirms there (ADR-0014). Slack has no per-action re-authentication
    primitive, and its own AI-agent guidance treats approval gates as a UX
    pattern, not an authentication mechanism.
-5. Five conditions must *all* hold (D65). The approver **is the Run's current
+5. Five conditions must *all* hold (ADR-0065). The approver **is the Run's current
    driver**; they re-authenticated in Grafana; check-then-act passes for that
    specific action against their **own** Grafana permission; the Run's origin is
    `user_initiated`; and their Role holds `action:approve` — which `viewer` never
@@ -195,7 +195,7 @@ same approval gate rather than a quieter one.
    `graft_run_id` recorded in the PR body and commit trailer. A
    **Jira/ServiceNow** ticket is updated.
 7. **An unanswered approval expires** (≥72h) and closes the Run as `expired`
-   (D47). It does not wait forever — an unbounded wait would pin a deploy colour
+   (ADR-0047). It does not wait forever — an unbounded wait would pin a deploy colour
    alive for weeks. The approval clock is **independent of the control clocks**:
    the driver may change, or the Run may sit unowned, without resetting it.
 
@@ -206,7 +206,7 @@ process staying alive.
 ### J5 — Two people, one Run *(rewritten again in r4 — r3's trade is withdrawn)*
 
 1. Alice starts a Run. It is **private to her** until she explicitly shares it
-   with the Tenant; sharing is **irreversible** (D54). While private, she is the
+   with the Tenant; sharing is **irreversible** (ADR-0054). While private, she is the
    driver by construction — there is nobody else.
 2. Once shared, Bob joins and sees the same live stream. **One driver at a
    time.** Bob watches until he requests control and Alice hands off, or until
@@ -214,7 +214,7 @@ process staying alive.
 3. `viewer` can never drive. `responder` and `tenant_admin` can.
 4. **Alice's laptop dies. Two minutes later her disconnect clock expires,
    control is released, and Bob claims it. Bob can now approve.** Approval
-   follows the wheel (D65).
+   follows the wheel (ADR-0065).
 5. Bob's approval screen says **"proposed while Alice was driving; you are
    approving as Bob."** The audit chain records proposer-context and approver
    separately, with the control-transfer record as a `caused_by` edge — so the
@@ -224,7 +224,7 @@ process staying alive.
    invalidating it on every handover would mean re-running the agent and would
    make handover useless.
 
-> **What r3 said, and why it changed.** r3 encoded D55's initiator-only rule and
+> **What r3 said, and why it changed.** r3 encoded ADR-0055's initiator-only rule and
 > stated the on-call handover gap as a deliberate trade. That trade is
 > **withdrawn**. Driver-based approval closes the gap and costs a different,
 > smaller one: **control is now authority**, so taking the wheel is an
@@ -236,11 +236,11 @@ process staying alive.
 
 1. The closed Run is a permanent, readable artefact: timeline, evidence, tool
    calls, hypothesis, who approved what, under which Tenant and Principal custom
-   instruction versions (D62).
+   instruction versions (ADR-0062).
 2. It feeds the postmortem and the ticket. **Archival changes storage tier and
-   mutability, never visibility** (D54).
+   mutability, never visibility** (ADR-0054).
 3. Engineers rate it — thumbs per message, a review per Run — feeding the
-   internal eval sink, **never the live agent** (D8a). No product feature may
+   internal eval sink, **never the live agent** (ADR-0071). No product feature may
    read from the eval sink.
 4. A de-provisioned Principal's private Runs become inaccessible in-product; the
    insert-only 12-month audit trail is the forensic path, not the product UI.
@@ -256,20 +256,20 @@ runtime dependency.
    be **adopted from existing Grafana datasources** — they are already
    GrafanaOrg-scoped, and Tenant ≡ GrafanaOrg.
 3. Enables tools from the platform catalogue — **per tool, never per server**,
-   because "enable `grafana-mcp`" must not silently enable its write set (D63).
+   because "enable `grafana-mcp`" must not silently enable its write set (ADR-0063).
 4. Enabling a **write- or destructive-class** tool requires a **step-up
-   re-authentication** and is itself an audit record (D16). Scoping is mandatory
+   re-authentication** and is itself an audit record (ADR-0016). Scoping is mandatory
    at enable time; "all resources" is a selectable option, never a silent
    default.
 5. Sets budgets — only ever *below* the platform ceiling. Sees spend. Requests an
    increase from the UI, which files an idempotency-keyed service-desk ticket
    pre-filled with `graft_tenant_id`, current ceiling, observed consumption and
-   the triggering `graft_run_id` (D57).
+   the triggering `graft_run_id` (ADR-0057).
 6. Creates **Schedules** — recurring health sweeps, 24h post-incident
    verification, drift reports. Governed: a per-Tenant count ceiling and a
    minimum interval, counted against the Tenant's quota. All scheduled Runs are
    `system_initiated` and therefore structurally read-only, so **Schedule risk is
-   bounded to cost, not blast radius** (D58).
+   bounded to cost, not blast radius** (ADR-0058).
 
 **Requires:** all config is **Tenant-scoped and shared**; per-Principal variation
 comes from Role filtering at call time, not from separate configs. Tool policy is
@@ -283,17 +283,17 @@ v3.
 2. Sets **per-connection** throttles protecting *customer* infrastructure — K8s
    API QPS, Loki query concurrency — independent of which Tenant is spending.
 3. When 20 alerts fire at once, **partitioned durable queues keyed by
-   `graft_tenant_id`** stop one Tenant's alert storm from starving another (D44).
-4. At-cap behaviour is **deliberately per-scope, not uniform** (D57):
+   `graft_tenant_id`** stop one Tenant's alert storm from starving another (ADR-0044).
+4. At-cap behaviour is **deliberately per-scope, not uniform** (ADR-0057):
    **per-run** → graceful terminate, emitting the best hypothesis formed so far,
    never a bare failure; **per-principal / per-tenant** → hard stop, new Runs
    rejected while in-flight Runs finish; **per-connection** → throttle and queue,
    never failing the Run. **No degrade-to-a-cheaper-model** — that would silently
    change the quality characteristics an operator is about to act on.
 5. Holds the **L2 platform-wide kill switch**: a hard deny that takes effect on
-   in-flight Runs at their next tool call (D63).
+   in-flight Runs at their next tool call (ADR-0063).
 6. **Break-glass is read, cancel and suspend in any Tenant — and explicitly not
-   approve** (D55). The actor who can reach every Tenant must not also authorise
+   approve** (ADR-0055). The actor who can reach every Tenant must not also authorise
    writes in every Tenant. Every break-glass access is a non-sampled audit
    record.
 
@@ -325,19 +325,19 @@ flowchart TB
 ```
 
 **Effective limit = `min(platform, tenant, principal, run)`.** A scope may only
-tighten, never loosen, what the scope above it allows (D57).
+tighten, never loosen, what the scope above it allows (ADR-0057).
 
-> **`graft_tenant_id` is the only scoping key** (D51). It is on every row, event,
+> **`graft_tenant_id` is the only scoping key** (ADR-0051). It is on every row, event,
 > span, audit record and token, enforced by Postgres `FORCE ROW LEVEL SECURITY`.
 > `grafana_org_id` is a **mapped attribute, not a key** — it is a region-local
 > integer, so org `5` exists in *both* regional deployments meaning different
-> Tenants (D60).
+> Tenants (ADR-0060).
 
 ### 4.2 Tool authority is a separate, narrower lattice
 
 Limits bound *how much*. This bounds *what at all*. **Effective capability is the
 intersection of all five layers; no layer can grant what a layer above has not**
-(D63).
+(ADR-0063).
 
 ```mermaid
 flowchart LR
@@ -377,7 +377,7 @@ Three consequences worth stating out loud:
 | Downstream credentials | Tenant | Shared, resolved per call at the Tool Gateway |
 | Budgets, Schedules | Tenant (+ per-Principal quota) | Shared |
 | Custom instructions — **behaviour** | Tenant **and** Principal | Tenant wins on conflict |
-| Slack ↔ IdP identity link | Principal | Private, and **mandatory** (D61) |
+| Slack ↔ IdP identity link | Principal | Private, and **mandatory** (ADR-0061) |
 | Default Tenant (for Slack DMs) | Principal | Private |
 | **Which Tools a given Principal may invoke** | Derived at call time from Role | **Not config — an authorisation filter** |
 
@@ -386,7 +386,7 @@ what differs is what each Principal is permitted to invoke, decided per call at
 the Tool Gateway. Per-Principal tool config would fragment the audit trail and
 make "what can the agent do here?" unanswerable.
 
-> **D62 narrows D16 rather than contradicting it.** D16 governs **capability**
+> **ADR-0062 narrows ADR-0016 rather than contradicting it.** ADR-0016 governs **capability**
 > (Tenant-scoped, shared). Custom instructions govern **behaviour** (two levels,
 > Tenant wins). Two different things were sharing one word. **Custom instructions
 > are prompt text, never policy** — an instruction reading *"you may restart pods
@@ -396,20 +396,20 @@ make "what can the agent do here?" unanswerable.
 
 ### 4.4 Roles
 
-Four Roles, stored as **data rows, not code** (D56).
+Four Roles, stored as **data rows, not code** (ADR-0056).
 
 | Grafana basic role | Harness Role | May drive a shared Run? | May approve writes? |
 |---|---|---|---|
 | GrafanaServerAdmin | `platform_admin` | **No** | **No — separation of duties** |
-| GrafanaOrgAdmin | `tenant_admin` | Yes, and may **force-release** | Yes, while driving (D65) |
-| `Editor` | `responder` | Yes | Yes, while driving (D65) |
+| GrafanaOrgAdmin | `tenant_admin` | Yes, and may **force-release** | Yes, while driving (ADR-0065) |
+| `Editor` | `responder` | Yes | Yes, while driving (ADR-0065) |
 | `Viewer` | `viewer` | **No** — no `run:steer` verb | **No**, by consequence |
 
 **`platform_admin` lost the wheel in r4.** Break-glass is read, cancel and
 suspend in any Tenant — and explicitly **not** approve, **not** drive, and **not**
 force-release. Once control confers approval authority, force-release becomes an
 approval-authority act, so the actor who can reach every Tenant must not hold it
-(D65). This *tightens* D55's separation of duties rather than relaxing it.
+(ADR-0065). This *tightens* ADR-0055's separation of duties rather than relaxing it.
 
 Overridable by IdP Group mapping, which wins where configured. The Grafana basic
 role is a **zero-config default and an independent call-time ceiling** — never a
@@ -423,21 +423,21 @@ per action.
 
 **Only basic-role granularity is available.** Fine-grained custom-role RBAC is
 Grafana-Enterprise-only — confirmed live: `POST /api/access-control/roles` 404s
-against Grafana OSS `latest` (D26). This is not a fallback for a hypothetical
+against Grafana OSS `latest` (ADR-0026). This is not a fallback for a hypothetical
 limitation; it is the ceiling.
 
 ### 4.5 Control liveness — three clocks
 
 Once approval follows the wheel, *"the driver went away"* stops being a UX
 annoyance and becomes a security parameter. So it is specified rather than
-implied (D66). State lives server-side in `run_control`; **a `NULL` driver means
+implied (ADR-0066). State lives server-side in `run_control`; **a `NULL` driver means
 unowned**, not "the last person still has it".
 
 | Clock | Anchored on | Default | Reset by | On expiry |
 |---|---|---|---|---|
 | **Idle** | `last_interaction_at` | **10 min** | An *interactive act* | Warn at T−60s, then release |
 | **Disconnect** | `disconnected_at` | **2 min** | Transport reconnect | Release |
-| **Approval** | the `action_proposed` event | **≥72h** | **Never** | Run closes `expired` (D47) |
+| **Approval** | the `action_proposed` event | **≥72h** | **Never** | Run closes `expired` (ADR-0047) |
 
 The three are **independent**. A driver can idle out while a proposal is still
 pending; the proposal survives, unowned, until someone claims the wheel or the
@@ -456,7 +456,7 @@ expanding an artifact, or tab focus.
 
 **Slack has no transport liveness, so a Slack driver has only the idle clock.**
 A deliberate, documented asymmetry rather than an oversight — and a Slack driver
-must land in Grafana to approve anyway (D14).
+must land in Grafana to approve anyway (ADR-0014).
 
 **How the clocks are actually evaluated:** a **30-second scheduled sweep**, not a
 durable timer per Run reset on every interaction. Resetting a durable timer on
@@ -481,7 +481,7 @@ naming the forcer, the displaced driver and any pending `proposal_hash`.
 > replacement for r3's expired-approval metric.
 
 **Claiming control on a `system_initiated` Run is the moment a human attaches**,
-and is therefore the upgrade point to `user_initiated` — refining D13, which put
+and is therefore the upgrade point to `user_initiated` — refining ADR-0013, which put
 the upgrade at approval. Until someone claims, such a Run has no driver and
 nobody can approve, which is correct, because it is structurally read-only until
 exactly that moment.
@@ -502,28 +502,28 @@ flowchart TB
     end
 
     %% ---------- Our system ----------
-    HARNESS["<b>Graft Agent Harness</b><br/><i>[Software System]</i><br/><br/>Runs LLM agents against production telemetry.<br/>Gathers evidence, forms hypotheses, proposes changes,<br/>executes them only after the <b>current driver</b> approves in Grafana.<br/><br/>One primitive: the <b>Run</b>. One scoping key: <b>graft_tenant_id</b>.<br/><b>Never a direct client on a customer system</b> — MCP only.<br/>API-first. Every act attributable to a verified Principal.<br/><br/><i>Two independent regional deployments (GCP, AliCloud).<br/>Run data never leaves its home region — D49.</i>"]
+    HARNESS["<b>Graft Agent Harness</b><br/><i>[Software System]</i><br/><br/>Runs LLM agents against production telemetry.<br/>Gathers evidence, forms hypotheses, proposes changes,<br/>executes them only after the <b>current driver</b> approves in Grafana.<br/><br/>One primitive: the <b>Run</b>. One scoping key: <b>graft_tenant_id</b>.<br/><b>Never a direct client on a customer system</b> — MCP only.<br/>API-first. Every act attributable to a verified Principal.<br/><br/><i>Two independent regional deployments (GCP, AliCloud).<br/>Run data never leaves its home region — ADR-0049.</i>"]
 
     %% ---------- Surfaces ----------
     subgraph SURFACES["Surfaces — v1"]
         direction LR
         GRAFANA["<b>Grafana</b><br/><i>[External System — platform-operated]</i><br/>OSS, latest, single shared multi-org<br/>instance. <b>We run it.</b><br/>Hosts our App Plugin.<br/>Asserts human identity (X-Grafana-Id).<br/><b>The only place approval happens.</b><br/>J2–J8"]
         SLACK["<b>Slack</b><br/><i>[External System]</i><br/>Conversational surface.<br/>One install serves every Tenant;<br/>SlackChannel→Tenant binding<br/>is load-bearing. J1, J2"]
-        WEBUI["<b>Web Frontend</b><br/><i>[DEFERRED — post-v1]</i><br/>Same API, no private<br/>capabilities. OIDC + explicit<br/>Tenant switcher. D64"]
+        WEBUI["<b>Web Frontend</b><br/><i>[DEFERRED — post-v1]</i><br/>Same API, no private<br/>capabilities. OIDC + explicit<br/>Tenant switcher. ADR-0064"]
     end
 
     %% ---------- Triggers ----------
     subgraph TRIGGERS["Triggers — what starts a Run"]
         direction LR
         ALERTING["<b>Alerting Sources</b><br/><i>[External System]</i><br/>Grafana Alerting, Alertmanager.<br/>Normalised webhook, deduplicated.<br/>Tenant from source GrafanaOrg. J1"]
-        SCHED["<b>Schedules</b><br/><i>[Internal trigger]</i><br/>Tenant-owned recurring Runs.<br/>Governed: count ceiling,<br/>min interval, quota-counted.<br/>Always read-only. J7, D58"]
+        SCHED["<b>Schedules</b><br/><i>[Internal trigger]</i><br/>Tenant-owned recurring Runs.<br/>Governed: count ceiling,<br/>min interval, quota-counted.<br/>Always read-only. J7, ADR-0058"]
     end
 
     %% ---------- Evidence ----------
     subgraph EVIDENCE["Evidence sources — read-only, always"]
         direction LR
         TELEMETRY["<b>Observability Stack</b><br/><i>[External System]</i><br/>Prometheus / Mimir, Loki, Tempo.<br/>Via Grafana datasources.<br/>graft_run_id in query headers. J1, J3"]
-        K8S["<b>Kubernetes Clusters</b><br/><i>[External System]</i><br/>GKE, ACK. Workloads, events, state.<br/><b>Reached only via k8s-mcp</b> — never<br/>a direct client. D68<br/>Impersonation carries graft_run_id. J1"]
+        K8S["<b>Kubernetes Clusters</b><br/><i>[External System]</i><br/>GKE, ACK. Workloads, events, state.<br/><b>Reached only via k8s-mcp</b> — never<br/>a direct client. ADR-0068<br/>Impersonation carries graft_run_id. J1"]
         CLOUD["<b>Cloud APIs</b><br/><i>[DEFERRED — post-v1]</i><br/>GCP, AliCloud."]
         KNOWLEDGE["<b>Knowledge Sources</b><br/><i>[DEFERRED — post-v1]</i><br/>Runbooks, docs, web search."]
     end
@@ -533,21 +533,21 @@ flowchart TB
         direction LR
         GITHUB["<b>Source Control</b><br/><i>[External System]</i><br/>GitHub. Deploy history read;<br/>PRs opened as <b>bot identity</b><br/>(GitHub App), never impersonating.<br/>graft_run_id in commit trailer. J1, J4"]
         ITSM["<b>ITSM / Ticketing</b><br/><i>[External System]</i><br/>Jira, ServiceNow, ITSI.<br/>Also the quota-increase<br/>service desk. J4, J6, J7"]
-        PAGING["<b>Paging / On-call</b><br/><i>[External System]</i><br/>PagerDuty, iLert.<br/><b>Read-only in v1</b> — schedules,<br/>rotation, incident detail.<br/><b>Suppression permanently denied</b><br/>at L2: an agent that can silence<br/>paging can hide an outage. D67"]
+        PAGING["<b>Paging / On-call</b><br/><i>[External System]</i><br/>PagerDuty, iLert.<br/><b>Read-only in v1</b> — schedules,<br/>rotation, incident detail.<br/><b>Suppression permanently denied</b><br/>at L2: an agent that can silence<br/>paging can hide an outage. ADR-0067"]
         REGISTRY["<b>Artifact Registry</b><br/><i>[DEFERRED — post-v1]</i><br/>Harbor. Image provenance."]
     end
 
     %% ---------- Platform ----------
     subgraph PLATFORM["Platform dependencies"]
         direction LR
-        IDP["<b>Identity Provider</b><br/><i>[External System]</i><br/>Entra ID, Keycloak, Okta, Auth0.<br/>Pluggable, zero code change.<br/><b>Authenticates only</b> — the<br/>harness authorizes. D56"]
-        SLACKOIDC["<b>Slack OIDC</b><br/><i>[External System]</i><br/>Sign in with Slack.<br/>Identity linking is a<br/><b>precondition</b>, not a<br/>convenience. D20, D61"]
+        IDP["<b>Identity Provider</b><br/><i>[External System]</i><br/>Entra ID, Keycloak, Okta, Auth0.<br/>Pluggable, zero code change.<br/><b>Authenticates only</b> — the<br/>harness authorizes. ADR-0056"]
+        SLACKOIDC["<b>Slack OIDC</b><br/><i>[External System]</i><br/>Sign in with Slack.<br/>Identity linking is a<br/><b>precondition</b>, not a<br/>convenience. ADR-0020, ADR-0061"]
         LLM["<b>LLM Providers</b><br/><i>[External System]</i><br/>Commercial APIs and<br/>self-hosted models.<br/>No mid-Run downgrade."]
         SECRETS["<b>Secret Store</b><br/><i>[External System]</i><br/>Tenant-scoped downstream<br/>credentials. Holds the platform<br/>Grafana Server Admin credential."]
-        TELSINK["<b>Telemetry Sinks</b><br/><i>[External System]</i><br/>OTLP → operational sink (LGTM)<br/>+ internal-only eval sink.<br/><b>One-way: no product feature<br/>reads the eval sink.</b> D8a"]
+        TELSINK["<b>Telemetry Sinks</b><br/><i>[External System]</i><br/>OTLP → operational sink (LGTM)<br/>+ internal-only eval sink.<br/><b>One-way: no product feature<br/>reads the eval sink.</b> ADR-0071"]
     end
 
-    SANDBOX["<b>Code Execution Sandbox</b><br/><i>[DEFERRED — Phase 2]</i><br/>Micro-VM execution.<br/>ToolExecutor seam exists in v1. D4a"]
+    SANDBOX["<b>Code Execution Sandbox</b><br/><i>[DEFERRED — Phase 2]</i><br/>Micro-VM execution.<br/>ToolExecutor seam exists in v1. ADR-0004"]
 
     %% ---------- Relationships ----------
     ONCALL -->|"Converses, triages,<br/>launches approval"| SLACK
@@ -600,33 +600,33 @@ flowchart TB
 
 ### Reading notes
 
-- **Grafana has a new colour because it has a new status.** D21 confirms the
+- **Grafana has a new colour because it has a new status.** ADR-0021 confirms the
   platform *owns and operates* it — OSS, latest, one shared multi-org instance.
   It is still drawn outside our boundary because we do not build it, but it is
   not a customer system either. That single fact closed r2's most dangerous open
   question: we control the version, so `idForwarding` is simply on.
 - **Grafana carries four roles now:** human surface (J3), gateway to telemetry
-  (J1), identity asserter (D9), *and* authorization oracle for check-then-act
-  (D23). That concentration is the main structural risk in the design. It is
+  (J1), identity asserter (ADR-0009), *and* authorization oracle for check-then-act
+  (ADR-0023). That concentration is the main structural risk in the design. It is
   mitigated by us operating it, not eliminated.
 - **Schedules are drawn as a trigger, not as config.** They start Runs, they
   consume quota, and they are governed resources with their own ceiling. Putting
   them in the config box would hide that they are an actor.
 - **Slack OIDC is drawn separately from the IdP** because they answer different
   questions. The IdP says *who this Principal is*; Slack OIDC proves *this Slack
-  account is that Principal*. D61 makes the second one a precondition for acting,
+  account is that Principal*. ADR-0061 makes the second one a precondition for acting,
   not a nicety.
 - **Evidence and action targets are separate groups** because the read/write
   split is the safety model, not an implementation detail. Everything in
   *Evidence* is reachable with no human present. Nothing in *Actions* is.
 - **The harness points at Grafana twice.** Once as a surface consuming us, once
   as a system we consume — service-account provisioning and permission checks.
-  Collapsing those two arrows would hide the confused-deputy problem D23 exists
+  Collapsing those two arrows would hide the confused-deputy problem ADR-0023 exists
   to solve.
 - **Every arrow to a customer system is a lie of convenience.** L1 draws one
   hop because L1 draws one box. From L2 down, *every* one of them passes through
   the Tool Gateway and an MCP server — that is the invariant, with three named
-  non-agent exceptions (D68).
+  non-agent exceptions (ADR-0068).
 - **Paging is drawn read-only and will stay that way for a while.** The arrow
   that does *not* exist is the important one: nothing in v1 can acknowledge,
   resolve or suppress. Suppression is denied at the platform layer permanently,
@@ -640,22 +640,22 @@ flowchart TB
 
 | # | Commitment | Forced by | Decision |
 |---|---|---|---|
-| 1 | **One API, thin surfaces.** No surface has private capabilities. The post-v1 web frontend must add nothing new. | J2 | D1, D2, D64 |
-| 2 | **One primitive.** Chat, authoring and RCA are the same Run, with the same durability, audit and approval gate. No lightweight tier. | J3b, J6 | D36 |
-| 3 | **Read and write are architecturally separate**, not policy-separate. A human-absent Run's capability token cannot name a write class. | J1, J4 | D13 |
-| 4 | **Approval is a distinct, re-authenticated human act, in Grafana, by the current driver.** Slack launches it, never performs it. **Control *is* authority**, so every transfer of the wheel is an audited transfer of approval rights. | J4, J5 | D14, D65, D66 |
-| 5 | **The agent has no ambient credentials, and no ambient Tenant context.** Scope travels as an explicit argument; credentials resolve per call. | J7, J8 | D50, D7 |
-| 6 | **Every claim links back to a query a human can re-run.** Evidence is cited, not asserted; raw artifacts are fetchable, never streamed verbatim. | J3 | D34 |
-| 7 | **Config is Tenant-scoped and shared; per-Principal variation is authorisation, not configuration** — except custom instructions, which govern behaviour and can never grant capability. | J7 | D16, D62 |
-| 8 | **Limits form a ceiling chain and at-cap behaviour differs by scope.** Per-connection throttles protect customer infrastructure independently of Tenant quota. | J8 | D17, D57 |
-| 9 | **Tenant ≡ GrafanaOrg, 1:1, and `graft_tenant_id` is the only scoping key.** Connections are adopted from Grafana, not re-entered. | J7 | D51 |
-| 10 | **Capability is an intersection of five layers, and the platform has the last word** — including a kill switch effective at the next tool call. | J8 | D63 |
-| 11 | **Identity linking is a precondition for acting.** An unverified external identity yields a link prompt, not a Run — because an unlinked human cannot produce a compliant audit record. | J2 | D61, D15 |
-| 12 | **Audit is insert-only, hash-chained and WORM-anchored, and `graft_run_id` propagates outward into customer-owned logs.** 12 months minimum, 3 hot. | J6 | D15, D25 |
-| 13 | **Run data never leaves its home region.** Cross-region access is a read-path proxy resolved through a metadata-only Tenant Directory. | J8 | D49 |
-| 14 | **The durable wait is the product.** Multi-hour approvals survive crashes, restarts and deploys — and expire rather than waiting forever. | J4 | D37, D47 |
-| 15 | **No direct clients on customer systems.** Tool Gateway → MCP → system, always. A direct client would bypass the lattice, credential resolution, throttles, result reduction and audit in one move — and be invisible in the audit chain rather than merely undesirable. | J1, J4, J8 | D68 |
-| 16 | **Narration is not action.** The agent reporting on its own surfaces never passes the Tool Gateway and carries no ToolClass. This is what lets a read-only 03:00 Run still tell you what it found. | J1 | D67 |
+| 1 | **One API, thin surfaces.** No surface has private capabilities. The post-v1 web frontend must add nothing new. | J2 | ADR-0001, ADR-0002, ADR-0064 |
+| 2 | **One primitive.** Chat, authoring and RCA are the same Run, with the same durability, audit and approval gate. No lightweight tier. | J3b, J6 | ADR-0036 |
+| 3 | **Read and write are architecturally separate**, not policy-separate. A human-absent Run's capability token cannot name a write class. | J1, J4 | ADR-0013 |
+| 4 | **Approval is a distinct, re-authenticated human act, in Grafana, by the current driver.** Slack launches it, never performs it. **Control *is* authority**, so every transfer of the wheel is an audited transfer of approval rights. | J4, J5 | ADR-0014, ADR-0065, ADR-0066 |
+| 5 | **The agent has no ambient credentials, and no ambient Tenant context.** Scope travels as an explicit argument; credentials resolve per call. | J7, J8 | ADR-0050, ADR-0007 |
+| 6 | **Every claim links back to a query a human can re-run.** Evidence is cited, not asserted; raw artifacts are fetchable, never streamed verbatim. | J3 | ADR-0034 |
+| 7 | **Config is Tenant-scoped and shared; per-Principal variation is authorisation, not configuration** — except custom instructions, which govern behaviour and can never grant capability. | J7 | ADR-0016, ADR-0062 |
+| 8 | **Limits form a ceiling chain and at-cap behaviour differs by scope.** Per-connection throttles protect customer infrastructure independently of Tenant quota. | J8 | ADR-0017, ADR-0057 |
+| 9 | **Tenant ≡ GrafanaOrg, 1:1, and `graft_tenant_id` is the only scoping key.** Connections are adopted from Grafana, not re-entered. | J7 | ADR-0051 |
+| 10 | **Capability is an intersection of five layers, and the platform has the last word** — including a kill switch effective at the next tool call. | J8 | ADR-0063 |
+| 11 | **Identity linking is a precondition for acting.** An unverified external identity yields a link prompt, not a Run — because an unlinked human cannot produce a compliant audit record. | J2 | ADR-0061, ADR-0015 |
+| 12 | **Audit is insert-only, hash-chained and WORM-anchored, and `graft_run_id` propagates outward into customer-owned logs.** 12 months minimum, 3 hot. | J6 | ADR-0015, ADR-0025 |
+| 13 | **Run data never leaves its home region.** Cross-region access is a read-path proxy resolved through a metadata-only Tenant Directory. | J8 | ADR-0049 |
+| 14 | **The durable wait is the product.** Multi-hour approvals survive crashes, restarts and deploys — and expire rather than waiting forever. | J4 | ADR-0037, ADR-0047 |
+| 15 | **No direct clients on customer systems.** Tool Gateway → MCP → system, always. A direct client would bypass the lattice, credential resolution, throttles, result reduction and audit in one move — and be invisible in the audit chain rather than merely undesirable. | J1, J4, J8 | ADR-0068 |
+| 16 | **Narration is not action.** The agent reporting on its own surfaces never passes the Tool Gateway and carries no ToolClass. This is what lets a read-only 03:00 Run still tell you what it found. | J1 | ADR-0067 |
 
 Commitments 3 and 4 are the two I would most defend. **3** is what makes J1
 shippable: you can let an agent loose on production telemetry at 03:00 precisely
@@ -679,30 +679,30 @@ Two of r3's six questions closed in r4, and the headline metric changed.
 
 | # | Question | State |
 |---|---|---|
-| 1 | **Force-release-then-self-approve rate.** D65 chose detection over friction: a `tenant_admin` can take the wheel from a live driver and approve immediately, and we flag the pattern rather than blocking it. If it turns out to be common rather than exceptional, the answer is friction after all — a cool-down, or a second approver for force-released proposals. | **Instrumented, not decided** — this replaces r3's expired-approval metric as the headline |
+| 1 | **Force-release-then-self-approve rate.** ADR-0065 chose detection over friction: a `tenant_admin` can take the wheel from a live driver and approve immediately, and we flag the pattern rather than blocking it. If it turns out to be common rather than exceptional, the answer is friction after all — a cool-down, or a second approver for force-released proposals. | **Instrumented, not decided** — this replaces r3's expired-approval metric as the headline |
 | 2 | **Are the clock defaults right?** 10 min idle and 2 min disconnect are proposed, not measured. Too short and a thoughtful reviewer loses the wheel mid-decision; too long and a dead laptop blocks an incident. The 30s sweep granularity is also a stated approximation. | **Open — needs real session data** |
 | 3 | **Expired-approval rate.** Still worth watching, but expected to fall sharply now that any eligible responder can take over. Retained as a secondary signal. | **Instrumented, downgraded** |
-| 4 | **D8b — raw prompts: audit chain or eval sink?** PCI-DSS makes it urgent: a prompt may quote a PAN from an investigated log line, so the eval sink must go through the *same* scrubbing pipeline or it becomes an unscrubbed liability next to a compliant one. Still in tension with D8a's "never a runtime dependency" framing for forensics. | **Deferred to the Evals & Benchmarks session, with D25's PAN detector** |
+| 4 | **D8b — raw prompts: audit chain or eval sink?** PCI-DSS makes it urgent: a prompt may quote a PAN from an investigated log line, so the eval sink must go through the *same* scrubbing pipeline or it becomes an unscrubbed liability next to a compliant one. Still in tension with ADR-0071's "never a runtime dependency" framing for forensics. | **Deferred to the Evals & Benchmarks session, with ADR-0025's PAN detector** |
 | 5 | **Slack Grid beyond v1.** v1 assumes a single SlackEnterprise and a single SlackWorkspace, which is exactly why SlackChannel→Tenant binding is load-bearing. A second install breaks that assumption. | **Open, bounded by v1 scope** |
 | 6 | **Quota and Schedule numbers.** Ceilings (proposed 10 Schedules/Tenant, 1h minimum interval) and monthly token/cost caps need real cost data. | **Open — needs measurement, not design** |
 
 **Closed in r4:**
 
-- ~~Does the harness reach Kubernetes directly?~~ → **D68. No — never, and not
+- ~~Does the harness reach Kubernetes directly?~~ → **ADR-0068. No — never, and not
   just for Kubernetes.** Every agent-reachable customer system goes through the
   Tool Gateway and an MCP server. Three exceptions, all non-agent-driven:
   service-account provisioning, check-then-act permission checks, and surface
   narration. *`k8s-mcp` itself still needs a design pass — the shape is decided,
   the plumbing is not.*
-- ~~PagerDuty writes in v1?~~ → **D67.** Classified rather than deferred
+- ~~PagerDuty writes in v1?~~ → **ADR-0067.** Classified rather than deferred
   wholesale. v1 is `read` only; create/escalate/note are `write`;
   acknowledge/resolve are `destructive`; **suppression and maintenance windows
   are hard-denied at L2 permanently.** The case that looked like it needed a
   write — the agent telling on-call what it found — is served by narration.
 
-**Closed in r3** *(retained for the record)*: minimum Grafana version (D21/D9),
-approver re-authentication (D14), deployment model (D49), compliance regime
-(D25).
+**Closed in r3** *(retained for the record)*: minimum Grafana version (ADR-0021/ADR-0009),
+approver re-authentication (ADR-0014), deployment model (ADR-0049), compliance regime
+(ADR-0025).
 
 ---
 

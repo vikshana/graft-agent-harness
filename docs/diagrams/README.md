@@ -7,13 +7,13 @@ Each level is confirmed before the next one is drawn.
 
 | Level | Doc | Status |
 |---|---|---|
-| **L1 — System Context** | [`c4-l1-system-context.md`](./c4-l1-system-context.md) | 🟡 **In review — revision 4** (D1–D69) |
-| **L2 — Containers** | [`c4-l2-containers.md`](./c4-l2-containers.md) | 🟡 **In review — revision 2** (D1–D69) |
+| **L1 — System Context** | [`c4-l1-system-context.md`](./c4-l1-system-context.md) | 🟡 **In review — revision 4** (ADR-0001–ADR-0069) |
+| **L2 — Containers** | [`c4-l2-containers.md`](./c4-l2-containers.md) | 🟡 **In review — revision 2** (ADR-0001–ADR-0069) |
 | L3 — Components | _not yet drawn_ | ⛔ Blocked on L2 sign-off + the two prototype spikes in L2 §9 |
 | L4 — Code | Not planned. Code is the diagram. | — |
 
 **Normative sources.** [`../GLOSSARY.md`](../GLOSSARY.md) owns the vocabulary and
-wins over any diagram. [`../adr/DECISION-REGISTER.md`](../adr/DECISION-REGISTER.md)
+wins over any diagram. [`../adr/DECISION-INDEX.md`](../adr/DECISION-INDEX.md)
 owns the decisions. A diagram that disagrees with either is a bug in the diagram.
 
 ## v1 scope at a glance
@@ -21,23 +21,23 @@ owns the decisions. A diagram that disagrees with either is a bug in the diagram
 - **Surfaces:** Grafana App Plugin + Slack. **No web frontend in v1** (post-v1,
   same API, no private capabilities).
 - **One primitive: the Run.** Chat, dashboard/alert authoring and RCA are the
-  same thing, with the same durability, audit trail and approval gate (D36).
+  same thing, with the same durability, audit trail and approval gate (ADR-0036).
 - **Tenant ≡ GrafanaOrg, 1:1.** `graft_tenant_id` is the **only** scoping key.
-  The word *workspace* has been removed from our vocabulary (D51, D52).
+  The word *workspace* has been removed from our vocabulary (ADR-0051, ADR-0052).
 - **Approval happens in Grafana, by the Run's current driver, re-authenticated.**
   Slack launches it, never performs it. **Control *is* authority**, so every
-  transfer of the wheel is an audited transfer of approval rights (D14, D65, D66).
+  transfer of the wheel is an audited transfer of approval rights (ADR-0014, ADR-0065, ADR-0066).
 - **No direct clients on customer systems.** Tool Gateway → MCP → system, always,
-  with three named non-agent exceptions (D68).
+  with three named non-agent exceptions (ADR-0068).
 - **The Token Service, Tool Gateway and Tool Registry ship as one deployable** —
   the Authority Service — three modules, five enforced invariants, named
-  decomposition triggers (D69).
+  decomposition triggers (ADR-0069).
 - **Capability is a five-layer intersection**, and the platform has the last word
-  — including a kill switch effective at the next tool call (D63).
+  — including a kill switch effective at the next tool call (ADR-0063).
 - **Limits form a ceiling chain** `platform ≥ tenant ≥ principal ≥ run`; at-cap
-  behaviour differs deliberately per scope (D57).
+  behaviour differs deliberately per scope (ADR-0057).
 - **Two independent regional deployments** (GCP, AliCloud). Run data never leaves
-  its home region (D49).
+  its home region (ADR-0049).
 
 ## Conventions
 

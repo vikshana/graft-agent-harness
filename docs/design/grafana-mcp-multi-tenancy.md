@@ -4,7 +4,7 @@
 > server using the SA token handed to it, and what happens with multiple
 > concurrent users?
 >
-> Related: D7/D7a/D7b (Tool Gateway shape), `grafana-mcp-provisioning.md` (where
+> Related: ADR-0007/ADR-0070/ADR-0007 (Tool Gateway shape), `grafana-mcp-provisioning.md` (where
 > the SA token comes from), `grafana-authz-delegation.md` (check-then-act).
 >
 > **Resolution:** the reference OSS `grafana-mcp` (`github.com/grafana/mcp-grafana`)
@@ -43,11 +43,11 @@ Tool Gateway ──MCP call (hop A)──▶ grafana-mcp ──REST call (hop B)
 ```
 
 - **Hop B (`grafana-mcp` → Grafana)** is "the downstream Grafana credential"
-  referenced throughout this document and `01-identity-and-access.md`/D11. It
+  referenced throughout this document and the corresponding deep-dive (now closed)/ADR-0011. It
   is a **Grafana Service Account (SA) token**, sent as `Authorization: Bearer
   glsa_...` — confirmed directly against Grafana's own docs (the SA-token
   debugging guide uses exactly this header). One SA per workspace, provisioned
-  per D12/D22. No ambiguity here: MCP-to-Grafana auth **is** the SA token, full
+  per ADR-0012/ADR-0022. No ambiguity here: MCP-to-Grafana auth **is** the SA token, full
   stop.
 - **Hop A (Tool Gateway → `grafana-mcp`)** is a separate, optional concern:
   `grafana-mcp` can itself demand proof that its *caller* (the Tool Gateway) is
@@ -74,14 +74,14 @@ header on one request. §4 resolves this.
 
 ## 3. Why "single central server, SA token passed in" is the right shape
 
-D7a already states the reasoning that applies here: **stdio MCP is
+ADR-0070 already states the reasoning that applies here: **stdio MCP is
 single-identity by construction — no per-user RBAC, no central throttling
 point.** That is exactly the failure mode a *shared, static-credential* server
 would reproduce even over HTTP: a process that reads one Grafana URL and one
 token from its environment at startup can only ever act as one workspace,
 forever, for every caller.
 
-The correct shape, consistent with D7a/D7b, and **confirmed as what the real
+The correct shape, consistent with ADR-0070/ADR-0007, and **confirmed as what the real
 implementation actually does (§4)**:
 
 - **One logical `grafana-mcp` service** (scaled horizontally as needed — this is
@@ -95,7 +95,7 @@ implementation actually does (§4)**:
   `grafana-mcp-provisioning.md`), and attached to that specific outbound MCP
   request's `Authorization` header.
 
-This is precisely why D7a mandates streamable-HTTP: the transport carries a
+This is precisely why ADR-0070 mandates streamable-HTTP: the transport carries a
 request, and a request can carry an `Authorization` header. stdio has no
 equivalent — the process's identity is fixed for its entire lifetime.
 
@@ -226,7 +226,7 @@ current `main`) and read directly, rather than assumed. Findings:
      Cookie-based forwarding (`GRAFANA_FORWARD_HEADERS=Cookie`) is a *different*
      use case — a live Grafana **user session**, not an SA token — and would
      mean provisioning and refreshing a Grafana session per workspace, which
-     contradicts the SA-token provisioning model already locked in D12/D22.
+     contradicts the SA-token provisioning model already locked in ADR-0012/ADR-0022.
    - **Locked decision: drop `grafana-mcp`'s built-in hop-A caller-auth
      (`MCP_GRAFANA_SERVER_TOKEN`) and protect the Tool Gateway↔`grafana-mcp`
      hop with network-level isolation instead** (private network / mTLS /

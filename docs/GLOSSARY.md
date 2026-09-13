@@ -1,10 +1,10 @@
 # Glossary — Ubiquitous Language
 
-> **Status: normative.** Locked as **D52** (2026-09-13). This document is the
+> **Status: normative.** Locked as **ADR-0052** (2026-09-13). This document is the
 > single source of truth for domain vocabulary. Where any other document in this
 > repository conflicts with it, this one wins and the other is a bug.
 >
-> Related: [`adr/DECISION-REGISTER.md`](./adr/DECISION-REGISTER.md),
+> Related: [`adr/DECISION-REGISTER.md`](./adr/DECISION-INDEX.md),
 > [`design/tenancy-and-scoping.md`](./design/tenancy-and-scoping.md).
 
 ---
@@ -28,7 +28,7 @@ Two rules resolve all of it:
    "workspace", "tenant" on its own when referring to another system.
 
 The word **Workspace** has been **removed from our vocabulary entirely**
-(D51). It no longer names anything of ours. If you see it in an older
+(ADR-0051). It no longer names anything of ours. If you see it in an older
 document, read it as **Tenant**.
 
 ---
@@ -42,20 +42,20 @@ document, read it as **Tenant**.
 | **PrincipalIdentity** | An external identity claim that maps to a Principal. One Principal may have several (Grafana, Slack, IdP). | `(provider, external_id)` | N:1 to Principal |
 | **Group** | An IdP-supplied group used to grant Roles within a Tenant. An *abstraction* — never "AD group". | abstract `groups` claim value | N:M with Role |
 | **Role** | A named bundle of permission verbs, scoped to Platform or Tenant. Ours, stored as data, extensible without code changes. | `graft_role_id` | — |
-| **Run** | **Every** agent interaction — chat, dashboard/alert building, and RCA investigation alike (D36). One durable DBOS workflow (D39), one event stream (D30), one audit chain (D15). | `graft_run_id` | N:1 to Tenant |
-| **Driver** | The single Principal holding interactive control of a Run at a given moment — the only one who may steer, cancel **or approve** (D65). `NULL` means **unowned**; any `responder` or `tenant_admin` viewer may then claim it. A private Run's driver is its initiator by construction. **Control is authority**, so every transfer is audited. | `run_control.driver_graft_principal_id` | 0..1 per Run |
+| **Run** | **Every** agent interaction — chat, dashboard/alert building, and RCA investigation alike (ADR-0036). One durable DBOS workflow (ADR-0039), one event stream (ADR-0030), one audit chain (ADR-0015). | `graft_run_id` | N:1 to Tenant |
+| **Driver** | The single Principal holding interactive control of a Run at a given moment — the only one who may steer, cancel **or approve** (ADR-0065). `NULL` means **unowned**; any `responder` or `tenant_admin` viewer may then claim it. A private Run's driver is its initiator by construction. **Control is authority**, so every transfer is audited. | `run_control.driver_graft_principal_id` | 0..1 per Run |
 | **Connection** | A Tenant-owned credentialed link to an external system (datasource, K8s cluster, repo, ticketing). | `graft_connection_id` | N:1 to Tenant |
-| **Schedule** | A Tenant-owned recurring trigger for a Run (D47). Always produces `system_initiated`, structurally read-only Runs (D13). | `graft_schedule_id` | N:1 to Tenant |
-| **CustomInstruction** | Prompt text influencing **how** the agent responds — tone, persona, format, house conventions. Exists at **Tenant** and **Principal** level. **Never grants capability** (D62). | — | N:1 to Tenant or Principal |
+| **Schedule** | A Tenant-owned recurring trigger for a Run (ADR-0047). Always produces `system_initiated`, structurally read-only Runs (ADR-0013). | `graft_schedule_id` | N:1 to Tenant |
+| **CustomInstruction** | Prompt text influencing **how** the agent responds — tone, persona, format, house conventions. Exists at **Tenant** and **Principal** level. **Never grants capability** (ADR-0062). | — | N:1 to Tenant or Principal |
 | **ToolClass** | `read` \| `write` \| `destructive`. The unit of **policy and approval**. | — | — |
-| **Tool** | One callable operation exposed by an MCP server. The unit of **enablement** — enabling a server never enables its whole set (D63). | `tool_id` | N:1 to ToolClass |
+| **Tool** | One callable operation exposed by an MCP server. The unit of **enablement** — enabling a server never enables its whole set (ADR-0063). | `tool_id` | N:1 to ToolClass |
 
 ### 1.1 Run origin — an attribute, not a type
 
 | Value | Meaning | Consequence |
 |---|---|---|
-| `user_initiated` | A human started it, **or a human claimed control of it** (D66) — claiming control is the moment a human attaches, and is therefore the upgrade point | May hold write tool classes |
-| `system_initiated` | Webhook/alert or Schedule started it; no human present | **Structurally read-only** (D13) — the capability token never contains a write tool class |
+| `user_initiated` | A human started it, **or a human claimed control of it** (ADR-0066) — claiming control is the moment a human attaches, and is therefore the upgrade point | May hold write tool classes |
+| `system_initiated` | Webhook/alert or Schedule started it; no human present | **Structurally read-only** (ADR-0013) — the capability token never contains a write tool class |
 
 ---
 
@@ -65,11 +65,11 @@ document, read it as **Tenant**.
 |---------------------------------------|-------------------------------|-------------------------------------------------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------|
 | **GrafanaOrg**                        | Grafana                       | `grafana_org_id` (integer, **region-local**, assigned by Grafana) | **Tenant**, 1:1                                                       | No — it is a *mapped attribute* of a Tenant, not the scoping key |
 | **GrafanaServerAdmin**                | Grafana                       | —                                                                 | **`platform_admin`** Role                                             | —                                                                |
-| **GrafanaOrgAdmin / Editor / Viewer** | Grafana                       | basic roles (D26 — the only granularity in OSS)                   | Default Role mapping (D56) and an independent call-time ceiling (D23) | No                                                               |
+| **GrafanaOrgAdmin / Editor / Viewer** | Grafana                       | basic roles (ADR-0026 — the only granularity in OSS)                   | Default Role mapping (ADR-0056) and an independent call-time ceiling (ADR-0023) | No                                                               |
 | **SlackEnterprise**                   | Slack                         | `slack_enterprise_id` (constant across a Grid)                    | Recorded on the PrincipalIdentity                                     | **No**                                                           |
 | **SlackWorkspace**                    | Slack                         | `slack_workspace_id`                                              | A **locator only**                                                    | **No**                                                           |
 | **SlackChannel**                      | Slack                         | `slack_channel_id`                                                | **Bound to exactly one Tenant** by an admin                           | It is a *resolution* mechanism, not a scope                      |
-| **SlackUser**                         | Slack                         | global user id (Grid) or `slack_workspace_id`+user id (D28)       | A **PrincipalIdentity** row → **Principal**                           | No                                                               |
+| **SlackUser**                         | Slack                         | global user id (Grid) or `slack_workspace_id`+user id (ADR-0028)       | A **PrincipalIdentity** row → **Principal**                           | No                                                               |
 | **LGTMTenant**                        | Mimir / Loki                  | `X-Scope-OrgID`                                                   | Nothing of ours. Coincidental name collision.                         | No                                                               |
 | **IdP Group**                         | Entra / Keycloak / Auth0 / AD | `groups` claim                                                    | **Group**                                                             | No                                                               |
 
@@ -87,7 +87,7 @@ Existing platform team metadata
                         ▲
                         │  PrincipalIdentity (provider, external_id)
                         ├── grafana   : Grafana user id
-                        ├── slack     : global user id  (Grid)      ── D28
+                        ├── slack     : global user id  (Grid)      ── ADR-0028
                         │               slack_workspace_id + user id (non-Grid)
                         └── idp       : subject claim  → Groups → Roles
 ```
@@ -124,7 +124,7 @@ Layer 3 is recorded **in data**, in `graft_ref_kind.native_field`, together with
 the two properties that cause outages when assumed wrong — `is_stable` and
 `is_global`. See
 [`design/external-identity-mapping.md`](./design/external-identity-mapping.md)
-(D60).
+(ADR-0060).
 
 **Foreign ids are never a primary key of ours.** They live only in
 `graft_external_ref`. And **email is never a join key** — it is mutable and
@@ -140,8 +140,8 @@ Every row, event, span, audit record and token carries:
 | Column | Always present? | Notes |
 |---|---|---|
 | `graft_tenant_id` | **Yes** | The RLS predicate. The only scoping key. |
-| `graft_principal_id` | Yes, where an actor exists | Derived from a verified credential, never from agent or tool output (D15) |
-| `graft_run_id` | Yes, within a Run | Propagated **outward** into customer-owned logs (D15) |
+| `graft_principal_id` | Yes, where an actor exists | Derived from a verified credential, never from agent or tool output (ADR-0015) |
+| `graft_run_id` | Yes, within a Run | Propagated **outward** into customer-owned logs (ADR-0015) |
 
 Deliberately **not** scoping columns: `grafana_org_id`, `slack_workspace_id`, `slack_enterprise_id`,
 `slack_channel_id`. All are attributes or locators.
@@ -165,26 +165,26 @@ An unprefixed identifier in any new code or document is a **review defect**.
 
 | Identifier | Names | Notes |
 |---|---|---|
-| `graft_tenant_id` | Tenant | The **only** scoping key (D51). Externally *sourced* from platform team metadata but **graft-owned** thereafter — we guarantee it |
+| `graft_tenant_id` | Tenant | The **only** scoping key (ADR-0051). Externally *sourced* from platform team metadata but **graft-owned** thereafter — we guarantee it |
 | `graft_principal_id` | Principal | |
-| `graft_run_id` | Run | Propagated **outward** into customer-owned logs (D15) — the prefix is what makes it unambiguous in a customer's own log stream |
-| `graft_event_id` | Event, monotonic per Run | D30 |
+| `graft_run_id` | Run | Propagated **outward** into customer-owned logs (ADR-0015) — the prefix is what makes it unambiguous in a customer's own log stream |
+| `graft_event_id` | Event, monotonic per Run | ADR-0030 |
 | `graft_role_id` | Role | |
 | `graft_connection_id` | Connection | |
-| `graft_schedule_id` | Schedule | D47 |
+| `graft_schedule_id` | Schedule | ADR-0047 |
 
 ### 4.2 Registry — foreign
 
 | Identifier | Owner | Notes |
 |---|---|---|
-| `grafana_org_id` | Grafana | Integer, **region-local**. Mapped attribute of a Tenant, never a key (D51) |
+| `grafana_org_id` | Grafana | Integer, **region-local**. Mapped attribute of a Tenant, never a key (ADR-0051) |
 | `grafana_user_id` | Grafana | |
-| `slack_enterprise_id` | Slack | Constant across a Grid. Scopes nothing (D52) |
+| `slack_enterprise_id` | Slack | Constant across a Grid. Scopes nothing (ADR-0052) |
 | `slack_workspace_id` | Slack | Slack's `team_id`. **A locator only** — the name is deliberately *not* `slack_team_id`, because Slack's own UI calls it a workspace |
 | `slack_channel_id` | Slack | Bound to one Tenant; a resolution mechanism, not a scope |
-| `slack_user_id` | Slack | Global user id on Grid; `slack_workspace_id` + user id otherwise (D28) |
+| `slack_user_id` | Slack | Global user id on Grid; `slack_workspace_id` + user id otherwise (ADR-0028) |
 | `idp_subject`, `idp_group_claim` | IdP | Entra / Keycloak / Auth0 / AD |
-| `dbos_workflow_id` | DBOS | D39 |
+| `dbos_workflow_id` | DBOS | ADR-0039 |
 | `lgtm_tenant_id` | Mimir / Loki | Their `X-Scope-OrgID`. **Nothing to do with `graft_tenant_id`** |
 
 ### 4.3 Separator follows the medium, the prefix never changes
@@ -220,12 +220,12 @@ An unprefixed identifier in any new code or document is a **review defect**.
 
 | Don't say | Say | Because |
 |---|---|---|
-| "workspace" | **Tenant** (ours) / **SlackWorkspace** (Slack's) | Removed from our vocabulary (D51) |
+| "workspace" | **Tenant** (ours) / **SlackWorkspace** (Slack's) | Removed from our vocabulary (ADR-0051) |
 | "tenant_id" | `graft_tenant_id` / **LGTMTenant** | Collides with Mimir/Loki |
 | "org" | **Tenant** / **GrafanaOrg** / **SlackEnterprise** | Three meanings |
 | "user" | **Principal** | Excludes bots, webhooks and schedules, which are also actors |
-| "session" | **Run** | There is exactly one primitive (D36) |
-| "AD group" | **Group** | IdP-independence is an explicit requirement (D56) |
-| "investigation" (as a type) | **Run** with RCA intent | Not a distinct primitive (D36) |
-| "the initiator approves" | **the driver approves** | Approval follows control, not origin (D65). The initiator has no standing approval right |
-| "the agent writes to Slack" | **the agent narrates** | Surface output is not a ToolClass and never passes the Tool Gateway (D67) |
+| "session" | **Run** | There is exactly one primitive (ADR-0036) |
+| "AD group" | **Group** | IdP-independence is an explicit requirement (ADR-0056) |
+| "investigation" (as a type) | **Run** with RCA intent | Not a distinct primitive (ADR-0036) |
+| "the initiator approves" | **the driver approves** | Approval follows control, not origin (ADR-0065). The initiator has no standing approval right |
+| "the agent writes to Slack" | **the agent narrates** | Surface output is not a ToolClass and never passes the Tool Gateway (ADR-0067) |

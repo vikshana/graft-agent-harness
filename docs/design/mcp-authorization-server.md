@@ -4,8 +4,8 @@
 > 2.1 + RFC 9728 protected resource metadata + RFC 8707 audience-bound tokens),
 > is the Authorization Server (AS) a separate component from the Tool Gateway?
 >
-> Related: D7/D7a/D7b (Tool Gateway shape), D9 (Grafana ID token), D10 (harness
-> session/capability token), D18 (per-call credential to upstream MCP servers).
+> Related: ADR-0007/ADR-0070/ADR-0007 (Tool Gateway shape), ADR-0009 (Grafana ID token), ADR-0010 (harness
+> session/capability token), ADR-0018 (per-call credential to upstream MCP servers).
 >
 > **Update (2026-09-12):** open question 1 (does our MCP client library
 > perform RFC 9728 discovery) is resolved — see §7.
@@ -43,12 +43,12 @@ flowchart LR
   exists — the Tool Gateway is the RS, and *something* has to mint the token the
   agent presents.
 - **Hop 2 (Tool Gateway → upstream MCP servers)** is **not** a new AS
-  relationship per upstream server. Per D18/D12/D11, the Tool Gateway already
+  relationship per upstream server. Per ADR-0018/ADR-0012/ADR-0011, the Tool Gateway already
   resolves the correct **target-native credential** per call (a Grafana SA
   token, a K8s impersonation header, a GitHub App token) from the secret store.
   Those are the target systems' own credentials, not tokens minted by an AS we
   operate. Treating hop 2 as "needs its own OAuth AS per upstream" would mean
-  reinventing what D11/D12/D18 already solved, with a heavier mechanism, for no
+  reinventing what ADR-0011/ADR-0012/ADR-0018 already solved, with a heavier mechanism, for no
   new capability.
 
 **So: the AS question is specifically about who mints the token for hop 1.**
@@ -57,7 +57,7 @@ flowchart LR
 
 ## 2. Is the AS the Tool Gateway itself?
 
-**No — and it shouldn't be, for the same reason D7 makes the Tool Gateway a
+**No — and it shouldn't be, for the same reason ADR-0007 makes the Tool Gateway a
 separate service in the first place.**
 
 The spec technically permits AS and RS to be the same entity. But collapsing
@@ -70,7 +70,7 @@ also takes on:
 - Revocation-list or introspection endpoint hosting
 
 That's a second job, orthogonal to policy enforcement, bolted onto the same
-process whose entire justification (D7) is "a security boundary, not a
+process whose entire justification (ADR-0007) is "a security boundary, not a
 library." An AS that lives inside the thing it's supposed to be issuing tokens
 *for* is a weaker boundary than one that's external and independently
 auditable — it's the identical argument that already ruled out in-process
@@ -89,19 +89,19 @@ Two things the customer's IdP cannot do:
    all. Neither can complete a redirect-based OAuth flow against the customer's
    IdP per request. The IdP is only ever in the picture for the Grafana/UI path.
 2. **It cannot mint our claims.** The token hop-1 needs carries `graft_run_id`,
-   `graft_tenant_id`, `initiation_mode`, `allowed_tool_classes[]` (D10) — harness
+   `graft_tenant_id`, `initiation_mode`, `allowed_tool_classes[]` (ADR-0010) — harness
    concepts the customer's IdP has no notion of, and shouldn't be taught, since
-   IdP-independence is an explicit requirement (`03-tenancy-and-scoping.md` C4).
+   IdP-independence is an explicit requirement (the corresponding deep-dive (now closed) C4).
 
 So the AS **is a harness-owned component** that:
 
 - **Verifies** whatever the surface actually provided (Grafana ID token via
-  JWKS per D9; a Slack-linked principal with no live token; a webhook shared
+  JWKS per ADR-0009; a Slack-linked principal with no live token; a webhook shared
   secret with no principal at all), and
-- **Mints** the run-scoped, audience-bound token (D10) carrying our own claims,
+- **Mints** the run-scoped, audience-bound token (ADR-0010) carrying our own claims,
   and
 - **Publishes** its own OIDC discovery metadata and JWKS, so the Tool Gateway
-  (as RS) can validate independently — never trusting the caller, per D10.
+  (as RS) can validate independently — never trusting the caller, per ADR-0010.
 
 This is a **token exchange** pattern (RFC 8693 in spirit, not necessarily
 letter): external assertion in, harness-scoped, audience-restricted token out.
@@ -116,7 +116,7 @@ Tool Gateway, but not necessarily a fourth deployable in v1.**
 | | Token Service (AS) | Tool Gateway (RS) |
 |---|---|---|
 | Role | Verifies surface credentials, mints run-scoped tokens, owns signing keys | Validates tokens independently, enforces authz, attaches downstream credentials, audits |
-| Deployment, v1 | **Co-located with the harness API** — it already terminates every inbound surface (Grafana plugin calls, Slack events, webhooks), so it's the natural place to also mint the token once a caller is verified. Not a new network hop for callers. | Separate service (D7), unchanged |
+| Deployment, v1 | **Co-located with the harness API** — it already terminates every inbound surface (Grafana plugin calls, Slack events, webhooks), so it's the natural place to also mint the token once a caller is verified. Not a new network hop for callers. | Separate service (ADR-0007), unchanged |
 | Deployment, later | Can be split out the moment there's a reason to — e.g. exposing the Tool Gateway to external MCP clients beyond our own agent, at which point a standalone AS with its own scaling/HA story earns its keep | — |
 | Trust boundary | **Logically distinct even when co-located** — different code path, different responsibility, and the Tool Gateway must validate its tokens exactly as if it were a separate network service (independent JWKS fetch, no shared in-memory trust) | — |
 
@@ -137,12 +137,12 @@ sequenceDiagram
     participant AGENT as LangGraph Agent
 
     SURF->>API: Native credential<br/>(X-Grafana-Id / linked Slack principal / webhook secret)
-    API->>API: Verify (D9) · resolve principal · resolve roles ·<br/>decide initiation_mode (D13)
+    API->>API: Verify (ADR-0009) · resolve principal · resolve roles ·<br/>decide initiation_mode (ADR-0013)
     API->>API: Mint run-scoped token<br/>{aud: tool-gateway, graft_run_id, graft_tenant_id,<br/>initiation_mode, allowed_tool_classes[], exp: 10m}
     API-->>AGENT: Start run with this token
     AGENT->>TG: MCP call, Authorization: Bearer <token>
     TG->>API: (independently) fetch JWKS, validate signature + aud + exp
-    TG->>TG: Enforce allowed_tool_classes,<br/>check-then-act if Grafana-scoped,<br/>resolve downstream credential (D18)
+    TG->>TG: Enforce allowed_tool_classes,<br/>check-then-act if Grafana-scoped,<br/>resolve downstream credential (ADR-0018)
     TG-->>AGENT: Result
 ```
 
@@ -163,7 +163,7 @@ What we actually need from the spec for this hop is narrower:
 | Spec mechanism | Needed for hop 1? | Why |
 |---|---|---|
 | RFC 9728 protected resource metadata on the Tool Gateway | **Yes** | Lets any spec-compliant MCP client (ours today, potentially others later) discover which AS to trust, rather than hardcoding it |
-| Audience-bound tokens (RFC 8707) | **Yes** | This *is* D10 — `aud: tool-gateway` prevents a token minted for this purpose being replayed against something else |
+| Audience-bound tokens (RFC 8707) | **Yes** | This *is* ADR-0010 — `aud: tool-gateway` prevents a token minted for this purpose being replayed against something else |
 | `WWW-Authenticate` challenge on 401 with AS location | **Yes** | Cheap, standard, and future-proofs us if a non-LangGraph client ever calls the Tool Gateway directly |
 | Interactive authorization-code + PKCE redirect | **No, not for this hop** | There is no human at this hop to redirect. The "authorization" already happened upstream, at the surface (Grafana ID token verification, Slack link, webhook secret) — hop 1 only needs to *carry* that decision forward as a bearer token |
 | Dynamic client registration | **Not yet** | Only matters once clients other than our own agent runtime need to register against the Tool Gateway. Revisit if/when the Tool Gateway is opened to external MCP clients |
@@ -179,11 +179,11 @@ yet in our system.
 
 | # | Decision |
 |---|---|
-| 1 | **The Authorization Server is a distinct logical component from the Tool Gateway.** The Tool Gateway is a Resource Server only — it never issues, only validates, and always validates independently (unchanged from D10). |
+| 1 | **The Authorization Server is a distinct logical component from the Tool Gateway.** The Tool Gateway is a Resource Server only — it never issues, only validates, and always validates independently (unchanged from ADR-0010). |
 | 2 | **The AS is harness-owned, not the customer's IdP directly.** It's a broker: verifies whatever a surface provides (including surfaces with no IdP token at all — Slack, webhooks), and mints an audience-bound token carrying harness-specific claims. |
 | 3 | **Deployed co-located with the harness API in v1**, not as a fourth service — because the API already terminates every inbound surface credential and minting is the natural next step of work it already does. Split out only if/when justified (e.g. external MCP clients). |
 | 4 | **The Tool Gateway publishes RFC 9728 protected resource metadata** naming this AS, and validates tokens via independent JWKS fetch — never via in-process trust, even though they may share a deployment today. |
-| 5 | **Hop 2 (Tool Gateway → upstream MCP servers) does not get its own AS.** It continues to use target-native credentials resolved per D11/D12/D18. Only hop 1 uses a token minted by our AS. |
+| 5 | **Hop 2 (Tool Gateway → upstream MCP servers) does not get its own AS.** It continues to use target-native credentials resolved per ADR-0011/ADR-0012/ADR-0018. Only hop 1 uses a token minted by our AS. |
 | 6 | **No interactive authorization-code/PKCE flow, no dynamic client registration, for hop 1** — narrower spec compliance (resource metadata + audience binding + `WWW-Authenticate`) is sufficient for a backend-only hop with no third-party client. Revisit if the Tool Gateway is ever exposed beyond our own agent runtime. |
 | 7 | **Use `mcp.client.auth.oauth2.OAuthClientProvider` (from the official `mcp` Python SDK) as the `auth=` value passed into `langchain-mcp-adapters`**, rather than writing RFC 9728 discovery ourselves — confirmed available and spec-complete (§7). |
 
@@ -223,7 +223,7 @@ yet in our system.
    before locking the client-side implementation.
 2. **Key rotation for the AS's signing keys** — same operational question as any
    JWKS-based system, but worth stating: rotation must not invalidate tokens for
-   runs already in flight (10-minute lifetime per D10 makes this low-risk, but
+   runs already in flight (10-minute lifetime per ADR-0010 makes this low-risk, but
    worth a stated overlap window).
 3. **If the Tool Gateway is ever exposed to non-LangGraph, external callers**
    (the "single call for specific task/tool" idea from the capability

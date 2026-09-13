@@ -1,8 +1,8 @@
 # External Identity & Reference Mapping
 
-> **Status: 🟢 Resolved for v1 (2026-09-13).** Locked as **D60** (mapping model)
-> and **D61** (mandatory verified linking). Extends **D52** (glossary) and
-> **D59** (identifier prefixes).
+> **Status: 🟢 Resolved for v1 (2026-09-13).** Locked as **ADR-0060** (mapping model)
+> and **ADR-0061** (mandatory verified linking). Extends **ADR-0052** (glossary) and
+> **ADR-0059** (identifier prefixes).
 >
 > Vocabulary per [`../GLOSSARY.md`](../GLOSSARY.md). Related:
 > [`slack-identity-and-surface.md`](./slack-identity-and-surface.md),
@@ -13,7 +13,7 @@
 
 ## 1. The problem: there are three layers, not two
 
-D59 fixed *prefixes*, but a prefix alone still conflates two different things:
+ADR-0059 fixed *prefixes*, but a prefix alone still conflates two different things:
 **our name for a slot** and **the external system's name for the thing in it**.
 
 ```
@@ -100,7 +100,7 @@ Their sync model carries **two** foreign-facing fields, not one:
 The second is the interesting one: it is a **provenance and lifecycle marker**,
 separate from the identity itself. It answers *"who owns this mapping, and
 therefore who is allowed to delete it."* We adopt the same idea — it is what
-makes a reconciler safe to run (§5.3), and it is the same instinct as D53's
+makes a reconciler safe to run (§5.3), and it is the same instinct as ADR-0053's
 drift reconciler.
 
 ### 2.4 Not verified
@@ -138,17 +138,17 @@ heads.
 | `ref_kind` (ours) | provider | `native_field` (theirs) | native_api | stable | global |
 |---|---|---|---|---|---|
 | `grafana_org_id` | grafana | `id`, `orgId` | `GET /api/orgs`; plugin context; `X-Grafana-Org-Id` | yes | **no — region-local** |
-| `grafana_user_id` | grafana | `sub` | `X-Grafana-Id` ID token (D9) | yes | no — per instance |
+| `grafana_user_id` | grafana | `sub` | `X-Grafana-Id` ID token (ADR-0009) | yes | no — per instance |
 | `slack_workspace_id` | slack | **`team_id`** | event envelope; `team.info` | yes | yes |
 | `slack_enterprise_id` | slack | `enterprise_id` | event envelope | yes | yes |
 | `slack_channel_id` | slack | `channel_id` | event envelope | yes | yes |
-| `slack_user_id` | slack | `user_id` / OIDC `sub` | Sign in with Slack (D20) | yes | yes |
+| `slack_user_id` | slack | `user_id` / OIDC `sub` | Sign in with Slack (ADR-0020) | yes | yes |
 | `idp_subject` | idp | `sub` (+ `iss`) | OIDC ID token | yes | **only with `iss`** |
-| `dbos_workflow_id` | dbos | `workflow_id` | DBOS (D42) | yes | yes — **but we mint the value**, §3.4 |
+| `dbos_workflow_id` | dbos | `workflow_id` | DBOS (ADR-0042) | yes | yes — **but we mint the value**, §3.4 |
 | `lgtm_tenant_id` | mimir/loki | `X-Scope-OrgID` | query headers | — | no |
 
 Rows marked **`is_global = false`** are the trap: a `grafana_org_id` of `5`
-exists in *both* D49 regions and means different Tenants. Any lookup by a
+exists in *both* ADR-0049 regions and means different Tenants. Any lookup by a
 non-global ref **must** be qualified by region (or instance), and the schema
 enforces it (§3.2).
 
@@ -163,7 +163,7 @@ CREATE TABLE graft_external_ref (
     ref_scope         text NOT NULL,      -- region/instance for non-global kinds; '' if global
     verified_at       timestamptz,        -- NULL ⇒ claimed, not proven (§4.2)
     sync_source       text NOT NULL,      -- incident.io's sync_id idea (§5.3)
-    graft_tenant_id   text NOT NULL REFERENCES tenant,   -- RLS predicate (D50)
+    graft_tenant_id   text NOT NULL REFERENCES tenant,   -- RLS predicate (ADR-0050)
     PRIMARY KEY (ref_kind, ref_scope, external_value)    -- inbound lookup direction
 );
 
@@ -190,11 +190,11 @@ two: `principal_identity` becomes a view over `graft_external_ref`.
 
 ### 3.4 The `dbos_workflow_id` edge case
 
-D42 makes the DBOS workflow id **caller-supplied**. So it carries a foreign
+ADR-0042 makes the DBOS workflow id **caller-supplied**. So it carries a foreign
 prefix (it lives in DBOS's namespace) while the *value* is minted by us — the
 one row in §3.1 where those differ.
 
-**Set `dbos_workflow_id = graft_run_id`.** They then cannot drift, D42's
+**Set `dbos_workflow_id = graft_run_id`.** They then cannot drift, ADR-0042's
 run-creation idempotency key becomes self-evident, and correlating a DBOS
 workflow to a Run in an incident needs no lookup at all.
 
@@ -209,8 +209,8 @@ address is routinely reissued to a new hire. Joining identities on email means
 that reassignment is an **identity takeover** that grants the new hire the old
 one's Runs and approvals, silently.
 
-This is directly disqualifying under D15 (the actor must derive from a verified
-credential) and D25 (PCI-DSS). Email may be *displayed*; it may never be
+This is directly disqualifying under ADR-0015 (the actor must derive from a verified
+credential) and ADR-0025 (PCI-DSS). Email may be *displayed*; it may never be
 *matched on*.
 
 The correct federated key is the **`(iss, sub)` pair**, per OIDC — `sub` alone
@@ -220,28 +220,28 @@ is only unique within its issuer.
 
 `verified_at IS NULL` means *claimed*. A mapping becomes verified only by an
 authenticated round trip that proves control of the external identity — for
-Slack, the "Sign in with Slack" OIDC flow (D20).
+Slack, the "Sign in with Slack" OIDC flow (ADR-0020).
 
-**An unverified link grants nothing.** This is what makes D61 enforceable.
+**An unverified link grants nothing.** This is what makes ADR-0061 enforceable.
 
 ### 4.3 Foreign ids are never our primary key
 
 Per Backstage and SCIM both: our tables key on `graft_*`. A foreign id appears
-only in `graft_external_ref`. This is what let D51 delete `workspace_id`
+only in `graft_external_ref`. This is what let ADR-0051 delete `workspace_id`
 without touching every table, and it is what keeps a Grafana org deletion and
 recreation from orphaning a Tenant's entire history.
 
 ### 4.4 One entity may hold several refs of the same kind; none may be shared
 
-A Principal can legitimately hold several `slack_user_id` values (Grid, D28).
+A Principal can legitimately hold several `slack_user_id` values (Grid, ADR-0028).
 Two Principals may never hold the **same** one — enforced by the primary key in
 §3.2.
 
 ---
 
-## 5. Mandatory identity linking (D61)
+## 5. Mandatory identity linking (ADR-0061)
 
-> **Correction adopted 2026-09-13.** A single Slack install (D52) does **not**
+> **Correction adopted 2026-09-13.** A single Slack install (ADR-0052) does **not**
 > mean a single identity. Every Tenant and every human must authenticate to
 > Graft so their identity is mapped across systems.
 
@@ -253,35 +253,35 @@ linked for the surface they are acting from.**
 | Actor state | What happens |
 |---|---|
 | Verified link exists for this provider | Proceed |
-| No link, or `verified_at IS NULL` | **Link prompt, not a Run.** Ephemeral Slack message with a signed, single-use "Sign in with Slack" link (D20) |
+| No link, or `verified_at IS NULL` | **Link prompt, not a Run.** Ephemeral Slack message with a signed, single-use "Sign in with Slack" link (ADR-0020) |
 | Link exists, Principal has no Role in the resolved Tenant | Refuse with an explicit "ask your `tenant_admin`" message — *not* a generic error |
-| `system_initiated` (webhook, Schedule) | No human to link. Bounded by the Tenant service account and structurally read-only (D13/D24) |
+| `system_initiated` (webhook, Schedule) | No human to link. Bounded by the Tenant service account and structurally read-only (ADR-0013/ADR-0024) |
 
 ### 5.2 Why it is mandatory, not a nicety
 
-- **D15 requires the audit actor to derive from a verified credential**, never
+- **ADR-0015 requires the audit actor to derive from a verified credential**, never
   from agent or tool output. An unlinked SlackUser cannot produce a compliant
   audit record — there is no `graft_principal_id` to attribute to.
-- **D65 makes approval driver-based** (superseding D55's initiator-only rule,
+- **ADR-0065 makes approval driver-based** (superseding ADR-0055's initiator-only rule,
   withdrawn 2026-09-13). The argument below is unchanged and in fact
   strengthened: *driver* is as meaningless as *initiator* without a
   resolved Principal.
-- **D24 remains true and is not weakened:** Slack-initiated Runs are still
+- **ADR-0024 remains true and is not weakened:** Slack-initiated Runs are still
   *authorized* by the Tenant service account's ceiling. Linking is about
   **attribution**, not authorization. We must know *who asked* even when the
-  permission check does not use their identity — and D24's revisit metric
+  permission check does not use their identity — and ADR-0024's revisit metric
   (denials that would have succeeded under the user's own role) is only
   computable if we know who they are.
 
 ### 5.3 Tenant-level linking, and reconciler safety
 
-Tenant linking is the `discovered → ready` transition (D53): binding
+Tenant linking is the `discovered → ready` transition (ADR-0053): binding
 `graft_tenant_id ↔ grafana_org_id` and the SlackChannel bindings is precisely
 what a `tenant_admin` does at that step.
 
 `sync_source` (§3.2, after incident.io's `sync_id`) records **which process
 created each mapping** — `backfill-reconciler`, `admin-ui`, `slack-oidc`. A
-reconciler may only delete mappings it owns. Without this, the D53 backfill
+reconciler may only delete mappings it owns. Without this, the ADR-0053 backfill
 reconciler could plausibly remove an admin's hand-made binding, which is the
 classic destructive-sync incident.
 
@@ -291,13 +291,13 @@ classic destructive-sync incident.
 
 | Decision | Effect |
 |---|---|
-| **D52** | `principal_identity` generalises into `graft_external_ref`; one mechanism |
-| **D59** | Extended: the prefix names the **owner of the namespace**; `graft_ref_kind.native_field` records the owner's **own** name for it |
-| **D20** | "Sign in with Slack" is promoted from a one-time convenience to a **precondition** for any human-attributed Slack action |
-| **D24** | Unchanged and clarified: SA ceiling governs *authorization*; linking governs *attribution* |
-| **D49** | `ref_scope` makes region-local foreign ids safe by construction |
-| **D53** | `sync_source` is what makes the backfill reconciler non-destructive |
-| **D42** | `dbos_workflow_id = graft_run_id` (§3.4) |
+| **ADR-0052** | `principal_identity` generalises into `graft_external_ref`; one mechanism |
+| **ADR-0059** | Extended: the prefix names the **owner of the namespace**; `graft_ref_kind.native_field` records the owner's **own** name for it |
+| **ADR-0020** | "Sign in with Slack" is promoted from a one-time convenience to a **precondition** for any human-attributed Slack action |
+| **ADR-0024** | Unchanged and clarified: SA ceiling governs *authorization*; linking governs *attribution* |
+| **ADR-0049** | `ref_scope` makes region-local foreign ids safe by construction |
+| **ADR-0053** | `sync_source` is what makes the backfill reconciler non-destructive |
+| **ADR-0042** | `dbos_workflow_id = graft_run_id` (§3.4) |
 
 ---
 
@@ -306,9 +306,9 @@ classic destructive-sync incident.
 1. **Verify Layer-3 field names at implementation time** against live payloads
    for: Grafana `X-Grafana-Id` token `sub` format, Slack event-envelope field
    names, and Slack OIDC `sub`. The §3.1 table is populated from
-   documentation and prior sessions (D9, D20, D28), not from captured traffic.
+   documentation and prior sessions (ADR-0009, ADR-0020, ADR-0028), not from captured traffic.
 2. **Re-link on Slack Grid migration** — if a customer migrates a standalone
-   workspace into a Grid, `slack_user_id` changes shape (D28). Needs a
+   workspace into a Grid, `slack_user_id` changes shape (ADR-0028). Needs a
    migration path, or an accepted re-link event.
 3. **Unlinked-user friction metric** — track link-prompt-to-completion rate;
    if it is poor, the Slack surface silently under-delivers.

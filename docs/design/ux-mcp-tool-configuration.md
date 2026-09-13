@@ -5,7 +5,7 @@
 >
 > Related: `../design/audit-and-attribution.md` (every change here is an audit
 > record), `../design/grafana-authz-delegation.md` (why Grafana-scoped tools
-> don't need re-entered credentials), `../adr/DECISION-REGISTER.md` §2 (Tool
+> don't need re-entered credentials), `../adr/DECISION-INDEX.md` §2 (Tool
 > Gateway).
 
 ---

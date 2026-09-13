@@ -1,6 +1,6 @@
 # Durable Execution & Run Orchestration
 
-> Resolution of [`../adr/open-questions/04-durable-execution.md`](../adr/open-questions/04-durable-execution.md).
+> Resolution of the durable-execution deep-dive. Decisions: [ADR-0037 … ADR-0048](../adr/DECISION-INDEX.md#agent).
 > Session date: 2026-09-12. Status: 🟢 **Resolved for v1.**
 >
 > All DBOS behaviour described here was **verified live against `docs.dbos.dev`
@@ -21,7 +21,7 @@
 | **E6** | **Idempotency: `workflow_id` for run creation, `deduplication_id` for trigger dedupe, `(graft_run_id, step_id, idempotency_key)` for write side effects.** Fork/eval runs are structurally read-only. |
 | **E7** | **Cancellation is at the next step boundary.** No `preemptible` steps in v1. |
 | **E8** | **Budgets: queue partition keys for rate/concurrency, workflow deadlines for wall clock, agent + Tool Gateway for semantic breakers.** |
-| **E9** | **D33's signal table is replaced by DBOS `send`/`recv`.** D30's event log is unaffected. |
+| **E9** | **ADR-0033's signal table is replaced by DBOS `send`/`recv`.** ADR-0030's event log is unaffected. |
 | **E10** | **Deploy strategy is blue/green with version pinning**, using DBOS's auto-computed application version. Bounded by E11's approval expiry. |
 | **E11** | **All five durable-timer use cases are in v1**, including a **bounded HITL approval window** — which is what makes E10's drain window finite. |
 | **E12** | **Reversibility is real but bounded, and throughput is not the trigger to watch.** A thin `runtime` seam keeps engine calls out of domain logic. **DBOSify is rejected as a hedge.** See §10. |
@@ -81,8 +81,8 @@ still paid — confirmed on `/production/hosting-conductor`). Excluding it costs
    *programmatic* equivalents (`list_workflows`, `list_workflow_steps`,
    `fork_workflow`, `resume_workflow`) are all in the MIT library, so this is a
    convenience loss, not a capability loss. Our own operator surface can be built
-   on those APIs, and D5's OTel pipeline already covers observability proper.
-3. **Managed retention policies** — we set our own, and D15 already mandates a
+   on those APIs, and ADR-0005's OTel pipeline already covers observability proper.
+3. **Managed retention policies** — we set our own, and ADR-0015 already mandates a
    retention regime (12 months, 3 hot) that we must implement regardless.
 
 ### 2.4 Cost of the determinism constraint
@@ -93,8 +93,8 @@ must be deterministic, and all non-deterministic work (LLM calls, tool calls,
 clock reads, randomness) must live inside steps.
 
 This is therefore **not a differentiator**, and it is largely already satisfied by
-**D3** ("graph nodes written as plain functions; no framework types in node
-signatures") and **R8**. What it does mean is that R8 is upgraded from a
+**ADR-0003** ("graph nodes written as plain functions; no framework types in node
+signatures") and **ADR-0037**. What it does mean is that ADR-0037 is upgraded from a
 recommendation to a hard requirement — see §4.
 
 ---
@@ -189,15 +189,15 @@ a one-to-one match for our planner → workers → validator fan-out.
 **Decision (E3): Pattern B is the primary structure. Pattern A is retained
 specifically for write actions** (open a PR, file a Jira ticket, silence an
 alert), where a self-contained durable workflow with its own idempotency key is
-the right unit and where D14's approval gate already forces a workflow boundary.
+the right unit and where ADR-0014's approval gate already forces a workflow boundary.
 
 **Known tension, accepted deliberately:** DBOS's Pattern B examples are
 framework-free Python agent loops, not LangGraph. Adopting Pattern B demotes
 LangGraph from "the orchestrator" to "graph structure invoked beneath the
-orchestrator." This does not contradict **D3** — LangGraph + DeepAgents remains
+orchestrator." This does not contradict **ADR-0003** — LangGraph + DeepAgents remains
 the agent framework — but it does mean the durable orchestration boundary sits
 *above* the graph, and the graph must be written to be entered and re-entered at
-step boundaries. This is R8, and it is now mandatory rather than advisory.
+step boundaries. This is ADR-0037, and it is now mandatory rather than advisory.
 
 ### 4.2 E4 — no LangGraph checkpointer
 
@@ -205,12 +205,12 @@ LangGraph is compiled **without** a checkpointer. DBOS step checkpoints are the
 single source of execution truth. This resolves briefing §6.7 by elimination
 rather than by reconciliation: there is no second state store to diverge.
 
-Conversational state for multi-turn chat runs (D36 makes chat a first-class run)
+Conversational state for multi-turn chat runs (ADR-0036 makes chat a first-class run)
 lives in our own run-state tables, passed explicitly into the graph — consistent
-with D3's "no framework types in node signatures."
+with ADR-0003's "no framework types in node signatures."
 
-**Eval impact: net positive.** Per D8a the eval sink is fed by OTel spans (D8)
-and the durable event log (D30) — never by a checkpointer, which stores state
+**Eval impact: net positive.** Per ADR-0071 the eval sink is fed by OTel spans (ADR-0008)
+and the durable event log (ADR-0030) — never by a checkpointer, which stores state
 snapshots rather than trajectories. DBOS additionally provides:
 
 - `list_workflow_steps()` — an ordered, SQL-queryable trajectory with checkpointed
@@ -230,7 +230,7 @@ The briefing called granularity "the crux." The rule:
 
 | Unit | Maps to |
 |---|---|
-| A run (chat, dashboard workflow, or RCA — all one primitive per **D36**) | Parent workflow |
+| A run (chat, dashboard workflow, or RCA — all one primitive per **ADR-0036**) | Parent workflow |
 | A sub-agent / DeepAgents worker invocation | Child workflow |
 | One LLM call | One step |
 | One tool call via the Tool Gateway | One step |
@@ -239,7 +239,7 @@ The briefing called granularity "the crux." The rule:
 Consequences worth stating explicitly:
 
 - **Retry waste is bounded to one LLM call** (accepted in session, Q6).
-- **D33's "signal check at every tool-call boundary" is satisfied structurally**,
+- **ADR-0033's "signal check at every tool-call boundary" is satisfied structurally**,
   not by a bespoke hook: since every tool call is a step, and cancellation
   preempts at the next step boundary, the requirement falls out of the granularity
   rule.
@@ -248,7 +248,7 @@ Consequences worth stating explicitly:
   against a single Postgres.
 - **Steps must return pointers, not payloads.** Large tool artifacts go to object
   storage, with the step returning a reference — required by DBOS for write-size
-  reasons, and independently required by D34, which already routes artifacts to
+  reasons, and independently required by ADR-0034, which already routes artifacts to
   object storage and fetches them on demand.
 
 ---
@@ -264,13 +264,13 @@ Three distinct layers, each with a different key:
 | **Write side effects** (PR, Jira, silence, remediation) | `(graft_run_id, step_id, idempotency_key)` | Passed to the Tool Gateway and to the upstream API's own idempotency facility where one exists |
 
 The third layer is the one that carries real production risk and is the reason
-R8's "side-effect idempotent" clause exists. It must survive retry, reconnect,
+ADR-0037's "side-effect idempotent" clause exists. It must survive retry, reconnect,
 **and** replay-after-fork.
 
 **Fork/eval runs are structurally read-only.** `fork_workflow` deliberately
 re-executes from a chosen step, so a forked run replaying an investigation would
 otherwise re-file its Jira ticket or re-open its PR. Forked runs are therefore
-denied write tool classes by the same capability-token mechanism as **D13** —
+denied write tool classes by the same capability-token mechanism as **ADR-0013** —
 enforced by the token's contents, not by a policy check that could be bypassed.
 
 ---
@@ -287,7 +287,7 @@ enforced by the token's contents, not by a policy check that could be bypassed.
   all its children**, so sub-agent teardown is native rather than hand-rolled.
 - **Teardown scope for v1:** child workflows (sub-agents) and pending queue
   entries. In-flight tool calls complete and are discarded. Phase-2 sandboxes
-  (D4) will need explicit teardown and are out of scope here.
+  (ADR-0004) will need explicit teardown and are out of scope here.
 
 ### 6.2 E8 — where budgets are enforced
 
@@ -296,15 +296,15 @@ deliberately all three, at different layers:
 
 | Control | Enforced by | Mechanism |
 |---|---|---|
-| Concurrent runs per workspace/tenant | **Orchestrator** | Durable queue **partition key** = workspace, with per-partition concurrency and rate limits — natively implementing **D17**'s ceiling chain |
+| Concurrent runs per workspace/tenant | **Orchestrator** | Durable queue **partition key** = workspace, with per-partition concurrency and rate limits — natively implementing **ADR-0017**'s ceiling chain |
 | Per-run wall-clock ceiling | **Orchestrator** | `timeout_ms` / `deadline_epoch_ms` |
 | Max graph depth (~15 steps), loop breakers (same tool + same args twice) | **Agent** | Semantic, needs graph context the orchestrator lacks |
-| Per-run token/cost cap | **Agent**, reported via `budget_consumed`/`budget_warning` (D29) | Needs per-call token accounting |
-| Per-connection throttles protecting *customer* infrastructure | **Tool Gateway** (D7, D17) | Keyed by connection, independent of workspace quota |
+| Per-run token/cost cap | **Agent**, reported via `budget_consumed`/`budget_warning` (ADR-0029) | Needs per-call token accounting |
+| Per-connection throttles protecting *customer* infrastructure | **Tool Gateway** (ADR-0007, ADR-0017) | Keyed by connection, independent of workspace quota |
 
-### 6.3 E9 — signal delivery supersedes D33's provisional mechanism
+### 6.3 E9 — signal delivery supersedes ADR-0033's provisional mechanism
 
-**D33** specified a Postgres signal table plus `LISTEN/NOTIFY`, explicitly marked
+**ADR-0033** specified a Postgres signal table plus `LISTEN/NOTIFY`, explicitly marked
 provisional pending this session. It is replaced by **DBOS `send`/`recv`**:
 
 - `DBOS.send(workflow_id, message, topic)` — persisted, exactly-once from within a
@@ -312,23 +312,23 @@ provisional pending this session. It is replaced by **DBOS `send`/`recv`**:
   PL/pgSQL via `dbos.send_message`.
 - `DBOS.recv(topic, timeout_seconds)` — the durable multi-hour HITL wait.
 
-D33's REST back-channel is **unchanged** — the REST handler now calls `send`
-instead of inserting into our own signal table. **D30's event log is entirely
+ADR-0033's REST back-channel is **unchanged** — the REST handler now calls `send`
+instead of inserting into our own signal table. **ADR-0030's event log is entirely
 unaffected**, preserving the briefing's §7.7 requirement that streaming remain
 independent of the orchestrator choice. We continue to use our own event log
-rather than DBOS's `set_event`/streaming features, keeping D29/D30/D31 intact.
+rather than DBOS's `set_event`/streaming features, keeping ADR-0029/ADR-0030/ADR-0031 intact.
 
 ### 6.4 E11 — durable-timer inventory (all v1)
 
 | # | Use case | Mechanism | Notes |
 |---|---|---|---|
 | **a** | HITL approval wait | `recv(topic, timeout_seconds)` | **Now bounded** — see below. Survives restarts |
-| **b** | Scheduled / recurring RCA | `create_schedule` per workspace | Runtime-creatable/pausable/deletable, stored in the database — so per-workspace schedules are ordinary data, not config redeploys. **These are `system_initiated` runs and therefore structurally read-only per D13.** Must carry `tenant_id`/`graft_tenant_id` per R3 and count against D17 ceilings |
+| **b** | Scheduled / recurring RCA | `create_schedule` per workspace | Runtime-creatable/pausable/deletable, stored in the database — so per-workspace schedules are ordinary data, not config redeploys. **These are `system_initiated` runs and therefore structurally read-only per ADR-0013.** Must carry `tenant_id`/`graft_tenant_id` per ADR-0051 and count against ADR-0017 ceilings |
 | **c** | Infra-memory refresh (`*/15`) | `apply_schedules` (static set, applied atomically at start) | Register §7 still defers the memory subsystem itself; only the timer mechanism is settled here |
 | **d** | Auto-close of stale runs | Sweeper schedule + per-run expiry | **Load-bearing for E10** — see below |
 | **e** | Per-run wall-clock deadline | `deadline_epoch_ms` at enqueue | Cancels the run **and all children**. Runaway protection and cancellation propagation in one field |
 
-**The (a)+(d) interaction is the significant one.** D35 deliberately specifies
+**The (a)+(d) interaction is the significant one.** ADR-0035 deliberately specifies
 *no escalation path* for unanswered approvals — "the run simply waits for its
 owner to return." Combined with E10's version pinning, an unbounded wait would
 pin an old code version alive indefinitely: one forgotten approval could block
@@ -336,7 +336,7 @@ retiring a deployment colour for weeks.
 
 **Therefore the HITL approval wait is bounded in v1.** An unanswered approval
 expires via (d), closing the run as `expired` rather than escalating it — which
-preserves D35's "no escalation" stance while making E10's drain window finite.
+preserves ADR-0035's "no escalation" stance while making E10's drain window finite.
 The expiry duration is a product decision not yet taken; it must exceed a
 realistic on-call handover (a weekend, so ≥72h) and is the effective upper bound
 on how long a deployment colour must be retained.
@@ -404,12 +404,12 @@ the documented escape hatch.
 
 | # | Risk | Notes |
 |---|---|---|
-| **X1** | **DBOS's system database falls into PCI-DSS scope.** Step inputs/outputs are checkpointed there; an unscrubbed log line could carry a PAN. | Extends **D25**. Mitigated structurally by E5's "pointers, not payloads" rule, but the scrubbing boundary must be re-examined in the Evals & Benchmarks session that already owns PAN detection. |
+| **X1** | **DBOS's system database falls into PCI-DSS scope.** Step inputs/outputs are checkpointed there; an unscrubbed log line could carry a PAN. | Extends **ADR-0025**. Mitigated structurally by E5's "pointers, not payloads" rule, but the scrubbing boundary must be re-examined in the Evals & Benchmarks session that already owns PAN detection. |
 | **X2** | The reaper (E2) is load-bearing for routine scale-down, not just crashes — and must be version-aware. | Needs an explicit test, not an assumed-correct safety net. |
 | **X3** | ~~Workflow code changes break in-flight runs.~~ **Resolved by E10.** | Residual: the deploy pipeline must gate colour retirement on a `list_workflows` check, and operators must understand that a structural change plus a long-lived approval keeps a colour alive. |
 | **X4** | Pattern B demotes LangGraph below the durability boundary, and DBOS's Pattern B references are not LangGraph-based. | We are the integration point. Prototype the parent-workflow-drives-LangGraph shape early. |
 | **X5** | Worker placement across GCP + AliCloud (briefing §6.9) is unaddressed. | DBOS queues can restrict which workers run which workflows, which is the likely lever, but multi-region Postgres for the system database is an open topology question for the Deployment session. |
-| **X6** | **Per-workspace cron schedules (E11 b) are a new tenant-scoped resource.** | They live in the database and are runtime-mutable, so they need R3 scoping columns, D16-style versioned policy treatment, and a D17 ceiling on schedule count/frequency. Flag into `03-tenancy-and-scoping.md`. |
+| **X6** | **Per-workspace cron schedules (E11 b) are a new tenant-scoped resource.** | They live in the database and are runtime-mutable, so they need ADR-0051 scoping columns, ADR-0016-style versioned policy treatment, and a ADR-0017 ceiling on schedule count/frequency. Closed by ADR-0058. |
 | **X7** | Two colours of workers run concurrently against one system database during every structural deploy. | Doubles peak worker count and Postgres connections during drains; capacity planning must assume it. |
 
 ---
@@ -444,7 +444,7 @@ Verified live against `docs.dbos.dev` and `dbos.dev`:
   **Pattern B** deep-research agent example; first-party *adapter packages* exist
   for Pydantic AI, LlamaIndex, OpenAI Agents SDK, Google ADK and Vercel AI —
   **LangGraph has a documented pattern, not an adapter.**
-- Corroborating **D30**: DBOS published *"Postgres LISTEN/NOTIFY Can Actually
+- Corroborating **ADR-0030**: DBOS published *"Postgres LISTEN/NOTIFY Can Actually
   Scale"* (Jul 2026) — 60K writes/sec at millisecond latency.
 
 **Not yet verified — do before build:**
@@ -454,7 +454,7 @@ Verified live against `docs.dbos.dev` and `dbos.dev`:
    double-execute — the exact safety envelope of E2's reaper.
 3. Behaviour of `list_workflows` filtering by executor ID without Conductor.
 4. Interaction of DBOS system-database migrations with our own Postgres migrations
-   and **R3**'s row-level security (DBOS tables are not RLS-aware).
+   and **ADR-0051**'s row-level security (DBOS tables are not RLS-aware).
 5. Whether the auto-computed application version is stable across Python versions,
    dependency upgrades and container rebuilds — E10's "few drains" argument
    depends on it changing *only* on real workflow-code changes.
@@ -479,16 +479,16 @@ Long before the orchestrator saturates, the binding constraints will be:
 
 1. **LLM/GPU capacity** (LiteLLM/vLLM throughput, provider rate limits),
 2. **Tool-call limits against customer infrastructure** — the shared K8s control
-   plane that D17's per-connection throttles exist to protect,
+   plane that ADR-0017's per-connection throttles exist to protect,
 3. **Postgres connection count**, not Postgres throughput — aggravated by X7's
-   blue/green doubling, and the one thing D30 already names as its revisit trigger
+   blue/green doubling, and the one thing ADR-0030 already names as its revisit trigger
    (`LISTEN/NOTIFY` connection scaling).
 
 **Temporal would not help with any of the three.** (3) is mitigated by a pooler
 such as PgBouncer; (1) and (2) are the agent's and the Tool Gateway's problem.
 
 And if raw orchestration throughput *did* ever bind, DBOS's own answer is to
-**shard workflows across multiple Postgres databases** — for which R3's
+**shard workflows across multiple Postgres databases** — for which ADR-0051's
 `tenant_id`/`graft_tenant_id` is a natural shard key. That is a materially cheaper
 escape than changing engines.
 
@@ -504,10 +504,10 @@ escape than changing engines.
 ### 10.3 What a migration would actually cost
 
 The briefing's core worry was that the *irreversible* part is graph
-decomposition, not engine choice. **That worry is fully discharged:** E5/D41's
+decomposition, not engine choice. **That worry is fully discharged:** E5/ADR-0041's
 granularity rule — run = workflow, sub-agent = child workflow, LLM call = step,
 tool call = step — is engine-agnostic and maps one-to-one onto Temporal's
-workflow / child-workflow / activity model. That is exactly what R8 asked for, and
+workflow / child-workflow / activity model. That is exactly what ADR-0037 asked for, and
 it is satisfied whichever engine we run.
 
 Mapping the rest:
@@ -520,7 +520,7 @@ Mapping the rest:
 | E7 deadlines cancelling children | Workflow timeouts + cancellation scopes | ≈ 1:1 |
 | **E2 heartbeat + reaper** | **Deleted entirely** — native cluster-side | **Negative cost: we delete code** |
 | E10 blue/green version pinning | Worker versioning / build IDs | Conceptually similar, mechanically different |
-| **E8 per-partition queue flow control** | **No direct equivalent** — DBOS's own comparison notes Temporal lacks comparable queueing/flow-control abstractions | **Real rework.** D44's per-workspace concurrency/rate limits (D17's ceiling chain) would need reimplementing |
+| **E8 per-partition queue flow control** | **No direct equivalent** — DBOS's own comparison notes Temporal lacks comparable queueing/flow-control abstractions | **Real rework.** ADR-0044's per-workspace concurrency/rate limits (ADR-0017's ceiling chain) would need reimplementing |
 | **E4 `fork_workflow` for evals** | Reset is roughly analogous but not identical | **Partial rework** of the prompt-comparison eval flow |
 
 So a migration is **moderate, bounded and mostly mechanical**, with exactly two
@@ -544,7 +544,7 @@ Temporal" later by changing imports and pointing at a server.**
 
 1. **It forces a lowest-common-denominator design.** Writing to the Temporal API
    surface forfeits precisely the DBOS-native features this design is built on —
-   `queue_partition_key` flow control (E8/D44), `fork_workflow` (E4/D40),
+   `queue_partition_key` flow control (E8/ADR-0044), `fork_workflow` (E4/ADR-0040),
    `deduplication_id` (E6), runtime-mutable database-stored schedules (E11), and
    `list_workflow_steps` trajectories. We would pay the migration cost *up front,
    permanently*, to insure against an event §10.1 shows is unlikely.
@@ -556,7 +556,7 @@ Temporal" later by changing imports and pointing at a server.**
 
 ### 10.5 What we do instead: a thin `runtime` seam
 
-Not a `RunController` driver port — that idea (R8's original framing) is
+Not a `RunController` driver port — that idea (ADR-0037's original framing) is
 unworkable in practice, because DBOS's value comes from decorators applied to our
 own functions, and determinism constraints cannot be hidden behind an interface.
 A wrapper pretending otherwise would be leaky and would buy little.
@@ -573,7 +573,7 @@ flows, so that domain and agent code never imports `dbos` directly:
 - `list_runs(...)`, `list_steps(graft_run_id)`
 
 This is worth doing **regardless of migration**: it is the natural chokepoint for
-D15 audit emission, D29 event publication, R3 tenant scoping and D17 ceiling
+ADR-0015 audit emission, ADR-0029 event publication, ADR-0051 tenant scoping and ADR-0017 ceiling
 checks, and it makes the engine testable by substitution. It is hygiene that
 happens to also cap migration cost — not an abstraction built on speculation.
 

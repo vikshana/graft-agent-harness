@@ -2,7 +2,7 @@
 
 > **Status: 🟢 Resolved for v1, verified 2026-09-12, closed 2026-09-12.** Arose
 > from a forum report describing the `app-with-rbac` plugin example.
-> Materially affects `01-identity-and-access.md` A4. §3.3, §5, §6, and §7
+> Materially affects the corresponding deep-dive (now closed) A4. §3.3, §5, §6, and §7
 > updated to reflect two confirmed facts, live-tested results against a real
 > Grafana OSS `latest` instance, and a final stakeholder decision that closes
 > the one remaining open item:
@@ -102,9 +102,9 @@ the plugin backend.
 
 Reasoning, now confirmed rather than merely leaning:
 
-- The Tool Gateway is the actual security boundary (D7). A boundary that
+- The Tool Gateway is the actual security boundary (ADR-0007). A boundary that
   delegates its decision to a caller's assertion is weaker than one that
-  checks independently — the same principle already applied to D10 (the
+  checks independently — the same principle already applied to ADR-0010 (the
   Tool Gateway validates the capability token itself, never trusts the agent
   worker).
 - **Slack-triggered runs have no plugin in the request path at all.** If
@@ -136,7 +136,7 @@ sequenceDiagram
 
 ### 3.2 It validates the hybrid model (A4)
 
-`01-identity-and-access.md` A4 framed the choice as *user identity vs service
+the corresponding deep-dive (now closed) A4 framed the choice as *user identity vs service
 identity*. Check-then-act shows that's a false dichotomy: accurate
 authorisation from the user's identity, reliable execution via the service
 identity, simultaneously. Restated as a Tool Gateway invariant:
@@ -188,14 +188,14 @@ agreed usage signal shows it's worth the complexity.
 **Consequence:** a Slack-initiated action against a Grafana resource is
 authorised only by whatever the workspace SA can already do — which means
 the SA's role (Viewer by default, Editor only where a write tool is
-explicitly enabled per D16) **is** the real access-control boundary for the
+explicitly enabled per ADR-0016) **is** the real access-control boundary for the
 Slack surface. This is consistent with, not an exception to, the hybrid model.
 
 ### 3.7 System-initiated runs — resolved (was §7 Q3)
 
 No user, therefore no user permissions to check. The workspace service
 account's own permissions are the ceiling — identical mechanism to §3.6,
-and consistent with D13 (`system_initiated` runs are structurally read-only,
+and consistent with ADR-0013 (`system_initiated` runs are structurally read-only,
 enforced by the capability token never containing a write tool class, so this
 ceiling is actually never tested against a write attempt in practice).
 
@@ -208,7 +208,7 @@ ceiling is actually never tested against a write attempt in practice).
   equivalent mechanism there; GitHub remains a bot identity.
 - **Does not authenticate the user to us.** Answers *"may this user do X?"*,
   not *"who is this user?"* — that's still ID forwarding (`X-Grafana-Id`,
-  D9). The enforcement client needs that ID token as input, so this
+  ADR-0009). The enforcement client needs that ID token as input, so this
   *reinforces* rather than replaces the ID-forwarding dependency.
 - **Does not remove the need for our own policy layer.** Grafana can say the
   user may read a datasource; only we can say the agent may act autonomously,
@@ -270,7 +270,7 @@ tested directly rather than relying on documentation:
 1. ~~PoC feedback trigger for §3.6~~ — **accepted 2026-09-12 (product
    decision), no longer open.** Metric: track denials where a Slack-triggered
    action would have succeeded under the linked user's actual Grafana role
-   but failed at the workspace SA's role; revisit D24/this section's decision
+   but failed at the workspace SA's role; revisit ADR-0024/this section's decision
    6 if that rate exceeds an agreed threshold or a customer explicitly
    complains.
 2. **`authlib` maturity and API stability** — is `EnforcementClient` a
@@ -285,7 +285,7 @@ tested directly rather than relying on documentation:
 5. **How the Tool Gateway obtains a user-scoped credential** for calling
    `/api/access-control/user/permissions` on behalf of the resolved principal
    (§5 item 1) — needs a concrete mechanism: most likely, forwarding the
-   `X-Grafana-Id` ID token itself (already available per D9) directly to
+   `X-Grafana-Id` ID token itself (already available per ADR-0009) directly to
    `authlib`'s `EnforcementClient`, which is designed to evaluate permissions
    from exactly that identity assertion, rather than establishing a separate
    Grafana session or using a Bearer SA token (which would answer "may the SA
