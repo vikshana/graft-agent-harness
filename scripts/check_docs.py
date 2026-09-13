@@ -50,7 +50,8 @@ def parse_fm(path: Path) -> dict[str, str] | None:
 
 
 def main() -> int:
-    md_files = sorted(DOCS.rglob("*.md"))
+    # docs/ plus root-level markdown (AGENTS.md, README.md)
+    md_files = sorted(DOCS.rglob("*.md")) + sorted(ROOT.glob("*.md"))
 
     # ---- collect known ADR ids
     adr_ids: set[str] = set()
