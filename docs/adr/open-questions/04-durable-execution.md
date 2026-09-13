@@ -1,7 +1,20 @@
 # Open Question 04 — Durable Execution & Run Orchestration
 
-> **Purpose of this document.** Self-contained briefing for a dedicated deep-dive
-> session. Nothing here is decided.
+> 🟢 **RESOLVED — 2026-09-12.** This document is the *briefing* that framed the
+> decision. It is kept **unedited, as a historical record** of what was known and
+> assumed before the session. **Do not read it as current architecture.**
+>
+> **The decision and its rationale live in
+> [`../../design/durable-execution.md`](../../design/durable-execution.md)** (E1–E12),
+> registered as **D37–D48**. Headline: the engine is **DBOS Transact**, an
+> MIT-licensed library on our existing Postgres. Temporal and the paid Conductor
+> control plane were both excluded by product constraint. Several assumptions
+> below did not survive the session — notably that determinism is a
+> Temporal-specific cost (§4a), that option (b) means a two-week bespoke build
+> (§4b), and that pervasive durable timers "shift strongly toward Temporal" (§6.2).
+>
+> **Original purpose statement, preserved:** Self-contained briefing for a
+> dedicated deep-dive session. Nothing here is decided.
 >
 > Source research: `docs/research/execution-guardrails.md`,
 > `docs/research/session.md`, `docs/research/oversight.md`,
