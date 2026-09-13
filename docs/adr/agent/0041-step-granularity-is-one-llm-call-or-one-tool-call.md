@@ -10,7 +10,7 @@ supersedes: []
 superseded_by: []
 amends: []
 amended_by: []
-relates_to: []
+relates_to: [ADR-0025, ADR-0034]
 design: ../../design/durable-execution.md
 legacy_id: D41
 ---
@@ -37,6 +37,8 @@ rule must satisfy rather than contradict.
 
 **Step granularity (the briefing's "crux"): one LLM call = one step; one tool call = one step; one sub-agent = one child workflow; one run = one parent workflow.** Consequences: retry waste is bounded to a single LLM call (accepted); **ADR-0033's "signal check at every tool-call boundary" is satisfied structurally** rather than by a bespoke hook, since cancel preempts at step boundaries and every tool call is a step; write amplification is one ~1–2 ms Postgres write per step (accepted, against DBOS's >40K steps/sec single-Postgres benchmark). **Steps must return pointers, never large payloads** — artifacts go to object storage, which ADR-0034 already requires independently.
 
+**Promoted to a hard invariant by spike S2 (2026-09-13).** DBOS's serialisation of step outputs, workflow inputs/outputs and `send`/`recv` message bodies is a wire format (pickle + base64), not encryption or redaction — any value that reaches one of those fields is recoverable in plaintext by anyone with `SELECT` on the DBOS system database. A single violation of the pointer rule, in a step that happens to handle a customer log line containing a PAN, is therefore sufficient to bring PCI-DSS scope down on the system database (ADR-0025). The pointer rule accordingly moves from convention to a **CI-enforced invariant**: `scripts/check_step_pointer_rule.py` fails any `@DBOS.step()`-decorated function whose return type is not a recognised pointer type.
+
 ## 3. Considered options
 
 | Option | Verdict | Why |
@@ -49,9 +51,10 @@ rule must satisfy rather than contradict.
 
 - **Positive —** retry waste is bounded to a single LLM call (accepted in session, Q6); ADR-0033's cancellation guarantee falls out of the granularity rule rather than needing a bespoke hook.
 - **Negative / accepted trade —** write amplification of one ~1–2 ms Postgres write per step, accepted in session (Q3b) against DBOS's published >40K steps/sec single-Postgres benchmark.
-- **Follow-on work —** steps must return pointers, never large payloads — artifacts go to object storage per ADR-0034.
+- **Follow-on work —** steps must return pointers, never large payloads — artifacts go to object storage per ADR-0034. **`scripts/check_step_pointer_rule.py` added to CI** (spike S2 deliverable), failing any step whose return type is not a recognised pointer type.
 - **Revisit trigger —** none observed; granularity was confirmed achievable in practice by spike S1 (see Verification).
 
 ## 5. Verification
 
 - Confirmed by **spike S1** (2026-09-13, experiments E2/E6): `list_workflow_steps()` returns exactly one entry per LLM call and one per tool call — named for the call-wrapper function, not the graph node — for both an in-process fake tool and a real streamable-HTTP MCP tool call (ADR-0070). Mechanism and the full experiment log: [`../../design/durable-execution.md`](../../design/durable-execution.md) section 4.4.
+- Confirmed by **spike S2** (2026-09-13, experiment E7) against a live scratch Postgres 16, `dbos==2.31.1`: a step deliberately returning a raw string containing a test PAN was found, unmodified and trivially recoverable (`base64.b64decode` + `pickle.loads`, no encryption involved), in `workflow_status.inputs`, `workflow_status.output` and `operation_outputs.output`. No PII/PAN-aware filtering exists anywhere in DBOS's serialisation path. Mechanism and full experiment log: [`../../design/durable-execution.md`](../../design/durable-execution.md) section 4.5.

@@ -41,4 +41,5 @@ legacy_id: D48
 
 ## 5. Verification
 
-<!-- Claims marked "verified live" in the register carry their date inline in section 2; restate them here when this ADR is next touched. -->
+- Connection behaviour under concurrency — verified 2026-09-13 against a live scratch Postgres 16, `dbos==2.31.1` (spike S2, experiment E5). Result: DBOS held 8 backend connections at idle (two bounded pools: system + app) and 25 for 50 concurrently in-flight workflows (~0.5 connections per in-flight workflow) — confirming connection count is bounded by DBOS's configured pool sizes, not 1:1 with workflow concurrency, and giving a concrete number to feed into capacity planning.
+- pgbouncer transaction-mode compatibility — verified 2026-09-13 (spike S2, experiment E4). Result: DBOS's own workflows, including a `send`/`recv` round trip, completed correctly through a transaction-mode pgbouncer with both `use_listen_notify=True` (default, session-scoped `LISTEN`) and `use_listen_notify=False` (documented polling fallback). This was a single-process smoke test, not a multi-worker production-scale stress test. Full experiment log: [`../../design/durable-execution.md`](../../design/durable-execution.md) section 4.5.

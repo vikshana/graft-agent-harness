@@ -10,7 +10,7 @@ supersedes: []
 superseded_by: []
 amends: []
 amended_by: []
-relates_to: []
+relates_to: [ADR-0050, ADR-0060]
 design: ../../design/durable-execution.md
 legacy_id: D37
 ---
@@ -41,4 +41,5 @@ legacy_id: D37
 
 ## 5. Verification
 
-<!-- Claims marked "verified live" in the register carry their date inline in section 2; restate them here when this ADR is next touched. -->
+- Confirmed by **spike S1** (2026-09-13) — the LangGraph/DBOS integration boundary. See the Verification sections of [ADR-0039](0039-the-run-is-the-durable-workflow.md), [ADR-0040](0040-langgraph-is-compiled-with-no-checkpointer.md) and [ADR-0041](0041-step-granularity-is-one-llm-call-or-one-tool-call.md).
+- Confirmed by **spike S2** (2026-09-13, experiments E1/E2/E6) against a live scratch Postgres 16, `dbos==2.31.1`: DBOS creates its own `dbos`-schema tables (`workflow_status`, `operation_outputs`, `notifications`, `workflow_events[_history]`, `streams`, `queues`, `workflow_schedules`, `application_versions`, `event_dispatch_kv`, `dbos_migrations`), plus a small `transaction_outputs` table in whichever database is configured as the *application* database. `system_database_url` and `application_database_url` are independently configurable — the system database can be the same database as ours, a separate schema in it, or a fully separate database; DBOS never assumes ownership of the whole database or the connection. Migrations can be split from runtime: `run_dbos_database_migrations(..., application_role=...)` migrates as a DDL-capable role and grants a narrower runtime role afterwards, and `run_migrations=False` fails launch **closed** (not open) if the schema is missing or behind version. Full experiment log: [`../../design/durable-execution.md`](../../design/durable-execution.md) section 4.5.

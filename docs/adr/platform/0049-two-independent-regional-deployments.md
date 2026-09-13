@@ -10,7 +10,7 @@ supersedes: []
 superseded_by: []
 amends: []
 amended_by: []
-relates_to: []
+relates_to: [ADR-0037]
 design: ../../design/platform-topology.md
 legacy_id: D49
 ---
@@ -41,4 +41,4 @@ legacy_id: D49
 
 ## 5. Verification
 
-<!-- Claims marked "verified live" in the register carry their date inline in section 2; restate them here when this ADR is next touched. -->
+- Separate-system-database-per-region topology — verified 2026-09-13 against a live scratch Postgres 16, `dbos==2.31.1` (spike S2, experiment E2). Result: pointing `system_database_url` at a dedicated database while `application_database_url` pointed elsewhere worked end to end, with DBOS's control-plane tables (`workflow_status`, `operation_outputs`, etc.) confined entirely to the dedicated database — bar a small `transaction_outputs` table that always accompanies the application database, for `@DBOS.transaction()`-decorated functions. Full experiment log: [`../../design/durable-execution.md`](../../design/durable-execution.md) section 4.5.

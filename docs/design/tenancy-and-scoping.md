@@ -60,6 +60,20 @@ Isolation comes from three mechanisms already locked:
 | Tool Gateway resolves credentials by Tenant, never ambient | ADR-0007, ADR-0070, ADR-0018 | A compromised agent cannot reach another Tenant's connections |
 | Postgres RLS on `graft_tenant_id` | ADR-0051 | A query bug cannot return another Tenant's rows |
 
+**Note on why RLS, not just query filtering.** Grafana OSS itself does *not*
+use database-level isolation for its own multi-org model: an `org_id` column
+on every org-scoped table, an explicit `WHERE org_id = ?` appended by the Go
+backend, and a single shared database role with unrestricted access to every
+table — no RLS, no per-tenant database principal, no independent backstop if
+a code path omits the filter. That is deliberately rejected here as the sole
+mechanism (ADR-0050 section 3): RLS makes the database a second, independent
+enforcement point, so a missed scope check fails closed instead of leaking.
+Spike S2 (2026-09-13) found one real limit to this guarantee — DBOS Transact's
+own control-plane tables cannot carry a working RLS policy without breaking
+DBOS outright (section 4.5 of [`durable-execution.md`](./durable-execution.md)), so isolation for
+that one internal, tenant-blind subsystem falls back to the same
+application-layer-only model Grafana accepts for its entire schema.
+
 Two hard implementation rules:
 
 - **No ambient or thread-local Tenant context — ever.** Scope travels as an

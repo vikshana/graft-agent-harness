@@ -10,6 +10,15 @@
 > Verification sections of [ADR-0039](../adr/agent/0039-the-run-is-the-durable-workflow.md),
 > [ADR-0040](../adr/agent/0040-langgraph-is-compiled-with-no-checkpointer.md) and
 > [ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md).**
+> **System-database placement, RLS interference and PCI scope (section 4.5) were
+> further confirmed empirically by spike S2 on 2026-09-13, closing risk X1 (section 8)
+> and the last item of section 9's "not yet verified" list — see the Verification
+> sections of [ADR-0025](../adr/observability/0025-compliance-regime-for-v1-is-pci-dss.md),
+> [ADR-0037](../adr/agent/0037-the-durable-execution-engine-is-dbos-transact.md),
+> [ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md),
+> [ADR-0048](../adr/agent/0048-a-thin-runtime-seam-isolates-the-durable-execution-engine.md),
+> [ADR-0049](../adr/platform/0049-two-independent-regional-deployments.md) and
+> [ADR-0050](../adr/tenancy/0050-isolation-is-never-thread-level.md).**
 
 ---
 
@@ -276,6 +285,75 @@ must pass `application_version=DBOS.application_version` explicitly.** This is e
 10.5): the seam's `fork(graft_run_id,
 step)` helper always supplies it, so application code cannot omit it.
 
+### 4.5 Confirmed by spike S2 (2026-09-13) — system database, RLS interference and PCI scope
+
+Section 8's risk **X1** and section 9's "not yet verified" list both flagged the same open question: does DBOS's system
+database coexist with **ADR-0050**'s isolation model and **ADR-0051**'s scoping rule, and does it fall inside
+**ADR-0025**'s PCI-DSS scope? **Spike S2** closed both, empirically, against a live scratch Postgres 16 + pgbouncer
+(transaction mode), `dbos==2.31.1`, with a non-superuser application role (the docker image's default bootstrap role
+is a superuser and silently bypasses RLS — using it would have invalidated every RLS test below). Seven experiments,
+E1–E7, plus a topology check E2:
+
+**E1 — inventory.** DBOS creates its own `dbos`-schema tables:
+`workflow_status`, `operation_outputs`, `notifications`, `workflow_events`, `workflow_events_history`, `streams`,
+`queues`, `workflow_schedules`, `application_versions`, `event_dispatch_kv`, `dbos_migrations` — plus
+`transaction_outputs` in whichever database is configured as the *application* database. A representative run (parent
+workflow, step, child workflow, `send`/`recv`, queued workflow) showed **every step's return value, every workflow's
+input arguments, and every `send`/`set_event` payload persisted in full** as base64-encoded pickle — not a pointer, not
+redacted. Table ownership: the connecting application role, same as our own tables — DBOS runs as table owner, not
+superuser, and grants itself no special privileges.
+
+**E2 — same database or separate?** `system_database_url` and `application_database_url` are independently
+configurable. DBOS was pointed at a fully separate database for its system tables while the application database
+stayed put; both launched and ran correctly, with DBOS's control-plane tables confined entirely to the dedicated
+database (bar the small `transaction_outputs` table, which always accompanies the *application* database regardless of
+topology). **DBOS never requires a shared connection or ownership of the whole database** — one system database per
+region (already ADR-0049's stated topology) is fully supported without contortion.
+
+**E3 — RLS interference (the load-bearing result).** Retrofitting `FORCE ROW LEVEL SECURITY` plus a `graft_tenant_id`
+policy onto DBOS's own `workflow_status` table — the same pattern used for our own tables — causes DBOS's own `INSERT`
+to be **rejected outright by Postgres** (`new row violates row-level security policy`), because DBOS never sets
+`graft.tenant_id` and has no column for it: a workflow cannot even start. The only policy shape that avoids the error
+(`graft_tenant_id IS NULL OR graft_tenant_id = current_setting(...)`) is vacuous — it grants every Tenant unrestricted
+read/write access to every DBOS row, since every DBOS-written row is `NULL`. **Conclusion: RLS on `graft_tenant_id`
+cannot be the isolation mechanism for DBOS's own control-plane tables.** ADR-0050 is updated accordingly: isolation for
+workflow metadata is enforced at the application layer (the `runtime` seam, section 10.5, is the chokepoint), not by
+Postgres, for this specific table set. Our own tables are unaffected.
+
+**E4 — `SET LOCAL` survival under pgbouncer transaction mode.** Our own pattern — `SET LOCAL graft.tenant_id` per
+transaction against a `FORCE ROW LEVEL SECURITY` table — was hammered with 400 interleaved, alternating-tenant,
+single-statement transactions across 4 threads through pgbouncer in transaction mode: **zero cross-tenant leakage**,
+consistent with pgbouncer's transaction-mode contract (it multiplexes at the transaction boundary, the same boundary
+`SET LOCAL` resets at). Separately, DBOS itself — including a `send`/`recv` round trip — ran correctly through the same
+pooled endpoint with both `use_listen_notify=True` (default, session-scoped `LISTEN`) and `use_listen_notify=False`
+(documented polling fallback). This was a single-process smoke test; a multi-worker, production-scale stress test of
+DBOS's notification listener under a pooler is still worth doing before fully trusting it at fleet scale.
+
+**E5 — connection behaviour.** 8 backend connections held at idle (two bounded pools, system + app, default
+`pool_size=20` each but opened lazily), 25 held for 50 concurrently in-flight workflows (~0.5 connections per in-flight
+workflow) — confirming section 4.4's pool-size finding with real numbers, and giving ADR-0048's scale note a concrete
+ratio rather than an assumed one.
+
+**E6 — migration story.** `run_migrations=False` against a schema that does not exist yet **fails launch closed**, with
+an explicit error naming the required action (`dbos migrate`, or enable migrations) — not a silent no-op.
+`run_dbos_database_migrations(system_database_url, app_database_url, schema, application_role=...)` is the out-of-band
+equivalent of the `dbos migrate` CLI: it migrates as whatever role runs it, then **grants the runtime role** permissions
+on the DBOS schema afterwards — i.e. DBOS explicitly supports "migrate as a DDL-capable role, run as a narrower one,"
+which is exactly ADR-0046's blue/green need.
+
+**E7 — PCI determination.** A step was made to deliberately violate ADR-0041's pointer rule, returning a raw string
+containing a test PAN. It landed, unmodified, in `workflow_status.inputs`, `workflow_status.output` and
+`operation_outputs.output` — recoverable in plaintext with one `SELECT` + `base64.b64decode` + `pickle.loads`. DBOS's
+serialisation is a wire format, not encryption or redaction, and there is no PII/PAN-aware filtering anywhere in the
+path. **The DBOS system database is confirmed inside PCI-DSS scope** (ADR-0025 updated), and ADR-0041's pointer rule is
+promoted from convention to a CI-enforced invariant (`scripts/check_step_pointer_rule.py`).
+
+**Net effect on Phase 1's schema:** one DBOS system database per region (ADR-0049, unchanged, now empirically
+confirmed), our own tables keep full `FORCE ROW LEVEL SECURITY` + `SET LOCAL` (ADR-0050, scope clarified), the DBOS
+system database is PCI-DSS scope inheriting ADR-0025's scrubbing and ADR-0015's retention, and the pointer rule
+(ADR-0041) is now a hard, lint-checked line rather than a design preference. Risk X1 (section 8) is closed.
+
+
 
 ---
 
@@ -410,7 +488,7 @@ in workflow code. v1 default is versioning + blue/green; patching is the documen
 
 | #      | Risk                                                                                                                                       | Notes                                                                                                                                                                                                        |
 |--------|--------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **X1** | **DBOS's system database falls into PCI-DSS scope.** Step inputs/outputs are checkpointed there; an unscrubbed log line could carry a PAN. | Extends **ADR-0025**. Mitigated structurally by E5's "pointers, not payloads" rule, but the scrubbing boundary must be re-examined in the Evals & Benchmarks session that already owns PAN detection.        |
+| **X1** | ~~DBOS's system database falls into PCI-DSS scope.~~ **Confirmed and closed by spike S2 (section 4.5).** | Step inputs/outputs/`send`/`recv` bodies are checkpointed in recoverable plaintext (pickle+base64, not encryption). **Confirmed in PCI-DSS scope** — extends **ADR-0025**. Mitigated structurally by ADR-0041's pointer rule, now a **CI-enforced invariant** (`scripts/check_step_pointer_rule.py`), not merely a convention. |
 | **X2** | The reaper (E2) is load-bearing for routine scale-down, not just crashes — and must be version-aware.                                      | Needs an explicit test, not an assumed-correct safety net.                                                                                                                                                   |
 | **X3** | ~~Workflow code changes break in-flight runs.~~ **Resolved by E10.**                                                                       | Residual: the deploy pipeline must gate colour retirement on a `list_workflows` check, and operators must understand that a structural change plus a long-lived approval keeps a colour alive.               |
 | **X4** | Pattern B demotes LangGraph below the durability boundary, and DBOS's Pattern B references are not LangGraph-based.                        | We are the integration point. Prototype the parent-workflow-drives-LangGraph shape early.                                                                                                                    |
@@ -456,10 +534,13 @@ Verified live against `docs.dbos.dev` and `dbos.dev`:
 2. Whether `resume_workflow` on a workflow whose executor is alive-but-silent can double-execute — the exact safety
    envelope of E2's reaper.
 3. Behaviour of `list_workflows` filtering by executor ID without Conductor.
-4. Interaction of DBOS system-database migrations with our own Postgres migrations and **ADR-0051**'s row-level security
-   (DBOS tables are not RLS-aware).
-5. Whether the auto-computed application version is stable across Python versions, dependency upgrades and container
+4. Whether the auto-computed application version is stable across Python versions, dependency upgrades and container
    rebuilds — E10's "few drains" argument depends on it changing *only* on real workflow-code changes.
+
+~~Interaction of DBOS system-database migrations with our own Postgres migrations and ADR-0051's row-level security
+(DBOS tables are not RLS-aware).~~ **Closed by spike S2** (section 4.5, experiments E3/E6): DBOS's own tables cannot
+carry a `graft_tenant_id` RLS policy without breaking DBOS outright, so isolation for workflow metadata is enforced at
+the application layer instead; migrations can be run out-of-band by a DDL-capable role separate from the runtime role.
 
 ---
 
