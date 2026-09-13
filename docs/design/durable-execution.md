@@ -24,7 +24,7 @@
 | **E9** | **ADR-0033's signal table is replaced by DBOS `send`/`recv`.** ADR-0030's event log is unaffected. |
 | **E10** | **Deploy strategy is blue/green with version pinning**, using DBOS's auto-computed application version. Bounded by E11's approval expiry. |
 | **E11** | **All five durable-timer use cases are in v1**, including a **bounded HITL approval window** — which is what makes E10's drain window finite. |
-| **E12** | **Reversibility is real but bounded, and throughput is not the trigger to watch.** A thin `runtime` seam keeps engine calls out of domain logic. **DBOSify is rejected as a hedge.** See §10. |
+| **E12** | **Reversibility is real but bounded, and throughput is not the trigger to watch.** A thin `runtime` seam keeps engine calls out of domain logic. **DBOSify is rejected as a hedge.** See section 10. |
 
 ---
 
@@ -51,7 +51,7 @@ The briefing costed option (b) at "roughly two weeks of focused work" and warned
 that "the hard parts … are exactly where hand-rolled implementations are subtly
 wrong." DBOS removes essentially all of that surface:
 
-| Briefing §3 requirement | DBOS mechanism | Ours to build? |
+| Briefing section 3 requirement | DBOS mechanism | Ours to build? |
 |---|---|---|
 | Recover graph state after crash | Step checkpoints in Postgres | No |
 | **Work rediscovery** | Executor-pinned recovery + Conductor | **Partly — see E2** |
@@ -64,9 +64,9 @@ wrong." DBOS removes essentially all of that surface:
 
 Only one row is not free, and it is the direct price of excluding Conductor.
 
-**Note on briefing §6.2.** The briefing argued that if durable timers proved
+**Note on the durable-execution briefing (closed).** The briefing argued that if durable timers proved
 *pervasive*, "that shifts strongly toward Temporal." They did prove pervasive —
-all five candidates are v1 (§6.4) — but this does **not** reopen E1, because DBOS
+all five candidates are v1 (section 6.4) — but this does **not** reopen E1, because DBOS
 covers every one of them natively (durable sleep, `recv` timeouts, and
 database-stored cron schedules that are creatable, pausable and deletable at
 runtime). The premise held; the conclusion does not follow for this engine.
@@ -95,7 +95,7 @@ clock reads, randomness) must live inside steps.
 This is therefore **not a differentiator**, and it is largely already satisfied by
 **ADR-0003** ("graph nodes written as plain functions; no framework types in node
 signatures") and **ADR-0037**. What it does mean is that ADR-0037 is upgraded from a
-recommendation to a hard requirement — see §4.
+recommendation to a hard requirement — see section 4.
 
 ---
 
@@ -112,7 +112,7 @@ From `/production/workflow-recovery`, verbatim in substance:
 
 **Consequence:** on a Deployment with HPA, a pod OOM-killed at minute 22 leaves
 its investigation `PENDING` and unrecovered until a pod bearing the same executor
-ID happens to start. That is precisely the failure mode the briefing's §1 says
+ID happens to start. That is precisely the failure mode the briefing says
 must not happen.
 
 ### 3.2 The design
@@ -178,7 +178,7 @@ keeping `PostgresSaver` for agent state.
 crash-proof but leaves the *run* with no work rediscovery — if the pod dies
 between tool calls, the LangGraph checkpoint sits there and nothing resumes it.
 It also runs two checkpointers side by side, which is exactly the
-double-checkpointing hazard flagged as briefing §6.7.
+double-checkpointing hazard flagged in the briefing.
 
 DBOS's own newest and most relevant example — the **Hacker News Deep Research
 Agent** — instead demonstrates **Pattern B**: the agent loop itself is the
@@ -202,7 +202,7 @@ step boundaries. This is ADR-0037, and it is now mandatory rather than advisory.
 ### 4.2 E4 — no LangGraph checkpointer
 
 LangGraph is compiled **without** a checkpointer. DBOS step checkpoints are the
-single source of execution truth. This resolves briefing §6.7 by elimination
+single source of execution truth. This resolves the briefing's double-checkpointing hazard by elimination
 rather than by reconciliation: there is no second state store to diverge.
 
 Conversational state for multi-turn chat runs (ADR-0036 makes chat a first-class run)
@@ -217,7 +217,7 @@ snapshots rather than trajectories. DBOS additionally provides:
   step inputs and outputs;
 - `fork_workflow(id, from_step=N)` — re-run a historical incident from step *N*
   under a new prompt version, as a **new workflow ID** with history copied, so the
-  original is preserved for comparison. This directly serves register §3's
+  original is preserved for comparison. This directly serves [`observability-pipeline.md`](./observability-pipeline.md)'s
   "compare prompt v1.2 vs v1.3 across 50 historical incidents," and is strictly
   better than in-place checkpointer time-travel.
 
@@ -314,7 +314,7 @@ provisional pending this session. It is replaced by **DBOS `send`/`recv`**:
 
 ADR-0033's REST back-channel is **unchanged** — the REST handler now calls `send`
 instead of inserting into our own signal table. **ADR-0030's event log is entirely
-unaffected**, preserving the briefing's §7.7 requirement that streaming remain
+unaffected**, preserving the briefing's requirement that streaming remain
 independent of the orchestrator choice. We continue to use our own event log
 rather than DBOS's `set_event`/streaming features, keeping ADR-0029/ADR-0030/ADR-0031 intact.
 
@@ -324,7 +324,7 @@ rather than DBOS's `set_event`/streaming features, keeping ADR-0029/ADR-0030/ADR
 |---|---|---|---|
 | **a** | HITL approval wait | `recv(topic, timeout_seconds)` | **Now bounded** — see below. Survives restarts |
 | **b** | Scheduled / recurring RCA | `create_schedule` per workspace | Runtime-creatable/pausable/deletable, stored in the database — so per-workspace schedules are ordinary data, not config redeploys. **These are `system_initiated` runs and therefore structurally read-only per ADR-0013.** Must carry `tenant_id`/`graft_tenant_id` per ADR-0051 and count against ADR-0017 ceilings |
-| **c** | Infra-memory refresh (`*/15`) | `apply_schedules` (static set, applied atomically at start) | Register §7 still defers the memory subsystem itself; only the timer mechanism is settled here |
+| **c** | Infra-memory refresh (`*/15`) | `apply_schedules` (static set, applied atomically at start) | [`../backlog/future-sessions.md`](../backlog/future-sessions.md) still defers the memory subsystem itself; only the timer mechanism is settled here |
 | **d** | Auto-close of stale runs | Sweeper schedule + per-run expiry | **Load-bearing for E10** — see below |
 | **e** | Per-run wall-clock deadline | `deadline_epoch_ms` at enqueue | Cancels the run **and all children**. Runaway protection and cancellation propagation in one field |
 
@@ -408,7 +408,7 @@ the documented escape hatch.
 | **X2** | The reaper (E2) is load-bearing for routine scale-down, not just crashes — and must be version-aware. | Needs an explicit test, not an assumed-correct safety net. |
 | **X3** | ~~Workflow code changes break in-flight runs.~~ **Resolved by E10.** | Residual: the deploy pipeline must gate colour retirement on a `list_workflows` check, and operators must understand that a structural change plus a long-lived approval keeps a colour alive. |
 | **X4** | Pattern B demotes LangGraph below the durability boundary, and DBOS's Pattern B references are not LangGraph-based. | We are the integration point. Prototype the parent-workflow-drives-LangGraph shape early. |
-| **X5** | Worker placement across GCP + AliCloud (briefing §6.9) is unaddressed. | DBOS queues can restrict which workers run which workflows, which is the likely lever, but multi-region Postgres for the system database is an open topology question for the Deployment session. |
+| **X5** | Worker placement across GCP + AliCloud is unaddressed. | DBOS queues can restrict which workers run which workflows, which is the likely lever, but multi-region Postgres for the system database is an open topology question for the Deployment session. |
 | **X6** | **Per-workspace cron schedules (E11 b) are a new tenant-scoped resource.** | They live in the database and are runtime-mutable, so they need ADR-0051 scoping columns, ADR-0016-style versioned policy treatment, and a ADR-0017 ceiling on schedule count/frequency. Closed by ADR-0058. |
 | **X7** | Two colours of workers run concurrently against one system database during every structural deploy. | Doubles peak worker count and Postgres connections during drains; capacity planning must assume it. |
 
@@ -468,7 +468,7 @@ bounded — but scaling is almost certainly the wrong trigger to watch for.**
 
 ### 10.1 Interrogating the premise: throughput will not be the binding constraint
 
-Our published workload (briefing §1) is **tens of simultaneous runs**, bursty.
+Our published workload is **tens of simultaneous runs**, bursty.
 Under E5's granularity, a run emits roughly one step per LLM or tool call — call
 it order-of one step per second per run at the busiest. A hundred concurrent
 investigations is therefore on the order of **100 steps/sec**, against DBOS's
@@ -496,7 +496,7 @@ escape than changing engines.
 
 | Trigger | Assessment |
 |---|---|
-| **Multi-cloud active-active (GCP + AliCloud), briefing §6.9 / X5** | The genuinely hard one. A single system database is a poor fit for active-active across clouds. **But Temporal has the same problem** — its cluster needs a co-located datastore too. The likely answer either way is **one application + one system database per region, with runs pinned to a region**, not a globally shared orchestrator. |
+| **Multi-cloud active-active (GCP + AliCloud), X5** | The genuinely hard one. A single system database is a poor fit for active-active across clouds. **But Temporal has the same problem** — its cluster needs a co-located datastore too. The likely answer either way is **one application + one system database per region, with runs pinned to a region**, not a globally shared orchestrator. |
 | **Operational maturity / hiring** | Temporal is the better-known quantity with a deeper operational corpus. A legitimate reason; unrelated to scale. |
 | **Postgres connection pressure** | Mitigate with a pooler first. Only an engine question if pooling fails. |
 | **DBOS project health** | A young company; the library is MIT and self-hostable, which caps the downside, but it is worth periodic review. |
@@ -547,11 +547,11 @@ Temporal" later by changing imports and pointing at a server.**
    `queue_partition_key` flow control (E8/ADR-0044), `fork_workflow` (E4/ADR-0040),
    `deduplication_id` (E6), runtime-mutable database-stored schedules (E11), and
    `list_workflow_steps` trajectories. We would pay the migration cost *up front,
-   permanently*, to insure against an event §10.1 shows is unlikely.
+   permanently*, to insure against an event section 10.1 shows is unlikely.
 2. **It is a young, Python-only compatibility layer** in the critical path of the
    least-reversible component in the system, with partial feature compatibility
    documented in its own `ARCHITECTURE.md`.
-3. **It insures the wrong risk.** §10.2 shows the plausible trigger is topology
+3. **It insures the wrong risk.** Section 10.2 shows the plausible trigger is topology
    (multi-cloud), which DBOSify does nothing for.
 
 ### 10.5 What we do instead: a thin `runtime` seam
@@ -579,6 +579,6 @@ happens to also cap migration cost — not an abstraction built on speculation.
 
 **It does not, and is not meant to, make the engine swappable by configuration.**
 The `@DBOS.workflow()` / `@DBOS.step()` decorators stay on our functions. Swapping
-engines means re-decorating and rewriting §10.3's two rework areas. That is the
+engines means re-decorating and rewriting section 10.3's two rework areas. That is the
 honest, bounded cost, accepted.
 

@@ -14,11 +14,11 @@
 > |---|---|---|
 > | 1 | **Token Service, Tool Gateway and Tool Registry merge into one deployable — the Authority Service.** Three containers become one, with three modules and five enforced invariants. | ADR-0069 |
 > | 2 | **No direct clients on customer systems.** `k8s-mcp` is now an invariant, not a preference; `pagerduty-mcp` added. | ADR-0068 |
-> | 3 | **Approval follows the driver**, so §4.4 and the authority model change, and a **fifth flow** (§4.5, control liveness) is added. | ADR-0065, ADR-0066 |
+> | 3 | **Approval follows the driver**, so section 4.4 and the authority model change, and a **fifth flow** (section 4.5, control liveness) is added. | ADR-0065, ADR-0066 |
 > | 4 | **`run_control` added to Postgres**; the 30s control sweep added to scheduled workflows. | ADR-0066 |
 >
 > **Rule for this level:** every container here must be traceable to a **locked
-> decision**, not to an implementation preference. §8 lists what was deliberately
+> decision**, not to an implementation preference. Section 8 lists what was deliberately
 > *not* made a container, and why — that list is as load-bearing as the diagram.
 
 ---
@@ -103,7 +103,7 @@ flowchart TB
   subgraph MCPS["Upstream MCP servers — streamable HTTP only, never stdio. The ONLY path to a customer system. ADR-0070, ADR-0068"]
     direction LR
     GMCP["<b>grafana-mcp</b><br/><i>[Container: Go — one logical service,<br/>stateless, horizontally scaled]</i><br/>GRAFANA_FORWARD_HEADERS=Authorization.<br/>Client cache keyed by credential.<br/>Isolation comes from the SA token per call,<br/><b>not</b> from process separation.<br/>Built-in caller-auth <b>not used</b>. ADR-0018"]
-    KMCP["<b>k8s-mcp</b><br/><i>[Container]</i><br/>Impersonation headers carry<br/>graft_run_id outward.<br/><b>Design pending</b> — §9. ADR-0011, ADR-0015, ADR-0068"]
+    KMCP["<b>k8s-mcp</b><br/><i>[Container]</i><br/>Impersonation headers carry<br/>graft_run_id outward.<br/><b>Design pending</b> — section 9. ADR-0011, ADR-0015, ADR-0068"]
     GHMCP["<b>github-mcp</b><br/><i>[Container]</i><br/>GitHub App <b>bot identity</b>,<br/>never user impersonation. ADR-0011"]
     ITMCP["<b>jira / servicenow-mcp</b><br/><i>[Container]</i>"]
     PDMCP["<b>pagerduty / ilert-mcp</b><br/><i>[Container]</i><br/><b>read class only in v1.</b><br/>Suppression and maintenance<br/>windows <b>hard-denied at L2,<br/>permanently</b>. ADR-0067"]
@@ -262,7 +262,7 @@ drift:
 
 1. **Exposing the Tool Gateway to external MCP clients.** That would require
    Dynamic Client Registration and change the AS threat model — already flagged
-   in `mcp-authorization-server.md` §7.
+   in `mcp-authorization-server.md` section 7.
 2. **Materially divergent scaling profiles** between token minting (cheap, bursty,
    per-run) and tool brokering (expensive, sustained, per-call).
 
@@ -285,7 +285,7 @@ drift:
 | **`runtime` seam** | Python module | Sole importer of `dbos`; chokepoint for audit, events, scoping, ceilings | Become a config-swappable engine port | ADR-0048 |
 | **Scheduled Workflows** | DBOS cron | Reaper, **30s control sweep**, drift reconciler, rotation, infra-memory refresh, auto-close, approval expiry | Consume Tenant Schedule ceilings (platform timers are not user Schedules) | ADR-0038, ADR-0047, ADR-0053, ADR-0058, ADR-0066 |
 | **grafana-mcp** | Go, shared, stateless | Grafana tool surface; forwards `Authorization` verbatim | Use its own caller-auth on hop A; cache across Tenants | ADR-0018 |
-| **k8s-mcp** | TBD — **design pending** | The **only** path to customer Kubernetes; impersonation carries `graft_run_id` | Exist as a library inside the worker | ADR-0068, §9 |
+| **k8s-mcp** | TBD — **design pending** | The **only** path to customer Kubernetes; impersonation carries `graft_run_id` | Exist as a library inside the worker | ADR-0068, section 9 |
 | **pagerduty / ilert-mcp** | TBD | Schedules, rotation, incident detail — `read` only in v1 | Ever expose suppression or maintenance windows | ADR-0067 |
 | **Postgres** | PostgreSQL, RLS | Run state, `run_control`, event log, audit chain, DBOS system DB, policy versions, identity mapping | Be reachable without `SET LOCAL graft.tenant_id`; hold large artifacts | ADR-0015, ADR-0030, ADR-0050, ADR-0066 |
 | **Object Storage** | Object-lock capable | Artifacts + WORM audit anchors | Hold anything mutable | ADR-0015, ADR-0034, ADR-0041 |
@@ -684,8 +684,8 @@ This list is where most of the design work actually went.
 2. **L3 — Orchestrator.** Components: `runtime` seam, workflow/step decomposition,
    queue partitioning, reaper, control sweep, signal handling, the LangGraph
    invocation boundary.
-3. **`k8s-mcp` design pass** (§10 item 3) — the last customer system without a
+3. **`k8s-mcp` design pass** (section 10 item 3) — the last customer system without a
    decided path.
-4. **Prototype spike** answering §10 items 1 and 2 — these two can invalidate
+4. **Prototype spike** answering section 10 items 1 and 2 — these two can invalidate
    container shapes, and nothing below L2 should be drawn until they are
    answered.

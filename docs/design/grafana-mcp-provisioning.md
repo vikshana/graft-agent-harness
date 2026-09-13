@@ -30,7 +30,7 @@ This collapses most of the original complexity:
 | Provisioning needs the customer admin's live session | Provisioning uses **our own platform-level Grafana Server Admin credential** |
 | "Does Org Admin have SA-management rights?" — had to verify per customer/edition | **Moot.** We are Server Admin; org-scoped SA creation via `X-Grafana-Org-Id` needs no per-customer permission at all |
 | Provisioning could only happen when an admin first interacted with the plugin | Provisioning happens **synchronously at workspace/org creation**, before any customer ever logs in |
-| Cold-start gap (§9.3, old revision) — a webhook could arrive before provisioning | **Eliminated.** Nothing is provisioned lazily; it exists before the workspace is marked ready |
+| Cold-start gap (section 9.3, old revision) — a webhook could arrive before provisioning | **Eliminated.** Nothing is provisioned lazily; it exists before the workspace is marked ready |
 | Two service accounts, two separate triggers | Still two service accounts (plugin enforcement SA, `grafana-mcp` tool-server SA) — but **both provisioned in the same platform-internal step**, no separate customer-facing trigger for either |
 
 ---
@@ -96,7 +96,7 @@ no risk of a forgotten stale credential resurfacing.
 ## 5. What Screen 1 looks like now
 
 Unchanged from the admin's point of view — the "Connect" step from
-`ux-mcp-tool-configuration.md` §3 effectively **disappears** for Grafana MCP,
+`ux-mcp-tool-configuration.md` section 3 effectively **disappears** for Grafana MCP,
 because it's already connected the moment the workspace exists:
 
 ```

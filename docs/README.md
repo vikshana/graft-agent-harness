@@ -20,7 +20,7 @@
 
 There is deliberately **no `research/` directory**. Surveys and comparisons are
 inputs to a decision, not artefacts of one; their durable residue is an ADR's
-*Considered options*. See [`adr/README.md`](./adr/README.md) §1.
+*Considered options*. See [`adr/README.md`](./adr/README.md) section 1.
 
 ## Conventions
 

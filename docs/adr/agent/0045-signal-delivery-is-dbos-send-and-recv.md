@@ -29,7 +29,7 @@ legacy_id: D45
 
 ## 2. Decision
 
-**Signal delivery is DBOS `send`/`recv`, superseding ADR-0033's provisional Postgres signal table + `LISTEN/NOTIFY`.** `DBOS.send()` is persisted with exactly-once delivery from workflows and is callable from outside the worker via `DBOSClient` or from PL/pgSQL (`dbos.send_message`); `DBOS.recv(topic, timeout_seconds)` is the durable multi-hour HITL wait. **ADR-0033's REST back-channel is unchanged** — the handler now calls `send` instead of inserting a row. **ADR-0030's event log is entirely unaffected**, preserving `04` §7.7: streaming remains independent of the orchestrator choice, and we keep our own event log rather than DBOS's `set_event`/streaming features (ADR-0029/ADR-0030/ADR-0031 intact).
+**Signal delivery is DBOS `send`/`recv`, superseding ADR-0033's provisional Postgres signal table + `LISTEN/NOTIFY`.** `DBOS.send()` is persisted with exactly-once delivery from workflows and is callable from outside the worker via `DBOSClient` or from PL/pgSQL (`dbos.send_message`); `DBOS.recv(topic, timeout_seconds)` is the durable multi-hour HITL wait. **ADR-0033's REST back-channel is unchanged** — the handler now calls `send` instead of inserting a row. **ADR-0030's event log is entirely unaffected**, preserving `04` section 7.7: streaming remains independent of the orchestrator choice, and we keep our own event log rather than DBOS's `set_event`/streaming features (ADR-0029/ADR-0030/ADR-0031 intact).
 
 ## 3. Considered options
 

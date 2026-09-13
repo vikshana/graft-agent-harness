@@ -4,7 +4,7 @@
 > concrete choice. Items that survive triage become ADRs or design content;
 > items that do not are deleted, not archived.
 >
-> *Migrated from `DECISION-REGISTER.md` §8 and `research/Agent Harness.csv`
+> *Migrated from `DECISION-REGISTER.md` section 8 and `research/Agent Harness.csv`
 > during the 2026-09-13 ADR migration. The CSV was the raw ideation artifact and
 > is retained only in git history (`git show ab62775`).*
 

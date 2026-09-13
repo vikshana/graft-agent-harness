@@ -10,7 +10,7 @@
 > | 2 | **Control is authority**, so every control transfer is an audited authority transfer. Auto-release is now specified as **three independent server-side clocks**, not a single vague "10 minutes". | ADR-0066 |
 > | 3 | **Claiming control on a `system_initiated` Run is the upgrade point** to `user_initiated` — refining ADR-0013, which located it at approval. | ADR-0066 |
 > | 4 | **Paging writes classified rather than deferred wholesale.** v1 is read-only; notification suppression is **permanently hard-denied**. Surfaced and fixed a latent J1 inconsistency: **narration is not a ToolClass**. | ADR-0067 |
-> | 5 | **The harness never reaches a customer system directly** — Tool Gateway → MCP, without exception, three named non-agent exceptions. Closes r3 §7 Q1. | ADR-0068 |
+> | 5 | **The harness never reaches a customer system directly** — Tool Gateway → MCP, without exception, three named non-agent exceptions. Closes r3 section 7 Q1. | ADR-0068 |
 >
 > *(The AS + Tool Gateway + Tool Registry merge into one deployable, ADR-0069, is an
 > L2 concern and changes nothing here.)*
@@ -31,9 +31,9 @@
 > | 9 | **Two independent regional deployments** (GCP, AliCloud) with a metadata-only Tenant Directory. Drawn as a boundary note; decomposed at L2. | ADR-0049 |
 > | 10 | **Identity linking is a precondition, not a convenience.** An unlinked Slack user gets a link prompt, not a Run. | ADR-0061 |
 >
-> **Method:** the UX comes first. §1–§4 describe what people experience and what
-> they configure. §5 is the diagram those journeys force into existence. §6 states
-> what it commits us to; §7 lists what is still open.
+> **Method:** the UX comes first. Sections 1–4 describe what people experience and what
+> they configure. Section 5 is the diagram those journeys force into existence. Section 6 states
+> what it commits us to; section 7 lists what is still open.
 >
 > **Next level:** [`c4-l2-containers.md`](./c4-l2-containers.md).
 
@@ -43,7 +43,7 @@
 
 Four **Principals**, distinguished by what they are allowed to do, not by job
 title. *Principal* — not "user" — because webhooks and Schedules are actors too
-(ADR-0052, Glossary §5).
+(ADR-0052, Glossary section 5).
 
 | Principal | What they want | Where they are | Default Role source |
 |---|---|---|---|
@@ -94,7 +94,7 @@ Three properties are load-bearing and shape everything downstream:
 
 ## 3. UX journeys
 
-The diagram in §5 contains nothing that is not justified by a journey here.
+The diagram in section 5 contains nothing that is not justified by a journey here.
 
 ### J1 — Alert fires, nobody is awake *(the flagship journey)*
 
@@ -210,7 +210,7 @@ process staying alive.
    driver by construction — there is nobody else.
 2. Once shared, Bob joins and sees the same live stream. **One driver at a
    time.** Bob watches until he requests control and Alice hands off, or until
-   control is released by one of the mechanisms in §4.5.
+   control is released by one of the mechanisms in section 4.5.
 3. `viewer` can never drive. `responder` and `tenant_admin` can.
 4. **Alice's laptop dies. Two minutes later her disconnect clock expires,
    control is released, and Bob claims it. Bob can now approve.** Approval
@@ -708,10 +708,10 @@ approver re-authentication (ADR-0014), deployment model (ADR-0049), compliance r
 
 ## 8. Next steps
 
-1. Confirm the **J5 rewrite and §4.5 clock defaults** — 10 min idle, 2 min
+1. Confirm the **J5 rewrite and section 4.5 clock defaults** — 10 min idle, 2 min
    disconnect, 30s sweep. These are now security parameters, and they are
    currently guesses.
-2. Confirm or challenge the §6 commitments, especially 2 (one primitive), 4
+2. Confirm or challenge the section 6 commitments, especially 2 (one primitive), 4
    (driver-based approval) and 15 (no direct clients).
 3. **L2 Containers is drawn:** [`c4-l2-containers.md`](./c4-l2-containers.md).
 4. Then L3 for the two components that carry the most risk: the **Tool Gateway**

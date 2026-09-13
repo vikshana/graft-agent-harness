@@ -2,15 +2,15 @@
 
 This directory is the **decision log**: why the system is the way it is.
 `../design/` is the **design layer**: how it actually works. The split between
-them is load-bearing and is defined in §4 — read that section before writing in
+them is load-bearing and is defined in section 4 — read that section before writing in
 either place.
 
 > **Conventions verified 2026-09-13** against primary sources: [MADR
 > 4.0.0](https://adr.github.io/madr/), the [ADR GitHub
 > organization](https://adr.github.io/), [arc42
-> §9](https://docs.arc42.org/section-9/), and [AWS Prescriptive Guidance on
+> section 9](https://docs.arc42.org/section-9/), and [AWS Prescriptive Guidance on
 > ADRs](https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html).
-> Where we deviate from a source, §2 says so and why.
+> Where we deviate from a source, section 2 says so and why.
 
 ---
 
@@ -68,7 +68,7 @@ hand-written `D`-number citations already exist across `../design/` and
 is a far worse failure than a slightly less tidy `ls`.
 
 Categories mirror `../design/` one-for-one, so that **each category has exactly
-one design document** (see §4):
+one design document** (see section 4):
 
 ```
 adr/
@@ -118,7 +118,7 @@ The duplication risk is real and arc42 names it directly:
 
 > "Please use your judgement to decide whether an architectural decision should
 > be documented here in this central section or whether you better document it
-> locally… **Avoid redundant texts.**" — arc42 §9
+> locally… **Avoid redundant texts.**" — arc42 section 9
 
 AWS gives the cut line:
 
@@ -203,6 +203,10 @@ options → Consequences → Verification.**
 - **Identifiers are prefixed** per ADR-0059. An unprefixed identifier is a review
   defect.
 - **Verification cites source and date.** Undated verification decays invisibly.
+- **Cross-references name the document.** Write `section 4`, never the section
+  glyph — the glyph reads as "somewhere, in some document". A reference to another
+  file must link that file first: *"see [`tool-gateway.md`](../design/tool-gateway.md)
+  section 3"*. A bare `section 3` always means *this* document. Enforced in CI.
 
 ## 8. The index
 
@@ -224,14 +228,14 @@ content was relocated as follows:
 
 | Old register section | Now |
 |---|---|
-| §1 Locked decisions (D1–D69) | One ADR per decision, across the eight categories |
-| §2 Tool Gateway responsibilities | [`../design/tool-gateway.md`](../design/tool-gateway.md) |
-| §3 Observability pipeline | [`../design/observability-pipeline.md`](../design/observability-pipeline.md) |
-| §4 Recommendations (R3–R8) | Resolved; alias map in the index |
-| §5 Deferred deep-dives | All four closed |
-| §6 UX-first track status | [`../diagrams/README.md`](../diagrams/README.md) |
-| §7 Not yet discussed | [`../backlog/future-sessions.md`](../backlog/future-sessions.md) |
-| §8 Capability inventory | [`../backlog/capability-inventory.md`](../backlog/capability-inventory.md) |
+| section 1 Locked decisions (D1–D69) | One ADR per decision, across the eight categories |
+| section 2 Tool Gateway responsibilities | [`../design/tool-gateway.md`](../design/tool-gateway.md) |
+| section 3 Observability pipeline | [`../design/observability-pipeline.md`](../design/observability-pipeline.md) |
+| section 4 Recommendations (R3–R8) | Resolved; alias map in the index |
+| section 5 Deferred deep-dives | All four closed |
+| section 6 UX-first track status | [`../diagrams/README.md`](../diagrams/README.md) |
+| section 7 Not yet discussed | [`../backlog/future-sessions.md`](../backlog/future-sessions.md) |
+| section 8 Capability inventory | [`../backlog/capability-inventory.md`](../backlog/capability-inventory.md) |
 
 ## 9. Hygiene, enforced in CI
 

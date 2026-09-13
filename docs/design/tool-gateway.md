@@ -8,7 +8,7 @@
 > [`grafana-mcp-multi-tenancy.md`](./grafana-mcp-multi-tenancy.md),
 > [`mcp-authorization-server.md`](./mcp-authorization-server.md).
 >
-> *Migrated from `DECISION-REGISTER.md` §2 during the 2026-09-13 ADR migration.*
+> *Migrated from `DECISION-REGISTER.md` section 2 during the 2026-09-13 ADR migration.*
 
 ---
 
@@ -78,4 +78,4 @@ gateway's own call to Grafana's access-control API for check-then-act
   do not assume.** Expect none to cover Tenant-scoped credential binding, K8s
   impersonation and our HITL model together.
 - **Blocking spike (L3):** DBOS × async LangGraph × `langchain-mcp-adapters`
-  ergonomics — see [`../diagrams/c4-l2-containers.md`](../diagrams/c4-l2-containers.md) §9.
+  ergonomics — see [`../diagrams/c4-l2-containers.md`](../diagrams/c4-l2-containers.md) section 9.

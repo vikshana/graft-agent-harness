@@ -1,11 +1,11 @@
 # Audit & Attribution Chain
 
-> **Status: 🟡 In review.** Design proposal. §7 and open question 1 updated —
+> **Status: 🟡 In review.** Design proposal. Section 7 and open question 1 updated —
 > compliance regime confirmed as **PCI-DSS**, which resolves retention and adds
-> a scrubbing requirement (§7.1). **2026-09-12: the PAN-scrubbing
+> a scrubbing requirement (section 7.1). **2026-09-12: the PAN-scrubbing
 > implementation itself (not the requirement) is deferred to the Evals &
-> Benchmarks deep-dive session** — see §7.1 item 1 and the Decision Register
-> §7.
+> Benchmarks deep-dive session** — see [`observability-pipeline.md`](./observability-pipeline.md) section 4 and the decision index
+> section 7.
 >
 > **Problem:** answer, months later and under scrutiny, the question
 > *"who caused this change to production, what did the agent do to reach it, on
@@ -233,25 +233,25 @@ didn't previously carry:
    pattern, Luhn-check-backed, not just regex, in the scrubbing layer, applied
    to both the audit chain and the eval sink) is deferred to the Evals &
    Benchmarks deep-dive session (2026-09-12 decision)** — that session already
-   owns the eval-sink design this scrubbing pipeline must also apply to (§9
+   owns the eval-sink design this scrubbing pipeline must also apply to (section 9
    item 2), so it's the same piece of work, not two.
 2. **MFA for administrative access** (PCI-DSS 8.4.2) — reinforces the
    step-up-authentication requirement already designed into
    `ux-mcp-tool-configuration.md` for enabling write-capable tools; now has a
    compliance citation, not just a design preference.
 3. **Immutable, tamper-evident logs** (PCI-DSS 10.5.2) — already satisfied by
-   §5.3's hash chain + WORM anchor design; no new work, just confirmation this
+   section 5.3's hash chain + WORM anchor design; no new work, just confirmation this
    requirement is met by what's already designed.
 4. **Quarterly access review / least privilege** — reinforces ADR-0016's
    authorisation-filter-at-call-time model and the SA role-recomputation
-   behaviour in `grafana-mcp-provisioning.md` §4; again, confirms rather than
+   behaviour in `grafana-mcp-provisioning.md` section 4; again, confirms rather than
    changes existing design.
 5. **Network segmentation** — if the harness or its tool servers can reach
    systems inside a customer's cardholder data environment (CDE), the
    deployment topology may itself need to be treated as in-scope for PCI-DSS,
    which is a **deployment/infrastructure** decision, not an audit-chain one —
    flagged here so it isn't lost, but tracked properly once deployment
-   topology (§7, capability inventory) gets its own session.
+   topology (section 7, capability inventory) gets its own session.
 
 ---
 
@@ -281,18 +281,18 @@ system go on to do?"*
    minimum retention, 3 months hot.** Whether approval signatures must be
    independently verifiable beyond the hash chain, or the chain itself
    suffices for a PCI-DSS audit, is worth confirming with whoever owns
-   compliance sign-off — the hash-chain + WORM design (§5.3) is believed
+   compliance sign-off — the hash-chain + WORM design (section 5.3) is believed
    sufficient for 10.5.2, but "believed" should become "confirmed" before
    this is load-bearing in an actual audit.
 2. **Do we store raw prompts in the audit chain, or only hashes?** Now sharper
    given PCI-DSS: raw prompts risk carrying PAN data if the agent ever quotes
-   from a log or query result containing one (§7.1). Leaning further toward
+   from a log or query result containing one (section 7.1). Leaning further toward
    **hash-only in the audit chain**, with the eval sink's raw-prompt storage
-   *also* subject to the same PAN-scrubbing pipeline (§7.1) before it lands
+   *also* subject to the same PAN-scrubbing pipeline (section 7.1) before it lands
    there — otherwise the eval sink becomes an unscrubbed PCI-DSS liability
    sitting next to the compliant chain. Still creates the D8b tension
    (eval sink becomes load-bearing for forensics); not resolved by this
-   answer, just made more urgent. **Both this item and §7.1 item 1's scrubbing
+   answer, just made more urgent. **Both this item and section 7.1 item 1's scrubbing
    implementation are deferred together to the Evals & Benchmarks session.**
 3. **Chain anchoring frequency.** Per-run at close, or on a timer? A run open
    for six hours is unanchored for six hours.

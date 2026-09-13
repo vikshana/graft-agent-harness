@@ -9,7 +9,7 @@ Each level is confirmed before the next one is drawn.
 |---|---|---|
 | **L1 — System Context** | [`c4-l1-system-context.md`](./c4-l1-system-context.md) | 🟡 **In review — revision 4** (ADR-0001–ADR-0069) |
 | **L2 — Containers** | [`c4-l2-containers.md`](./c4-l2-containers.md) | 🟡 **In review — revision 2** (ADR-0001–ADR-0069) |
-| L3 — Components | _not yet drawn_ | ⛔ Blocked on L2 sign-off + the two prototype spikes in L2 §9 |
+| L3 — Components | _not yet drawn_ | ⛔ Blocked on L2 sign-off + the two prototype spikes in L2 section 9 |
 | L4 — Code | Not planned. Code is the diagram. | — |
 
 **Normative sources.** [`../GLOSSARY.md`](../GLOSSARY.md) owns the vocabulary and
@@ -62,7 +62,7 @@ ordering.
 2. Every external system on L1 must be justified by a **named UX journey** in the
    same document. No speculative integrations.
 3. Every container on L2 must be traceable to a **locked decision**, not to an
-   implementation preference. L2 §8 — *deliberately not containers* — is as
+   implementation preference. L2 section 8 — *deliberately not containers* — is as
    load-bearing as the diagram itself.
 4. Anything deferred is drawn dashed rather than omitted — the scope boundary is
    more useful than a clean picture.

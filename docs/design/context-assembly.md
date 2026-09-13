@@ -9,7 +9,7 @@
 >
 > *Promoted from `research/context-management.md` during the 2026-09-13 ADR
 > migration, because **ADR-0062 cites this hierarchy normatively**. Claims that
-> contradicted locked decisions have been corrected — see §5.*
+> contradicted locked decisions have been corrected — see section 5.*
 
 ---
 

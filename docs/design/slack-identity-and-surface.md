@@ -4,9 +4,9 @@
 > newer Slack app mechanisms (beyond classic Bolt + Events API webhooks) change
 > the identity stance in the corresponding deep-dive (now closed) A3 / ADR-0014?
 >
-> **All of §1–§3 are now grounded in fetched content from `docs.slack.dev`**
-> (fetched live this session for §1's items, and in an earlier session for
-> §2–3's `ai/agents` / `ai/agent-governance` pages) — no part of this document
+> **All of sections 1–3 are now grounded in fetched content from `docs.slack.dev`**
+> (fetched live this session for section 1's items, and in an earlier session for
+> sections 2–3's `ai/agents` / `ai/agent-governance` pages) — no part of this document
 > is recollection-based anymore.
 
 ---
@@ -64,7 +64,7 @@ in Workspace A and a separate one in Workspace B** within the same Grid, which
 Slack reconciles via **"global user IDs"** valid across every workspace in the
 org.
 
-**Consequence for the corresponding deep-dive (now closed) §5's canonical identity model:**
+**Consequence for the canonical identity model (ADR-0028, ADR-0052):**
 `slack_workspace_id` (`team_id`) alone is **not sufficient identity
 granularity** for a Grid-linked principal — the same human can appear under
 different `team_id`s within one Grid org, and Slack's own guidance is to key
@@ -222,25 +222,25 @@ actions, which is the bar ADR-0014 is actually held to.
 
 | # | Decision |
 |---|---|
-| 1 | **Slack account linking (A3) uses Sign in with Slack (OIDC)** — verified against current `docs.slack.dev`, see §1.1. |
+| 1 | **Slack account linking (A3) uses Sign in with Slack (OIDC)** — verified against current `docs.slack.dev`, see section 1.1. |
 | 2 | **ADR-0014 is unchanged.** Reinforced, not weakened, by Slack's own governance guidance treating approval gates as a UX pattern, not a re-authentication mechanism. |
 | 3 | **Our Slack app must never present as human** — extends ADR-0011's bot-identity principle to the Slack surface itself, per Slack's own governance guidance. |
 | 4 | **Adopt the "Always allow / Allow once / Deny" Block Kit pattern** for Slack-surfaced tool proposals under J2 — with the explicit caveat that "Always allow" only ever grants *triggering*, never *approving* a destructive action. |
 | 5 | **`chat.startStream` (`task_display_mode`) is a candidate Slack-side rendering target for ADR-0006's event model** — tracked for the corresponding deep-dive (now closed). |
 | 6 | **App Home is the Slack-side rendering of ADR-0033's back-channel** (pause/resume/stop/retry/redirect), not a separate mechanism. |
 | 7 | **Slack's Audit Logs API is a complementary signal, not a substitute, for our own audit chain (ADR-0015)** — it is admin-level-changes-only and lacks per-tool-call granularity. |
-| 8 | **Canonical identity model keys Grid-linked Slack principals by `enterprise_id` (+ global user id)**, falling back to `team_id` (+ user id) for non-Grid installs — confirmed necessary by §1.3, not previously modelled. |
-| 9 | **Socket Mode and public Slack Marketplace listing are presently mutually exclusive** per Slack's own docs (§1.2) — noted as a constraint to weigh consciously if Marketplace distribution is ever pursued, not acted on now. |
+| 8 | **Canonical identity model keys Grid-linked Slack principals by `enterprise_id` (+ global user id)**, falling back to `team_id` (+ user id) for non-Grid installs — confirmed necessary by section 1.3, not previously modelled. |
+| 9 | **Socket Mode and public Slack Marketplace listing are presently mutually exclusive** per Slack's own docs (section 1.2) — noted as a constraint to weigh consciously if Marketplace distribution is ever pursued, not acted on now. |
 
 ---
 
 ## 6. Open questions
 
-1. ~~Verify Sign in with Slack, Socket Mode, and Enterprise Grid claims in §1
+1. ~~Verify Sign in with Slack, Socket Mode, and Enterprise Grid claims in section 1
    against current `docs.slack.dev` pages~~ — **done, 2026-09-12.**
 2. **Does Enterprise Grid change the `slack_workspace_id` granularity assumed in
-   the canonical identity model (§5 of the corresponding deep-dive (now closed))?** —
-   **answered: yes** (§1.3, §5 decision 8). Still to do: thread this change
+   the canonical identity model (ADR-0028)?** —
+   **answered: yes** (sections 1.3 and 5 decision 8). Still to do: thread this change
    through the corresponding deep-dive (now closed)'s scope model (ADR-0051) concretely — it
    currently assumes `graft_tenant_id` as a stable key, and Grid may need
    `enterprise_id` recognised as a first-class scoping dimension alongside it.

@@ -41,13 +41,13 @@ Their eight mitigations, mapped to decisions already taken:
 | OWASP mitigation | Ours |
 |---|---|
 | 1. Minimize extensions | Layer 2/3 — deny-by-default catalogue |
-| 2. Minimize extension **functionality** | **Policy is per *tool*, not per *server*** (§3.3) |
+| 2. Minimize extension **functionality** | **Policy is per *tool*, not per *server*** (section 3.3) |
 | 3. **Avoid open-ended extensions** | **ADR-0004** — no arbitrary code execution in v1 |
 | 4. Minimize extension permissions | **ADR-0022** — SA role recomputed to the minimum across enabled tools |
 | 5. Execute in the user's context | **ADR-0011 / ADR-0023** — check-then-act under the Principal's own identity |
 | 6. Require user approval | **ADR-0014 / ADR-0065** — re-authenticated, in Grafana, **by the current driver** (was initiator-only under ADR-0055, withdrawn 2026-09-13) |
 | 7. **Complete mediation** — *"implement authorization in downstream systems rather than relying on an LLM to decide if an action is allowed"* | **ADR-0007** — the Tool Gateway is a separate service precisely because in-process policy is not a boundary |
-| 8. Sanitise inputs and outputs | Collector scrubbing (ADR-0008/ADR-0025); §4.2 below |
+| 8. Sanitise inputs and outputs | Collector scrubbing (ADR-0008/ADR-0025); section 4.2 below |
 
 Mitigation 7 is the load-bearing one and it is worth quoting because it is the
 whole argument for ADR-0007: **the model is never the policy decision point.** A tool
@@ -178,7 +178,7 @@ Every value here is **configuration, not a constant**, and
 
 Monthly token/cost ceilings stay deliberately unset: any number chosen before
 real cost data is a guess that would be mistaken for a decision. Onboarding
-assigns them explicitly per Tenant, and §6's monitoring is what turns them into
+assigns them explicitly per Tenant, and section 6's monitoring is what turns them into
 an informed default later.
 
 ---
@@ -188,7 +188,7 @@ an informed default later.
 - **Denials by layer** — a spike at L2 or L3 means policy is wrong; a spike at
   L5 means ADR-0024's SA-ceiling assumption is wrong and is exactly its revisit
   metric.
-- **Definition-hash drift events** (§4.1) — an upstream mutating tools is a
+- **Definition-hash drift events** (section 4.1) — an upstream mutating tools is a
   supply-chain signal, not a routine event.
 - **Tools enabled but never called** — OWASP risk example 2 (an extension
   trialled and never removed). Feeds a periodic least-privilege review, which

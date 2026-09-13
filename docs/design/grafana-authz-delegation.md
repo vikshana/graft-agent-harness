@@ -2,7 +2,7 @@
 
 > **Status: 🟢 Resolved for v1, verified 2026-09-12, closed 2026-09-12.** Arose
 > from a forum report describing the `app-with-rbac` plugin example.
-> Materially affects the corresponding deep-dive (now closed) A4. §3.3, §5, §6, and §7
+> Materially affects the corresponding deep-dive (now closed) A4. Sections 3.3, 5, 6 and 7
 > updated to reflect two confirmed facts, live-tested results against a real
 > Grafana OSS `latest` instance, and a final stakeholder decision that closes
 > the one remaining open item:
@@ -14,17 +14,17 @@
 >    Both service accounts this document discusses are provisioned by
 >    `grafana-mcp-provisioning.md`'s platform-Server-Admin flow, synchronously
 >    at workspace creation — never dependent on a customer admin's session or
->    rights. This resolves what was previously §7 Q1 and Q4.
+>    rights. This resolves what was previously section 7 Q1 and Q4.
 > 3. **`/api/access-control/user/permissions` reachability — confirmed live**
 >    against Grafana OSS `latest` (v13.0.2): 200 with full RBAC data, reachable
 >    via **either SA-token Bearer auth or session-cookie auth** (plain Basic
 >    Auth specifically 404s against it). Custom-role creation (`POST
 >    /api/access-control/roles`) 404s in OSS, confirming fine-grained
 >    custom-role evaluation is **Enterprise-only** — the basic-role
->    (Viewer/Editor/Admin) fallback in §6 decision 5 is not just a fallback, it
->    is the only option available to us in OSS. See §5.
-> 4. **The former PoC-feedback-trigger open question (§7 item 1) is now
->    accepted as a product decision** — see §7.
+>    (Viewer/Editor/Admin) fallback in section 6 decision 5 is not just a fallback, it
+>    is the only option available to us in OSS. See section 5.
+> 4. **The former PoC-feedback-trigger open question (section 7 item 1) is now
+>    accepted as a product decision** — see section 7.
 
 ---
 
@@ -48,7 +48,7 @@ Names to search for:
 |---|---|
 | **`app-with-rbac`** | Example in `grafana/grafana-plugin-examples` |
 | **`EnforcementClient`** | Client in `github.com/grafana/authlib`, evaluates permissions for a user |
-| **`/api/access-control/user/permissions`** | The underlying endpoint — **live-verified reachable in OSS `latest`, via SA-token Bearer or session-cookie auth (§5)** |
+| **`/api/access-control/user/permissions`** | The underlying endpoint — **live-verified reachable in OSS `latest`, via SA-token Bearer or session-cookie auth (section 5)** |
 | **Actions and scopes** | Permission model, e.g. action `datasources:read`, scope `datasources:uid:abc123` |
 | **`externalServiceAccounts`** | Feature toggle for a *single, Grafana-managed* SA — broken for multi-org, and moot for us regardless (see revision note) |
 
@@ -95,7 +95,7 @@ the service identity. They are deliberately different.
 
 ## 3. The resolved architecture
 
-### 3.1 Where the check happens — resolved (was §7 Q1)
+### 3.1 Where the check happens — resolved (was section 7 Q1)
 
 **The harness (Tool Gateway) performs the enforcement check directly.** Not
 the plugin backend.
@@ -156,12 +156,12 @@ Grafana's permission model and drifts from it). **Default for all
 Grafana-scoped resources** (datasources, dashboards, folders, alert rules),
 with `oauthPassThru` reserved for datasources that must see the end user.
 
-### 3.4 Both service accounts — resolved (was §3.3's open dependency)
+### 3.4 Both service accounts — resolved (was section 3.3's open dependency)
 
 Both the plugin's own enforcement SA and the `grafana-mcp` tool server's SA
 are provisioned by the **same platform-internal mechanism**: a platform-level
 Grafana Server Admin credential creates both, synchronously, at workspace/org
-creation — see `grafana-mcp-provisioning.md` §2. No per-customer admin
+creation — see `grafana-mcp-provisioning.md` section 2. No per-customer admin
 session or rights dependency exists anymore. This also means the
 multi-org `externalServiceAccounts` limitation, while still true as a Grafana
 platform fact, is now simply **irrelevant to us** — we were never going to use
@@ -175,11 +175,11 @@ this alert rule*. Every `@context` reference must pass an enforcement check
 — otherwise a Viewer can reference a dashboard they cannot open and have the
 agent read and summarise it with workspace credentials.
 
-### 3.6 Slack-initiated runs and Grafana permissions — resolved (was §7 Q2)
+### 3.6 Slack-initiated runs and Grafana permissions — resolved (was section 7 Q2)
 
 **Decision: no per-user check for Slack-initiated runs. Always evaluate at the
 workspace service account's ceiling.** Chosen deliberately as the simpler path
-for v1. **The revisit trigger is now agreed (§7 item 1, 2026-09-12)**, rather
+for v1. **The revisit trigger is now agreed (section 7 item 1, 2026-09-12)**, rather
 than left as an open placeholder: a Slack-triggered run never resolves to a
 live Grafana request context, so building the resolve-linked-principal-and-
 check-out-of-band path (the more accurate alternative) is deferred until the
@@ -191,10 +191,10 @@ the SA's role (Viewer by default, Editor only where a write tool is
 explicitly enabled per ADR-0016) **is** the real access-control boundary for the
 Slack surface. This is consistent with, not an exception to, the hybrid model.
 
-### 3.7 System-initiated runs — resolved (was §7 Q3)
+### 3.7 System-initiated runs — resolved (was section 7 Q3)
 
 No user, therefore no user permissions to check. The workspace service
-account's own permissions are the ceiling — identical mechanism to §3.6,
+account's own permissions are the ceiling — identical mechanism to section 3.6,
 and consistent with ADR-0013 (`system_initiated` runs are structurally read-only,
 enforced by the capability token never containing a write tool class, so this
 ceiling is actually never tested against a write attempt in practice).
@@ -235,19 +235,19 @@ tested directly rather than relying on documentation:
    X"), the credential presented here must represent the resolved *user*
    principal, not the workspace SA — i.e. this call needs the forwarded
    Grafana ID token / an equivalent per-user credential path, not the SA token
-   used for hop B execution. See §7 item 5 for the remaining mechanics.
+   used for hop B execution. See section 7 item 5 for the remaining mechanics.
 2. **Custom-role evaluation confirmed Enterprise-only in OSS.**
    `POST /api/access-control/roles` (creating a custom RBAC role) returns 404
-   in OSS. This confirms decision 5 in §6 below is not merely a fallback for a
+   in OSS. This confirms decision 5 in section 6 below is not merely a fallback for a
    hypothetical OSS limitation — it is the **only** option available to us:
    evaluation must be expressed in terms of the built-in Viewer/Editor/Admin
    org roles, never custom action/scope combinations, unless/until Grafana
    Enterprise is in play.
 3. **`authlib`/`EnforcementClient` maturity** — not resolved by this pass
    (requires inspecting the Go module directly, not just the HTTP surface);
-   still an open verification item, see §7.
+   still an open verification item, see section 7.
 4. **Latency/caching and action/scope vocabulary** — not addressed by this
-   pass; still open, see §7.
+   pass; still open, see section 7.
 
 ---
 
@@ -259,15 +259,15 @@ tested directly rather than relying on documentation:
 | 2 | **The Tool Gateway performs the enforcement check itself** — never delegated to the plugin backend |
 | 3 | **Grafana resource access defaults to enforcement-check + service account**, with `oauthPassThru` reserved for datasources that must see the end user |
 | 4 | **Every `@context` reference is enforcement-checked before the agent sees the resource**, never filtered afterwards |
-| 5 | If OSS lacks fine-grained permission evaluation, fall back to **org-role-based checks** (Viewer/Editor/Admin) — coarser, still not a confused deputy. **Confirmed the only option in OSS (§5 item 2), not merely a fallback.** |
-| 6 | **Slack-initiated and system-initiated runs never get a per-user check** — both are bounded by the workspace service account's own role, by design. **Revisit trigger accepted 2026-09-12 — see §7 item 1.** |
-| 7 | **Calls to `/api/access-control/user/permissions` may use either an SA-token Bearer credential or session-cookie auth**, but never Basic Auth — confirmed by live test (§5 item 1). The check-then-act call specifically needs to represent the *user* principal, not the workspace SA, so it must carry the forwarded ID token or an equivalent user-scoped credential (§7 item 5), not simply the SA's own Bearer token. |
+| 5 | If OSS lacks fine-grained permission evaluation, fall back to **org-role-based checks** (Viewer/Editor/Admin) — coarser, still not a confused deputy. **Confirmed the only option in OSS (section 5 item 2), not merely a fallback.** |
+| 6 | **Slack-initiated and system-initiated runs never get a per-user check** — both are bounded by the workspace service account's own role, by design. **Revisit trigger accepted 2026-09-12 — see section 7 item 1.** |
+| 7 | **Calls to `/api/access-control/user/permissions` may use either an SA-token Bearer credential or session-cookie auth**, but never Basic Auth — confirmed by live test (section 5 item 1). The check-then-act call specifically needs to represent the *user* principal, not the workspace SA, so it must carry the forwarded ID token or an equivalent user-scoped credential (section 7 item 5), not simply the SA's own Bearer token. |
 
 ---
 
 ## 7. Remaining open questions
 
-1. ~~PoC feedback trigger for §3.6~~ — **accepted 2026-09-12 (product
+1. ~~PoC feedback trigger for section 3.6~~ — **accepted 2026-09-12 (product
    decision), no longer open.** Metric: track denials where a Slack-triggered
    action would have succeeded under the linked user's actual Grafana role
    but failed at the workspace SA's role; revisit ADR-0024/this section's decision
@@ -284,7 +284,7 @@ tested directly rather than relying on documentation:
    dashboards, folders, alert rules. Still open.
 5. **How the Tool Gateway obtains a user-scoped credential** for calling
    `/api/access-control/user/permissions` on behalf of the resolved principal
-   (§5 item 1) — needs a concrete mechanism: most likely, forwarding the
+   (section 5 item 1) — needs a concrete mechanism: most likely, forwarding the
    `X-Grafana-Id` ID token itself (already available per ADR-0009) directly to
    `authlib`'s `EnforcementClient`, which is designed to evaluate permissions
    from exactly that identity assertion, rather than establishing a separate

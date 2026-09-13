@@ -1,10 +1,10 @@
 # Remaining architecture sessions
 
-> *Migrated from `DECISION-REGISTER.md` §7 during the 2026-09-13 ADR migration.*
+> *Migrated from `DECISION-REGISTER.md` section 7 during the 2026-09-13 ADR migration.*
 
 Each becomes one or more ADRs in [`../adr/`](../adr/README.md). The **Gate**
 marker on each shows which roadmap phase it blocks — see
-[`roadmap.md`](./roadmap.md) §6. Sessions with no gate marker are not on the
+[`roadmap.md`](./roadmap.md) section 6. Sessions with no gate marker are not on the
 critical path. The four earlier
 deep-dives (identity, streaming, tenancy, durable execution) are **all closed** —
 their `open-questions/` files were deleted in commit `b78cdcc` and their outcomes
@@ -14,7 +14,7 @@ are ADR-0009–ADR-0069.
 
 ## 1. Context assembly & compaction
 
-**Gate S5 — blocks Phase 2.**
+**Gate S5 — blocks Phase 2.** No spike brief yet; scoped when Phase 1 lands.
 Layered prompt hierarchy, summariser node, tool-result offloading, prompt-caching
 strategy.
 
@@ -44,7 +44,7 @@ the superseded initiator-only rule (ADR-0055) and is now re-openable.
 
 ## 4. Model routing & provider strategy
 
-**Gate S4 — a *provisional* choice blocks Phase 1; the full session is Phase 2.**
+**[Gate S4](./spikes/S4-provisional-model.md) — a *provisional* choice blocks Phase 1; the full session is Phase 2.**
 LiteLLM, local (vLLM/Qwen) vs commercial, per-node model selection, fallbacks.
 
 **Inherits a hard constraint:** **no degrade-to-a-cheaper-model at budget cap**
@@ -53,14 +53,14 @@ operator is about to act on.
 
 ## 5. Evals & benchmarks
 
-**Gate S3 (sink choice) blocks Phase 1; Gate S6 (methodology) blocks Phase 2.**
+**[Gate S3](./spikes/S3-eval-sink.md) (sink choice) blocks Phase 1; Gate S6 (methodology) blocks Phase 2.**
 Incident replay suite, trajectory evals, DeepEval, O11y-Bench, shadow deployments.
 
 **Also owns two handed-off items:**
 - **PAN-scrubbing implementation** (Luhn-check-backed detector for the OTel
   Collector) — requirement locked by ADR-0025, implementation deferred here.
 - **The eval-sink scrubbing tension** — see
-  [`../design/observability-pipeline.md`](../design/observability-pipeline.md) §4.
+  [`../design/observability-pipeline.md`](../design/observability-pipeline.md) section 4.
 - **PCI scope extending to the DBOS system database** (ADR-0037 risk X1).
 
 **Inherits:** `fork_workflow(id, from_step=N)` is the replay primitive
@@ -106,8 +106,8 @@ Not architectural questions — things to check before or during build.
 |---|---|
 | Grafana Live per-message size/throughput limits (undocumented) — prototype largest expected payload | ADR-0031 |
 | Exact `SubscribeStream` request/context shape against the plugin SDK | ADR-0031 |
-| DBOS × async LangGraph × `langchain-mcp-adapters` ergonomics — **Gate S1: blocks C4 L3 *and* Phase 1** | ADR-0037 |
-| DBOS system-DB migrations vs `FORCE ROW LEVEL SECURITY` / PCI scope — **Gate S2: blocks C4 L3 *and* Phase 1** | ADR-0050 |
+| DBOS × async LangGraph × `langchain-mcp-adapters` ergonomics — **[Gate S1](./spikes/S1-dbos-langgraph-mcp.md): blocks C4 L3 *and* Phase 1** | ADR-0037 |
+| DBOS system-DB migrations vs `FORCE ROW LEVEL SECURITY` / PCI scope — **[Gate S2](./spikes/S2-dbos-system-db-rls-pci.md): blocks C4 L3 *and* Phase 1** | ADR-0050 |
 | Reaper safety envelope | ADR-0038 |
 | LangGraph-under-Pattern-B prototype | ADR-0039 |
 | Doubled worker capacity during blue/green drains | ADR-0046 |

@@ -46,7 +46,7 @@ Postgres only, no Redis (ADR-0030).
 |---|---|
 | `graft_run_id` | Scope |
 | `graft_event_id` | Monotonic ordering and replay cursor |
-| `event_type`, `event_version` | Taxonomy (§2) |
+| `event_type`, `event_version` | Taxonomy (section 2) |
 | `payload JSONB` | Event body — **pointers, never large artifacts** |
 | `created_at` | |
 
@@ -128,7 +128,7 @@ has no multi-viewer concern by construction.
   per-run durable timer. Slack has no transport liveness, so a Slack driver has
   only the idle clock.
 - New viewers see the **live tail by default**, with explicit scroll-back backed
-  by §3's replay query.
+  by section 3's replay query.
 
 ## 8. Notification
 

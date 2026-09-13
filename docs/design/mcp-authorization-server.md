@@ -8,7 +8,7 @@
 > session/capability token), ADR-0018 (per-call credential to upstream MCP servers).
 >
 > **Update (2026-09-12):** open question 1 (does our MCP client library
-> perform RFC 9728 discovery) is resolved — see §7.
+> perform RFC 9728 discovery) is resolved — see section 7.
 
 ---
 
@@ -185,7 +185,7 @@ yet in our system.
 | 4 | **The Tool Gateway publishes RFC 9728 protected resource metadata** naming this AS, and validates tokens via independent JWKS fetch — never via in-process trust, even though they may share a deployment today. |
 | 5 | **Hop 2 (Tool Gateway → upstream MCP servers) does not get its own AS.** It continues to use target-native credentials resolved per ADR-0011/ADR-0012/ADR-0018. Only hop 1 uses a token minted by our AS. |
 | 6 | **No interactive authorization-code/PKCE flow, no dynamic client registration, for hop 1** — narrower spec compliance (resource metadata + audience binding + `WWW-Authenticate`) is sufficient for a backend-only hop with no third-party client. Revisit if the Tool Gateway is ever exposed beyond our own agent runtime. |
-| 7 | **Use `mcp.client.auth.oauth2.OAuthClientProvider` (from the official `mcp` Python SDK) as the `auth=` value passed into `langchain-mcp-adapters`**, rather than writing RFC 9728 discovery ourselves — confirmed available and spec-complete (§7). |
+| 7 | **Use `mcp.client.auth.oauth2.OAuthClientProvider` (from the official `mcp` Python SDK) as the `auth=` value passed into `langchain-mcp-adapters`**, rather than writing RFC 9728 discovery ourselves — confirmed available and spec-complete (section 7). |
 
 ---
 
@@ -210,11 +210,11 @@ yet in our system.
    - performs the full authorization-code + PKCE grant, token refresh, and
      resource-parameter inclusion (RFC 8707) when needed.
 
-   **Consequence:** §5's "Yes" items (protected resource metadata, audience
+   **Consequence:** Section 5's "Yes" items (protected resource metadata, audience
    binding, `WWW-Authenticate`) are enforced by this library, not something we
    need to hand-roll, **provided** we construct and pass an
    `OAuthClientProvider` as `langchain-mcp-adapters`' `auth=` argument. Since
-   §5 already concluded hop 1 doesn't need the interactive
+   section 5 already concluded hop 1 doesn't need the interactive
    authorization-code/PKCE parts, we'd likely use `OAuthClientProvider` in a
    reduced mode (token-in-hand, resource-metadata-aware, no interactive
    redirect) — or, more simply, keep hop 1 as a plain bearer token attached by
@@ -227,6 +227,6 @@ yet in our system.
    worth a stated overlap window).
 3. **If the Tool Gateway is ever exposed to non-LangGraph, external callers**
    (the "single call for specific task/tool" idea from the capability
-   inventory) — does that change §6 item 6's "no DCR yet" answer? Likely yes, and
+   inventory) — does that change section 6 item 6's "no DCR yet" answer? Likely yes, and
    probably the point at which physically splitting the AS out of the harness
-   API (§4) becomes worth doing.
+   API (section 4) becomes worth doing.

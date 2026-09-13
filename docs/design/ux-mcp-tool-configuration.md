@@ -5,7 +5,7 @@
 >
 > Related: `../design/audit-and-attribution.md` (every change here is an audit
 > record), `../design/grafana-authz-delegation.md` (why Grafana-scoped tools
-> don't need re-entered credentials), `../adr/DECISION-INDEX.md` §2 (Tool
+> don't need re-entered credentials), `../adr/DECISION-INDEX.md` section 2 (Tool
 > Gateway).
 
 ---
@@ -85,7 +85,7 @@ actually an Admin, not just "was an Admin five minutes ago".
   capability against a placeholder.
 - **Grafana MCP shows "Connected via this Grafana instance"** with no separate
   connect step — it rides the org's existing identity, consistent with
-  `grafana-authz-delegation.md` §3.2. This is the payoff of Tenant ≡ Grafana
+  `grafana-authz-delegation.md` section 3.2. This is the payoff of Tenant ≡ Grafana
   Org: one fewer credential to manage, visibly, on the first screen the admin sees.
 - **Write-capable count is surfaced at the list level**, before drilling in. An
   admin scanning this list should see risk at a glance, not discover it three
@@ -137,7 +137,7 @@ Clicking **Configure** on Grafana MCP:
 ## 5. Enabling a write-capable tool — the step-up
 
 Checking `update_alert_rule` does not just tick a box. Per L1 commitment 9 and
-the write-gating rule from `c4-l1-system-context.md` §4:
+the write-gating rule from `c4-l1-system-context.md` section 4:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -213,7 +213,7 @@ sequenceDiagram
     API->>AUTHZ: Is caller still tenant_admin, right now?
     AUTHZ-->>API: yes
     alt any tool moved to enabled AND class = Act
-        API->>Admin: Require step-up (§5)
+        API->>Admin: Require step-up (section 5)
         Admin-->>API: Re-authenticated confirmation
     end
     API->>DB: Write new policy version (never overwrite — append)
@@ -225,7 +225,7 @@ sequenceDiagram
 **Policy is versioned, not overwritten.** A run that started under policy v3
 finishes under policy v3, even if an admin saves v4 mid-run — otherwise "what was
 the agent allowed to do" becomes unanswerable for any run that overlaps a config
-change. The run's capability token (per `audit-and-attribution.md` §5.1) is
+change. The run's capability token (per `audit-and-attribution.md` section 5.1) is
 minted against the policy version live at run start.
 
 ---
@@ -245,7 +245,7 @@ ambiguity:
 | **Deprecated** | as configured | strikethrough badge | Platform marks it retiring; still runs, admin is warned |
 
 The "Blocked by platform" state matters for the ceiling chain in
-`c4-l1-system-context.md` §4 — the UI must make visible that some doors are not
+`c4-l1-system-context.md` section 4 — the UI must make visible that some doors are not
 the tenant admin's to open, rather than just failing silently on save.
 
 ---
@@ -270,7 +270,7 @@ admin has to correlate manually.
 
 ## 10. Open questions
 
-1. **Who can grant the step-up in §5 if the tenant admin's IdP session has no
+1. **Who can grant the step-up in section 5 if the tenant admin's IdP session has no
    step-up mechanism configured** (no WebAuthn, no re-prompt configured at the
    IdP)? Falls back to password re-entry, but not all IdPs support that either
    for federated logins.
@@ -281,7 +281,7 @@ admin has to correlate manually.
    Useful for onboarding speed, dangerous if it becomes the default path past
    Act-class review. Leaning: allow bulk-enable for Read only; Act always
    requires the individual step-up, even inside a bulk flow.
-4. **Should scoping (§6) support deny-lists as well as allow-lists** — e.g. "all
+4. **Should scoping (section 6) support deny-lists as well as allow-lists** — e.g. "all
    datasources except this one"? Allow-lists are safer defaults but do not scale
    past ~30 datasources.
 5. **Multi-admin conflict** — two org admins editing the same server

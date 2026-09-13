@@ -7,7 +7,7 @@
 >
 > Vocabulary is normative per [`../GLOSSARY.md`](../GLOSSARY.md) (ADR-0052).
 >
-> ⚠️ **Partially superseded 2026-09-13 by ADR-0065/ADR-0066.** §4.1a and §4.2 below were
+> ⚠️ **Partially superseded 2026-09-13 by ADR-0065/ADR-0066.** sections 4.1a and 4.2 below were
 > written under **ADR-0055's initiator-only approval**, which has been **withdrawn**.
 > **Approval now follows the driver.** Those two sections are updated in place;
 > everything else in this document (ADR-0049–ADR-0054, ADR-0056–ADR-0058) stands unchanged.
@@ -240,7 +240,7 @@ handed over.
   **On release, control goes to nobody** — never auto-handed to a specific
   viewer. Both escape hatches emit an audit record. This closes the
   driver-disconnect item left open in
-  [`streaming-and-events.md`](./streaming-and-events.md) §7 (closed by ADR-0066).
+  [`streaming-and-events.md`](./streaming-and-events.md) section 7 (closed by ADR-0066).
 - **Driving *is* approving — the wheel carries the authority** (ADR-0065, superseding
   ADR-0064's framing). A handover or force-release therefore **does** transfer
   approval authority, which is why every transfer is an audit record and why
@@ -377,9 +377,9 @@ RBAC is Grafana-Enterprise-only.
 
 | Role | Scope | Default source (ADR-0056/Q16) | Capabilities |
 |---|---|---|---|
-| `platform_admin` | Platform | **GrafanaServerAdmin** | Tenant lifecycle, platform ceilings, quota overrides, break-glass read/cancel/suspend (§4.3). **Cannot approve.** |
+| `platform_admin` | Platform | **GrafanaServerAdmin** | Tenant lifecycle, platform ceilings, quota overrides, break-glass read/cancel/suspend (section 4.3). **Cannot approve.** |
 | `tenant_admin` | Tenant | **GrafanaOrgAdmin** | Connections, tool policy (ADR-0016), budgets, Schedules, Group→Role mapping, quota-increase requests. Plus everything `responder` can do. |
-| `responder` | Tenant | **Grafana Editor** | Create / steer / cancel / share own Runs; propose actions; **approve any Run they are driving**, subject to §4.2 |
+| `responder` | Tenant | **Grafana Editor** | Create / steer / cancel / share own Runs; propose actions; **approve any Run they are driving**, subject to section 4.2 |
 | `viewer` | Tenant | **Grafana Viewer** | Read tenant-shared Runs. No Run creation. |
 
 **`operator` was considered and removed.** Under ADR-0055 the argument was a
@@ -419,7 +419,7 @@ member:manage            tenant:provision         tenant:breakglass
 ```
 1. Explicit Group→Role mapping for this Tenant   ─┐  first match wins
 2. Explicit per-Principal Role grant              │
-3. Default mapping from Grafana basic role        ─┘  (§5.1, zero-config)
+3. Default mapping from Grafana basic role        ─┘  (section 5.1, zero-config)
 ⇒ harness Role
 ⇒ AND, at call time, check-then-act against the Principal's Grafana
    permission for Grafana-scoped actions (ADR-0023)
@@ -463,7 +463,7 @@ remain **independent** of Tenant quota (ADR-0044).
 | Cap | Behaviour at cap |
 |---|---|
 | **Per-run** — tokens, cost, graph depth, wall clock | **Graceful terminate.** Emit the best hypothesis formed so far plus `budget_consumed` (ADR-0029). Never a bare failure. |
-| **Per-principal** — monthly | **Hard stop.** New Runs rejected; in-flight Runs finish. Surfaced in the UI *before* it is reached (§6.4). |
+| **Per-principal** — monthly | **Hard stop.** New Runs rejected; in-flight Runs finish. Surfaced in the UI *before* it is reached (section 6.4). |
 | **Per-tenant** — monthly | **Hard stop.** New Runs rejected; in-flight Runs finish. The billing boundary. |
 | **Per-connection** | **Throttle / queue.** Protects customer infrastructure; never fails the Run outright. |
 
@@ -506,7 +506,7 @@ the same treatment as any other tenant-scoped resource:
 - **Ceiling on Schedule count per Tenant** and a **minimum interval**.
   *Proposed defaults, to confirm with cost data:* **10 Schedules per Tenant**,
   **minimum interval 1 hour**. Both are `platform_admin`-customisable per
-  Tenant per §6.3.
+  Tenant per section 6.3.
 - **Versioned policy, never overwritten** (ADR-0016). Every create/modify/delete is
   an audit record naming the Principal.
 - **Schedule consumption counts against the Tenant's monthly quota** — a
@@ -524,7 +524,7 @@ the same treatment as any other tenant-scoped resource:
 | Recurring configuration- or cost-drift reports | `system_initiated` | Tenant |
 | Pre-emptive checks ahead of a known high-traffic event | `system_initiated` | Tenant |
 | **Infrastructure-memory refresh** (`*/15`, ADR-0047) | internal | **Platform** — not tenant-configurable, not quota-counted |
-| **SA drift reconciliation and rotation** (§3.1) | internal | **Platform** |
+| **SA drift reconciliation and rotation** (section 3.1) | internal | **Platform** |
 
 The last two are platform-internal machinery that happens to use the same timer
 substrate. They are not user-facing Schedules and do not consume a Tenant's
@@ -571,7 +571,7 @@ CREATE TABLE role        (graft_role_id text PRIMARY KEY, scope_level text NOT N
 CREATE TABLE role_permission (graft_role_id text REFERENCES role, verb text,
                               PRIMARY KEY (graft_role_id, verb));
 
-CREATE TABLE group_role_mapping (              -- §5.3 layer 1 — admin config
+CREATE TABLE group_role_mapping (              -- section 5.3 layer 1 — admin config
     graft_tenant_id   text NOT NULL REFERENCES tenant,
     idp_group_claim   text NOT NULL,
     graft_role_id           text NOT NULL REFERENCES role,
@@ -579,7 +579,7 @@ CREATE TABLE group_role_mapping (              -- §5.3 layer 1 — admin config
     PRIMARY KEY (graft_tenant_id, idp_group_claim, policy_version)
 );
 
-CREATE TABLE principal_role (                  -- §5.3 layer 2 — explicit grant
+CREATE TABLE principal_role (                  -- section 5.3 layer 2 — explicit grant
     graft_tenant_id   text NOT NULL REFERENCES tenant,
     graft_principal_id      uuid NOT NULL REFERENCES principal,
     graft_role_id           text NOT NULL REFERENCES role,

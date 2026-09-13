@@ -40,7 +40,7 @@ broken.
 
 ## 2. How other systems solve this (verified against primary sources)
 
-### 2.1 SCIM — RFC 7643 §3.1 *(read directly, 2026-09-13)*
+### 2.1 SCIM — RFC 7643 section 3.1 *(read directly, 2026-09-13)*
 
 SCIM formalises exactly this two-party problem:
 
@@ -60,7 +60,7 @@ Two things worth taking:
    do not accept a `graft_tenant_id` we hand them), so **we must store the
    local mapping** — which makes doing it deliberately, once, the right call.
 2. **"Stable, non-reassignable" is called out as a requirement, not an
-   assumption.** Most of the ids we consume do *not* meet it. See §4.
+   assumption.** Most of the ids we consume do *not* meet it. See section 4.
 
 ### 2.2 Backstage — well-known annotations *(read directly, 2026-09-13)*
 
@@ -100,7 +100,7 @@ Their sync model carries **two** foreign-facing fields, not one:
 The second is the interesting one: it is a **provenance and lifecycle marker**,
 separate from the identity itself. It answers *"who owns this mapping, and
 therefore who is allowed to delete it."* We adopt the same idea — it is what
-makes a reconciler safe to run (§5.3), and it is the same instinct as ADR-0053's
+makes a reconciler safe to run (section 5.3), and it is the same instinct as ADR-0053's
 drift reconciler.
 
 ### 2.4 Not verified
@@ -108,7 +108,7 @@ drift reconciler.
 PagerDuty's and incident.io's *user*-identity mapping specifics could not be
 retrieved (docs are JS-rendered and several URLs 404'd). The widely-used
 industry shortcut in this space is **joining on email address**. We are
-explicitly rejecting that — see §4.1 — on first principles rather than on
+explicitly rejecting that — see section 4.1 — on first principles rather than on
 their authority, so nothing here depends on that unverified claim.
 
 ---
@@ -144,13 +144,13 @@ heads.
 | `slack_channel_id` | slack | `channel_id` | event envelope | yes | yes |
 | `slack_user_id` | slack | `user_id` / OIDC `sub` | Sign in with Slack (ADR-0020) | yes | yes |
 | `idp_subject` | idp | `sub` (+ `iss`) | OIDC ID token | yes | **only with `iss`** |
-| `dbos_workflow_id` | dbos | `workflow_id` | DBOS (ADR-0042) | yes | yes — **but we mint the value**, §3.4 |
+| `dbos_workflow_id` | dbos | `workflow_id` | DBOS (ADR-0042) | yes | yes — **but we mint the value**, section 3.4 |
 | `lgtm_tenant_id` | mimir/loki | `X-Scope-OrgID` | query headers | — | no |
 
 Rows marked **`is_global = false`** are the trap: a `grafana_org_id` of `5`
 exists in *both* ADR-0049 regions and means different Tenants. Any lookup by a
 non-global ref **must** be qualified by region (or instance), and the schema
-enforces it (§3.2).
+enforces it (section 3.2).
 
 ### 3.2 Mapping table
 
@@ -161,8 +161,8 @@ CREATE TABLE graft_external_ref (
     ref_kind          text NOT NULL REFERENCES graft_ref_kind,
     external_value    text NOT NULL,      -- the raw value, verbatim, never normalised
     ref_scope         text NOT NULL,      -- region/instance for non-global kinds; '' if global
-    verified_at       timestamptz,        -- NULL ⇒ claimed, not proven (§4.2)
-    sync_source       text NOT NULL,      -- incident.io's sync_id idea (§5.3)
+    verified_at       timestamptz,        -- NULL ⇒ claimed, not proven (section 4.2)
+    sync_source       text NOT NULL,      -- incident.io's sync_id idea (section 5.3)
     graft_tenant_id   text NOT NULL REFERENCES tenant,   -- RLS predicate (ADR-0050)
     PRIMARY KEY (ref_kind, ref_scope, external_value)    -- inbound lookup direction
 );
@@ -184,7 +184,7 @@ distinct principals.
 ### 3.3 What this replaces
 
 The `principal_identity` table sketched in
-[`tenancy-and-scoping.md`](./tenancy-and-scoping.md) §7.1 is a **special case
+[`tenancy-and-scoping.md`](./tenancy-and-scoping.md) section 7.1 is a **special case
 of this table** (`graft_entity_type = 'principal'`). Keep one mechanism, not
 two: `principal_identity` becomes a view over `graft_external_ref`.
 
@@ -192,7 +192,7 @@ two: `principal_identity` becomes a view over `graft_external_ref`.
 
 ADR-0042 makes the DBOS workflow id **caller-supplied**. So it carries a foreign
 prefix (it lives in DBOS's namespace) while the *value* is minted by us — the
-one row in §3.1 where those differ.
+one row in section 3.1 where those differ.
 
 **Set `dbos_workflow_id = graft_run_id`.** They then cannot drift, ADR-0042's
 run-creation idempotency key becomes self-evident, and correlating a DBOS
@@ -235,7 +235,7 @@ recreation from orphaning a Tenant's entire history.
 
 A Principal can legitimately hold several `slack_user_id` values (Grid, ADR-0028).
 Two Principals may never hold the **same** one — enforced by the primary key in
-§3.2.
+Section 3.2.
 
 ---
 
@@ -279,7 +279,7 @@ Tenant linking is the `discovered → ready` transition (ADR-0053): binding
 `graft_tenant_id ↔ grafana_org_id` and the SlackChannel bindings is precisely
 what a `tenant_admin` does at that step.
 
-`sync_source` (§3.2, after incident.io's `sync_id`) records **which process
+`sync_source` (section 3.2, after incident.io's `sync_id`) records **which process
 created each mapping** — `backfill-reconciler`, `admin-ui`, `slack-oidc`. A
 reconciler may only delete mappings it owns. Without this, the ADR-0053 backfill
 reconciler could plausibly remove an admin's hand-made binding, which is the
@@ -297,7 +297,7 @@ classic destructive-sync incident.
 | **ADR-0024** | Unchanged and clarified: SA ceiling governs *authorization*; linking governs *attribution* |
 | **ADR-0049** | `ref_scope` makes region-local foreign ids safe by construction |
 | **ADR-0053** | `sync_source` is what makes the backfill reconciler non-destructive |
-| **ADR-0042** | `dbos_workflow_id = graft_run_id` (§3.4) |
+| **ADR-0042** | `dbos_workflow_id = graft_run_id` (section 3.4) |
 
 ---
 
@@ -305,7 +305,7 @@ classic destructive-sync incident.
 
 1. **Verify Layer-3 field names at implementation time** against live payloads
    for: Grafana `X-Grafana-Id` token `sub` format, Slack event-envelope field
-   names, and Slack OIDC `sub`. The §3.1 table is populated from
+   names, and Slack OIDC `sub`. The section 3.1 table is populated from
    documentation and prior sessions (ADR-0009, ADR-0020, ADR-0028), not from captured traffic.
 2. **Re-link on Slack Grid migration** — if a customer migrates a standalone
    workspace into a Grid, `slack_user_id` changes shape (ADR-0028). Needs a

@@ -29,7 +29,7 @@ legacy_id: D37
 
 ## 2. Decision
 
-**Durable-execution engine is DBOS Transact** — an **MIT-licensed library embedded in the worker process**, backed by the Postgres we already run. **Temporal rejected** and **DBOS Conductor rejected** by an explicit product constraint (2026-09-12): no paid plans, no separate orchestration service. Bare-worker + LangGraph-checkpoints (briefing option (c)) remains rejected as failing the 30-minute / multi-hour-HITL requirements. Critically, this is **not** the briefing's feared "two weeks building a durable-execution engine": every capability in `04`'s §3 table is native to DBOS **except work rediscovery** (see ADR-0038). Note the determinism constraint is **not** a Temporal-specific cost — DBOS imposes the identical rule (workflow functions deterministic, all I/O in steps), already largely satisfied by ADR-0003.
+**Durable-execution engine is DBOS Transact** — an **MIT-licensed library embedded in the worker process**, backed by the Postgres we already run. **Temporal rejected** and **DBOS Conductor rejected** by an explicit product constraint (2026-09-12): no paid plans, no separate orchestration service. Bare-worker + LangGraph-checkpoints (briefing option (c)) remains rejected as failing the 30-minute / multi-hour-HITL requirements. Critically, this is **not** the briefing's feared "two weeks building a durable-execution engine": every capability in `04`'s section 3 table is native to DBOS **except work rediscovery** (see ADR-0038). Note the determinism constraint is **not** a Temporal-specific cost — DBOS imposes the identical rule (workflow functions deterministic, all I/O in steps), already largely satisfied by ADR-0003.
 
 ## 3. Considered options
 

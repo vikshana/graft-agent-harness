@@ -281,8 +281,8 @@ The register used `D`-numbers and `R`-numbers. Both are accepted aliases in pros
 
 | Legacy | Now |
 |---|---|
-| `D4a` | §2 of [ADR-0004](tools/0004-no-arbitrary-code-execution-in-v1.md) |
-| `D7b` | §2 of [ADR-0007](tools/0007-the-tool-gateway-is-a-separate-service.md) |
+| `D4a` | section 2 of [ADR-0004](tools/0004-no-arbitrary-code-execution-in-v1.md) |
+| `D7b` | section 2 of [ADR-0007](tools/0007-the-tool-gateway-is-a-separate-service.md) |
 | `D7a` | promoted to [ADR-0070](tools/0070-all-mcp-servers-are-streamable-http-never-stdio.md) |
 | `D8a` | promoted to [ADR-0071](observability/0071-two-telemetry-sinks-with-an-internal-only-eval-sink.md) |
 

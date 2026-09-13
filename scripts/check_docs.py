@@ -7,6 +7,7 @@
   4. every accepted ADR names a design document that exists
   5. no references to deleted directories (research/, open-questions/)
   6. every ADR is placed in a roadmap phase
+  7. no bare section glyphs (ambiguous about which document)
 
 Usage: python3 scripts/check_docs.py
 """
@@ -78,6 +79,12 @@ def main() -> int:
             aid = f"ADR-{num}"
             if aid not in adr_ids:
                 errors.append(f"{rel(p)}: reference to unknown {aid}")
+
+        # ---- 5a. the section glyph is ambiguous about *which* document
+        if "\u00a7" in text and "check_docs" not in p.name:
+            errors.append(
+                f"{rel(p)}: uses '\u00a7'. Write 'section N', and name the "
+                f"document unless it is this one.")
 
         # ---- 5. dead directories
         if "check_docs" not in p.name:

@@ -1,12 +1,12 @@
 # Observability pipeline
 
-> **Status: 🟢 Resolved for v1; one open tension (§4).** Mechanism for
+> **Status: 🟢 Resolved for v1; one open tension (section 4).** Mechanism for
 > **ADR-0005**, **ADR-0008**, **ADR-0071**; compliance from **ADR-0025**.
 >
 > Vocabulary per [`../GLOSSARY.md`](../GLOSSARY.md). Related:
 > [`audit-and-attribution.md`](./audit-and-attribution.md).
 >
-> *Migrated from `DECISION-REGISTER.md` §3 during the 2026-09-13 ADR migration.*
+> *Migrated from `DECISION-REGISTER.md` section 3 during the 2026-09-13 ADR migration.*
 
 ---
 

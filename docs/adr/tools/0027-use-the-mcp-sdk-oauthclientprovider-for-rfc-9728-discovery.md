@@ -29,7 +29,7 @@ legacy_id: D27
 
 ## 2. Decision
 
-**The MCP client for hop 1 should use `mcp.client.auth.oauth2.OAuthClientProvider`** (from the official `mcp` Python SDK, a dependency of `langchain-mcp-adapters`) as the `auth=` value if/when RFC 9728 discovery is needed, rather than implementing discovery ourselves. `langchain-mcp-adapters` itself does not implement discovery — it only exposes a generic `httpx.Auth` hook — but the underlying SDK's `OAuthClientProvider` is spec-complete (RFC 9728 discovery, 401-triggered re-discovery, PKCE, refresh). Per ADR-0019 §5, the interactive parts of this are not needed for hop 1 day one; this decision fixes *which library* to reach for if/when they are.
+**The MCP client for hop 1 should use `mcp.client.auth.oauth2.OAuthClientProvider`** (from the official `mcp` Python SDK, a dependency of `langchain-mcp-adapters`) as the `auth=` value if/when RFC 9728 discovery is needed, rather than implementing discovery ourselves. `langchain-mcp-adapters` itself does not implement discovery — it only exposes a generic `httpx.Auth` hook — but the underlying SDK's `OAuthClientProvider` is spec-complete (RFC 9728 discovery, 401-triggered re-discovery, PKCE, refresh). Per ADR-0019 section 5, the interactive parts of this are not needed for hop 1 day one; this decision fixes *which library* to reach for if/when they are.
 
 ## 3. Considered options
 
