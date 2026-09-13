@@ -45,6 +45,9 @@ document, read it as **Tenant**.
 | **Run** | **Every** agent interaction — chat, dashboard/alert building, and RCA investigation alike (D36). One durable DBOS workflow (D39), one event stream (D30), one audit chain (D15). | `graft_run_id` | N:1 to Tenant |
 | **Connection** | A Tenant-owned credentialed link to an external system (datasource, K8s cluster, repo, ticketing). | `graft_connection_id` | N:1 to Tenant |
 | **Schedule** | A Tenant-owned recurring trigger for a Run (D47). Always produces `system_initiated`, structurally read-only Runs (D13). | `graft_schedule_id` | N:1 to Tenant |
+| **CustomInstruction** | Prompt text influencing **how** the agent responds — tone, persona, format, house conventions. Exists at **Tenant** and **Principal** level. **Never grants capability** (D62). | — | N:1 to Tenant or Principal |
+| **ToolClass** | `read` \| `write` \| `destructive`. The unit of **policy and approval**. | — | — |
+| **Tool** | One callable operation exposed by an MCP server. The unit of **enablement** — enabling a server never enables its whole set (D63). | `tool_id` | N:1 to ToolClass |
 
 ### 1.1 Run origin — an attribute, not a type
 

@@ -101,6 +101,84 @@ weight: one Slack install serves every Tenant.
 
 ---
 
+### 0.5 Audit of the original doc — what was *not* covered by C1–C5
+
+Every explicit "To resolve" bullet under C1–C5 is answered by D49–D58. This
+section records what the original briefing raised **outside** those bullets, so
+none of it evaporates.
+
+#### One genuine contradiction — **resolved 2026-09-13 as D62**
+
+§5 proposes **"custom instructions exist at two levels — workspace and user,
+workspace wins on conflict."** **D16 says the opposite:** configuration is
+org-scoped and shared, and per-user variation is an authorisation filter at call
+time, *"never a separate per-user configuration."* Per-user custom instructions
+are unambiguously per-user configuration.
+
+**D16's absolute is already strained by decisions taken in this session**, which
+makes this a narrowing exercise rather than a straight choice:
+
+| Per-Principal setting | Introduced by | Is it really "configuration"? |
+|---|---|---|
+| `default_graft_tenant_id` (Slack DM resolution) | D51 / D54 | A preference |
+| Per-Principal monthly quota | D57 | A limit, not a grant |
+| Per-Principal custom instructions | *proposed, undecided* | A preference |
+
+**Proposed resolution (untaken):** narrow D16 to mean *per-user variation of
+**tool and authorization** configuration is never separate configuration* —
+which was its actual intent, stopping a Principal from holding a private tool
+allow-list. Per-Principal **preferences and limits** are a different kind of
+thing and are legitimate. Custom instructions then work as §5 proposed: two
+levels, **Tenant wins on conflict**, consistent with the Layer-2-over-Layer-3
+prompt hierarchy in `../../research/context-management.md`.
+
+**Resolved as D62 (2026-09-13):** the narrowing was taken as proposed.
+Custom instructions exist at **both** levels, Tenant winning on conflict. The
+distinction that settles it: D16 governs **capability** (what a Principal may
+*do*), custom instructions govern **behaviour** (how the agent *replies*) —
+different kinds of thing that were sharing one word. The hard rule that keeps
+them separable is that **custom instructions are prompt text and can never
+grant capability** (D63's layer 4). The two unwritten consequences below are
+also now closed: steer/watch as **D64**, web-frontend resolution as **D64**.
+
+#### Two unwritten consequences — now stated
+
+- **Steer vs. watch on a tenant-shared Run** (C3, bullet 2). Resolved by
+  composition but never written down: **`viewer` holds no `run:steer` verb**
+  (D56) and so can only watch; **`responder` and `tenant_admin` may request
+  control** under D32's soft-lock driver model. Approval remains
+  initiator-only regardless of who is driving (D55) — **driving is not
+  approving.**
+- **Tenant resolution for the custom web frontend** (C2, bullet 3). **Moot for
+  v1** — D2 dropped the Web UI. When it returns post-v1 it inherits the Slack
+  rule shape rather than inventing one: an **explicit Tenant switcher**, with
+  the Principal's `default_graft_tenant_id` as the initial selection, and the
+  active Tenant carried in the harness token exactly as for every other
+  surface.
+
+#### Numbers whose mechanism is locked but whose value is not
+
+| Value | Decision | Proposed |
+|---|---|---|
+| Per-Principal / per-Tenant monthly quota ceiling | D57 | — needs cost data |
+| Schedule count per Tenant | D58 | 10 |
+| Minimum Schedule interval | D58 | 1 hour |
+| Budget warning threshold | D57 | 80% |
+| Approval expiry | D47 (pre-existing) | ≥72h |
+
+#### UX items raised in §5, deferred to a UX session
+
+- Run list scoped to Tenant, filterable "mine / my team / all".
+- **Sharing is a link to the live Run, not an export** — consistent with D54's
+  irreversible promotion and D32's multi-viewer model, but never decided as
+  such.
+
+*(§5's remaining items **are** decided: connection setup is a `tenant_admin`
+action distinct from `platform_admin` — D56's `connection:manage`; and
+budget/quota indicators are Tenant-scoped and visible — D57.)*
+
+---
+
 ## 0A. Inputs carried in from `01-identity-and-access.md`
 
 - **C1 (deployment model) is resolved: option (a)/(c) shape.** D21 confirms

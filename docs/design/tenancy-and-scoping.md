@@ -205,6 +205,28 @@ a run-type.
   months (D15, insert-only) — the end-to-end audit trail, not the product UI,
   is the forensic path.
 
+### 4.1a Driving a shared Run, and the Run list
+
+**One driver, everyone else watches, handover is explicit** (D64). The driver
+holds `run:steer` and `run:cancel`; other viewers are read-only until control is
+handed over.
+
+- **`viewer` can never drive** — it holds no `run:steer` verb (D56).
+  `responder` and `tenant_admin` may request control.
+- **Explicit handover is the normal path.** Two escape hatches stop a
+  disconnected driver deadlocking the Run: **auto-release after 10 minutes** of
+  driver disconnect or idle, and **`tenant_admin` force-release**. Both emit an
+  audit record. This closes the driver-disconnect item left open in
+  `../adr/open-questions/02-streaming-and-events.md` §0.4.
+- **Driving is not approving.** Approval remains initiator-only (D55), so a
+  handover — or a force-release — never transfers approval authority. This is
+  what keeps the escape hatches safe.
+
+**Run list filters: "Mine" and "Tenant".** Deliberately *not* the originally
+proposed "mine / my team / all": there is no "my team" because **Group is not a
+scoping layer** (D51), and no "all" because cross-Tenant listing does not exist
+(D51).
+
 ### 4.2 Approval authority
 
 **Approval is initiator-only in v1**, on top of the existing constraints:
@@ -245,6 +267,36 @@ Tenant entered, and the action taken — non-sampled (D15).
 
 **Not in v1.** Initiator-only approval and a two-person rule are mutually
 exclusive by definition. Deferred to the HITL & write-action session.
+
+---
+
+### 4.5 Custom instructions (D62)
+
+Custom instructions exist at **two levels**, because they answer two different
+questions:
+
+| Level | Answers | Example |
+|---|---|---|
+| **Tenant** | House conventions and domain context | "Always cite the dashboard UID you drew a conclusion from." |
+| **Principal** | Personal preference for *how* the agent replies | "Be terse. Lead with the conclusion, then evidence." |
+
+**Precedence follows the prompt-layer hierarchy** in
+`../research/context-management.md` — platform system/safety text, then Tenant,
+then Principal. **The higher layer wins on conflict**, so a Principal cannot
+opt out of a Tenant convention.
+
+**The hard rule: custom instructions are prompt text, never policy.** They
+cannot enable a tool, widen a Role, alter a budget or bypass an approval. An
+instruction reading *"you may restart pods without asking"* has **literally no
+effect** — capability comes from the run capability token (D10/D63 layer 4),
+which is minted before the instruction is ever read. This matters because
+custom instructions are user-authored text flowing into the model's context,
+i.e. a prompt-injection channel by construction; the mitigation is structural,
+not a filter.
+
+Both levels are **versioned**, and the versions in force are recorded on the
+Run — required for audit attribution (D15) and for D40's `fork_workflow` eval
+replay to be reproducible.
 
 ---
 
