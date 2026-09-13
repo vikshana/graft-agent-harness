@@ -1,75 +1,210 @@
-# Delivery roadmap and quality gates
+# Delivery roadmap
 
-> ⚠️ **This predates ADR-0029–ADR-0069 and must not be handed to an implementer
-> as-is.** It is preserved for its *sequencing discipline and quality gates*,
-> which remain sound. Its *technology choices are substantially superseded* —
-> see §3 before using any of it.
+> **Status: 🟡 Proposed.** Rewritten 2026-09-13 against ADR-0001–ADR-0072.
+> Supersedes the pre-decision phase plan (in git history only).
 >
-> *Promoted from `research/phases.md` and `research/phase-1.md` during the
-> 2026-09-13 ADR migration. Rewriting this against the locked ADRs is an
-> outstanding task.*
+> Phases 1–4 together deliver **v1**. Phase 5 is post-v1.
+> Four decisions gate Phase 1 — see §6.
 
 ---
 
-## 1. What is still valid
+## 1. "v1" is a scope boundary, not a phase
 
-The **shape** — five phases, each ending in an automated quality gate, with
-security and observability built in rather than appended — and specifically:
+The ADRs use **v1** to mean *what ships to a customer*, and **Phase 2 / post-v1*
+to mean *explicitly deferred*. Mapping v1 → Phase 1 directly does not work:
 
-- A CI gate per phase, not a test phase at the end.
-- Infrastructure and model routing before any agent code.
-- Security testing that injects real malicious payloads
-  (`Ignore previous instructions…`) rather than asserting a filter exists.
-- Historical-incident replay as a **promotion gate**, not a nice-to-have.
-- A lean first milestone that validates the alert → hypothesis → proposal loop
-  before layering on memory and knowledge graphs.
+> v1 includes two regional deployments (ADR-0049), PCI-DSS compliance
+> (ADR-0025), a hash-chained audit DAG anchored to WORM storage (ADR-0015),
+> blue/green deploys with a version-aware reaper (ADR-0038, ADR-0046), five
+> durable-timer use cases (ADR-0047), governed Schedules (ADR-0058), Tenant
+> lifecycle with SA provisioning and drift reconciliation (ADR-0053), three
+> surfaces, and the full approval and control-liveness model
+> (ADR-0014, ADR-0065, ADR-0066).
 
-## 2. Phase skeleton (technology claims stripped)
+**That is the whole product.** Building all of it before the first evaluation
+inverts the point of having an MVP. So:
 
-| Phase | Goal | Quality gate |
-|---|---|---|
-| **1. Foundation** | Monorepo (`/api`, `/worker`, `/infra`), local compose → K8s manifests, Postgres, model routing | Lint (Ruff), type check (MyPy), container boot health checks |
-| **2. API & streaming** | Stateless API, authn middleware, run dispatch, event streaming | Integration tests: invalid-token rejection; event streaming under concurrent clients |
-| **3. Agent core & tools** | Agent loop; tool access via the Tool Gateway; read-through cache on hot read tools | Unit tests with mocked tool responses verifying state transitions and **recovery across simulated worker crashes** |
-| **4. Guardrails** | Injection sanitisation between tool output and model context; circuit breakers; budget caps | Security suite injecting malicious log payloads; assert stripping happens *before* the LLM |
-| **5. RCA, HITL & telemetry** | Triage / evidence / hypothesis nodes; approval gate; OTel instrumentation; replay evals | E2E: alert → evidence → HITL pause → clean traces |
-
-Read-through caching on K8s read tools (short TTL) to prevent control-plane
-saturation during incident bursts remains a good idea and is now a Tool Gateway
-responsibility ([`../design/tool-gateway.md`](../design/tool-gateway.md)).
-
-## 3. Superseded technology claims — do not carry forward
-
-| Original claim | Now |
+| ADR language | Roadmap |
 |---|---|
-| "Integrate **Temporal** or Celery" | **DBOS Transact**, an embedded MIT library on our existing Postgres. Temporal and paid orchestration services excluded by product constraint (ADR-0037) |
-| "**Redis**/Valkey cache & pub/sub", "Redis Pub/Sub channels" | **Postgres only, no Redis** (ADR-0030). Fan-out via `LISTEN/NOTIFY` |
-| "SSE streaming to the frontend" | **Grafana Live** for the Grafana surface (ADR-0031); SSE only for the post-v1 web frontend |
-| "LangGraph workflows backed by Postgres **checkpointing**" | **No checkpointer** (ADR-0040). DBOS step checkpoints are the single source of execution truth |
-| "Pause execution via **LangGraph checkpoints**" for HITL | `DBOS.recv(topic, timeout)` (ADR-0045), bounded at ≥72 h (ADR-0066) |
-| Phase 4 "**MicroVM sandbox** (Daytona/E2B)" | **No arbitrary code execution in v1** (ADR-0004). Sandbox is Phase 2; only the `ToolExecutor` seam ships now |
-| "**Keycloak**" as the auth system | Pluggable IdP; **the IdP authenticates, the harness authorizes** (ADR-0056). Keycloak is one interchangeable option, not the design |
-| "Integrate MCP clients for K8s, GitHub, Jira" *in the worker* | The **agent never calls MCP servers directly** (ADR-0007, ADR-0068) — only the Tool Gateway does |
-| "Extract user context for downstream **impersonation**" | Hybrid, **service-identity-by-default** (ADR-0011); GitHub always acts as a bot identity, never impersonating |
-| Frontend is "the frontend" | v1 surfaces are the **Grafana plugin and Slack** (ADR-0002); custom web UI is post-v1 |
-| "Confidence ≥ 80 % → generate PR → `hitl_required`" | Directionally right, but approval authority, re-authentication and expiry are now governed by ADR-0014 / ADR-0065 / ADR-0066 |
+| "in v1", "for v1" | Somewhere in **Phases 1–4** |
+| "Phase 2", "deferred", "post-v1" | **Phase 5+** |
+| "structurally read-only", "denied at L2" | **Phase 1 is where this is free** |
 
-## 4. Phase-1 scope, restated
+## 2. The MVP: read-only is a complete product, not a crippled one
 
-The lean-MVP instinct holds: validate **alert → evidence → hypothesis →
-proposal** before adding knowledge graphs or memory daemons.
+The single most useful thing the locked decisions give us is that **a read-only
+agent needs almost none of the expensive machinery**:
 
-**Deferred, confirmed by decision:** Neo4j knowledge graph, Mem0 auto-refresh,
-multi-agent swarms, dynamic multi-model routing with automatic fallbacks, shadow
-A/B testing, sandboxed code execution.
+- **ADR-0013** — `system_initiated` runs are structurally read-only, enforced by
+  the capability token never containing a write class.
+- **ADR-0063 L2** — the platform policy layer is a hard deny that is *not
+  customer-raisable*. Denying every `write` and `destructive` ToolClass at L2 is
+  a config fact, not a missing feature.
+- **ADR-0067** — *"surface output is not a ToolClass."* The agent narrating its
+  findings into Grafana and Slack flows from the event log through surface
+  adapters and **never through the Tool Gateway**. It acts on *us*, not on a
+  customer system.
 
-**Not deferrable, contrary to the original plan:** multi-tenancy scoping. The
-scoping key must exist on every row from the first migration (ADR-0051,
-ADR-0050) — retrofitting a scoping column below every row is the expensive
-rewrite this project explicitly avoided.
+Together those mean **Phase 1 needs no approval flow, no step-up auth, no write
+credentials, no driver/control model, no proposal-diff UI** — and is still a
+coherent product: *an alert fires, the agent investigates, and a narrated finding
+with evidence appears where the on-call engineer is already looking.*
 
-## 5. Outstanding task
+ADR-0067 established that this is what on-call actually wants. It is also
+precisely what you need in order to evaluate RCA quality.
 
-Rewrite §2 as a real plan against the locked ADRs, with the two blocking spikes
-from [`future-sessions.md`](./future-sessions.md) resolved first, since both can
-invalidate container shapes.
+## 3. What must be right from line one
+
+Irreversible or prohibitively expensive to retrofit. These are not phased.
+
+| Foundation | ADR | Why it cannot wait |
+|---|---|---|
+| `graft_tenant_id` on every row, event, span, audit record | ADR-0051 | Adding a scoping key *below* every row later is the rewrite ADR-0051 exists to avoid |
+| `FORCE ROW LEVEL SECURITY`, `SET LOCAL` per transaction, no ambient Tenant context | ADR-0050 | Thread-locals plus async task switching is the classic cross-tenant leak |
+| Prefixed identifiers everywhere | ADR-0059 | Free on day one; a mass rename later |
+| Glossary vocabulary | ADR-0052 | Naming drift is unpickable once code exists |
+| Step decomposition: 1 LLM call = 1 step, 1 tool call = 1 step | ADR-0039, ADR-0041 | ADR-0048 names graph decomposition as the least reversible choice |
+| Event log as the only streaming substrate | ADR-0006, ADR-0030 | Single writer, transactional with run state; retrofitting removes the guarantee |
+| **All** tool access via the Tool Gateway | ADR-0007, ADR-0068 | A direct client is a hole in five controls at once, invisible in the audit chain |
+| `dbos_workflow_id = graft_run_id` | ADR-0060 | Trivial now, a migration later |
+| Audit actor derived from verified credential | ADR-0015, ADR-0061 | Attribution cannot be reconstructed after the fact |
+
+## 4. Phases
+
+### Phase 1 — Walking skeleton *(MVP; internal only)*
+
+**Goal:** one alert → investigation → narrated finding, end to end, read-only,
+single region, with §3's foundations correct.
+
+**In scope:** ADR-0021 · ADR-0001 · ADR-0009 · ADR-0003 · ADR-0036 · ADR-0037 ·
+ADR-0039 · ADR-0040 · ADR-0041 · ADR-0043 · ADR-0048 · ADR-0030 · ADR-0006 ·
+ADR-0029 · ADR-0031 · ADR-0034 · ADR-0007 · ADR-0068 · ADR-0070 · ADR-0018 ·
+ADR-0010 · ADR-0013 · ADR-0004 · ADR-0063 (L1/L2/L4) · ADR-0050 · ADR-0051 ·
+ADR-0052 · ADR-0059 · ADR-0005 · ADR-0008 · ADR-0071 · ADR-0015 (chain, not yet
+WORM-anchored) · ADR-0054 (private runs only) · ADR-0062 · ADR-0067 (read class)
+
+**Explicitly deferred:** every write path, approval, Slack, run sharing and the
+driver model, Schedules, second region, blue/green, quota ceilings, PAN scrubbing.
+
+**Exit criteria**
+- A webhook-triggered run produces a narrated finding in the Grafana plugin with
+  token-level streaming, and survives a worker kill mid-run (resumes, no
+  duplicate tool calls).
+- Every tool call is a DBOS step; `list_workflow_steps()` returns a readable
+  trajectory.
+- RLS proven: a query under Tenant A's GUC cannot see Tenant B's rows, including
+  through a transaction-mode pooler.
+- Zero direct clients to customer systems (assert in CI by dependency rule).
+- Trajectories visible in the eval sink.
+
+**Quality gates:** lint/type-check; a cross-tenant isolation test suite; crash
+recovery test; a dependency-direction test enforcing ADR-0068.
+
+---
+
+### Phase 2 — Multi-tenant and measurable
+
+**Goal:** more than one Tenant, real permission enforcement, and a quality signal
+you can act on.
+
+**In scope:** ADR-0053 (lifecycle + brownfield backfill) · ADR-0012 · ADR-0022 ·
+ADR-0023 · ADR-0026 · ADR-0056 (roles) · ADR-0016 · ADR-0060 · ADR-0061 ·
+ADR-0020 · ADR-0028 · ADR-0024 · ADR-0017 · ADR-0044 · ADR-0057 (per-run and
+per-Tenant caps) · ADR-0042 (idempotency; `fork_workflow` for replay) ·
+ADR-0063 (L3, L5) · ADR-0019 · ADR-0027 · ADR-0069 · context compaction
+
+**Exit criteria**
+- Two Tenants, isolated, each with provisioned platform SAs and drift detection.
+- Check-then-act denies a read the caller's Grafana role forbids.
+- An incident-replay suite runs N historical incidents via `fork_workflow` and
+  produces a comparable score between two prompt versions.
+- A run hitting its per-run cap terminates gracefully with its best hypothesis,
+  never a bare failure (ADR-0057).
+
+---
+
+### Phase 3 — Write actions, approval, and Slack
+
+**Goal:** propose → approve → execute, plus the second surface.
+
+**In scope:** ADR-0002 (Slack) · ADR-0014 · ADR-0065 · ADR-0066 · ADR-0032 ·
+ADR-0064 · ADR-0072 · ADR-0033 · ADR-0045 · ADR-0011 · ADR-0016 (step-up) ·
+ADR-0067 (`write` class) · ADR-0034 (diff view) · ADR-0054 (sharing/promotion)
+
+**Order matters:** control liveness (ADR-0066) must land **with or before**
+approval, because ADR-0065 makes control equal authority — shipping handover
+without the three clocks means approval authority with no expiry.
+
+**Exit criteria**
+- A proposed change is approved in Grafana by a re-authenticated driver, bound to
+  `proposal_hash`, and the audit chain shows proposer-context and approver
+  separately with the control transfer as a `caused_by` edge.
+- Slack can trigger and converse but **cannot** approve; an unlinked Slack user
+  gets a link prompt, not a run (ADR-0061).
+- A disconnected driver auto-releases; control goes to nobody (ADR-0066).
+
+---
+
+### Phase 4 — Production hardening *(v1 GA)*
+
+**In scope:** ADR-0025 (PAN scrubbing) · ADR-0015 (WORM anchoring, 12-month
+retention) · ADR-0038 (reaper) · ADR-0046 (blue/green) · ADR-0047 (timers) ·
+ADR-0058 (Schedules) · ADR-0035 (notification) · ADR-0049 (second region,
+Tenant Directory) · ADR-0057 (quota request flow)
+
+**Exit criteria:** colour retirement gated on a machine check, not a human
+eyeball (ADR-0046); PANs demonstrably stripped before reaching either sink;
+cross-region read proxy returns without persisting outside the home region.
+
+---
+
+### Phase 5 — Post-v1
+
+ADR-0004 (micro-VM sandbox behind the `ToolExecutor` seam) · ADR-0002 (custom web
+frontend) · ADR-0029 (AG-UI adapter, web only) · memory & knowledge · ADR-0067's
+`write`/`destructive` paging classes — noting maintenance windows and
+notification suppression are **permanently L2-denied** and need their own
+decision, never a phase.
+
+## 5. Sequencing rules
+
+1. **Nothing in §3 is phased.** It lands in Phase 1 or the phase plan is void.
+2. **Read-only until Phase 3.** Enforced at L2, so it is a policy row, not
+   discipline.
+3. **ADR-0066 ships with ADR-0065**, never after.
+4. **No surface ships before its identity story** — Slack requires ADR-0061.
+5. **Evaluation capability is Phase 2, not Phase 4.** If quality is only
+   measurable at the end, the phases before it are unfalsifiable.
+
+## 6. Decision gates — what must be clarified before each phase
+
+**Yes, four items gate Phase 1.** Two are real spikes; two are cheap.
+
+| # | Item | Gates | Why it blocks | Cost |
+|---|---|---|---|---|
+| **S1** | DBOS × async LangGraph × `langchain-mcp-adapters` ergonomics | **Phase 1** | ADR-0039 concedes DBOS's Pattern-B references are framework-free Python loops, not LangGraph. If the combination is unworkable, ADR-0039/ADR-0041 — the least reversible decisions — are wrong, and so is Phase 1's core shape | Spike, days |
+| **S2** | DBOS system-DB migrations vs `FORCE ROW LEVEL SECURITY`; whether the DBOS system DB falls in PCI scope | **Phase 1** | Determines the Phase 1 schema and whether the system DB needs the scrubbing/retention treatment. Retrofitting RLS onto a third-party schema is not cheap | Spike, days |
+| **S3** | Langfuse vs Phoenix for the eval sink | **Phase 1** | "Start testing and evaluating" requires somewhere to *look at* trajectories from day one | ~1 day |
+| **S4** | Provisional model + serving choice | **Phase 1** | Phase 1 needs a model. ADR-0057 forbids mid-run degradation but picks nothing. A provisional choice is enough; the full routing session is Phase 2 | ~1 day |
+| **S5** | Context compaction mechanics | **Phase 2** | Locked hierarchy, unlocked mechanics ([`../design/context-assembly.md`](../design/context-assembly.md) §3). Long investigations overflow without it — but Phase 1 runs are short enough to defer |  |
+| **S6** | Eval methodology: ground truth, metrics, corpus size | **Phase 2** | `fork_workflow` is the mechanism (ADR-0040); "good" is undefined. Phase 1 can rely on qualitative trajectory review |  |
+| **S7** | HITL & write-action model; two-person rule | **Phase 3** | Re-openable now that ADR-0055 is superseded |  |
+| **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some |  |
+| **S9** | Tenant Directory substrate | **Phase 4** | Single region until then |  |
+
+**S1 and S2 are the only genuine blockers.** They are already flagged as blocking
+for C4 L3 — the same two spikes gate both, so resolving them unblocks the
+container-level design and Phase 1 together. S3 and S4 are a day's work and can
+run in parallel.
+
+Everything else resolves inside the phase that needs it. **The backlog does not
+need clearing before the roadmap is finalised** — it needs exactly two spikes
+run, which is a week, not a planning round.
+
+## 7. What this roadmap deliberately does not do
+
+- **No estimates.** Phase content is decided; duration is not, and S1 can change
+  Phase 1's shape.
+- **No parallel tracks.** Phases 1–3 are strictly ordered by the sequencing rules.
+- **No "Phase 0".** §3's foundations are not a phase; they are the definition of
+  done for every phase.

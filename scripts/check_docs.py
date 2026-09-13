@@ -6,6 +6,7 @@
   3. ADR front matter is complete and `category` matches the directory
   4. every accepted ADR names a design document that exists
   5. no references to deleted directories (research/, open-questions/)
+  6. every ADR is placed in a roadmap phase
 
 Usage: python3 scripts/check_docs.py
 """
@@ -114,6 +115,15 @@ def main() -> int:
                 errors.append(f"{rel(p)}: design doc not found -> {design}")
         if fm.get("status") == "superseded" and fm.get("superseded_by", "[]") == "[]":
             errors.append(f"{rel(p)}: status superseded but superseded_by is empty")
+
+    # ---- 7. every ADR has a delivery home in the roadmap
+    roadmap = ROOT / "docs" / "backlog" / "roadmap.md"
+    if roadmap.exists():
+        cited = set(ADR_REF_RE.findall(roadmap.read_text(encoding="utf-8")))
+        for aid in sorted(adr_ids):
+            if aid.removeprefix("ADR-") not in cited:
+                warnings.append(
+                    f"docs/backlog/roadmap.md: {aid} is not placed in any phase")
 
     for w in warnings:
         print(f"WARN  {w}")
