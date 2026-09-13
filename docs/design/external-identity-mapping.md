@@ -267,8 +267,8 @@ linked for the surface they are acting from.**
   strengthened: *driver* is as meaningless as *initiator* without a
   resolved Principal.
 - **ADR-0024 remains true and is not weakened:** Slack-initiated Runs are still
-  *authorized* by the Tenant service account's ceiling. Linking is about
-  **attribution**, not authorization. We must know *who asked* even when the
+  *authorised* by the Tenant service account's ceiling. Linking is about
+  **attribution**, not authorisation. We must know *who asked* even when the
   permission check does not use their identity — and ADR-0024's revisit metric
   (denials that would have succeeded under the user's own role) is only
   computable if we know who they are.
@@ -294,7 +294,7 @@ classic destructive-sync incident.
 | **ADR-0052** | `principal_identity` generalises into `graft_external_ref`; one mechanism |
 | **ADR-0059** | Extended: the prefix names the **owner of the namespace**; `graft_ref_kind.native_field` records the owner's **own** name for it |
 | **ADR-0020** | "Sign in with Slack" is promoted from a one-time convenience to a **precondition** for any human-attributed Slack action |
-| **ADR-0024** | Unchanged and clarified: SA ceiling governs *authorization*; linking governs *attribution* |
+| **ADR-0024** | Unchanged and clarified: SA ceiling governs *authorisation*; linking governs *attribution* |
 | **ADR-0049** | `ref_scope` makes region-local foreign ids safe by construction |
 | **ADR-0053** | `sync_source` is what makes the backfill reconciler non-destructive |
 | **ADR-0042** | `dbos_workflow_id = graft_run_id` (section 3.4) |

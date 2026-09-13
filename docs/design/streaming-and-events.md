@@ -73,7 +73,7 @@ Grafana Live rather than SSE through the plugin's Go proxy, to avoid known
 Go-reverse-proxy SSE-buffering problems on long-lived streams. Frontend uses
 `@grafana/ui` directly.
 
-**Channel authorization** is enforced inside our backend's `SubscribeStream`
+**Channel authorisation** is enforced inside our backend's `SubscribeStream`
 handler, against the caller's plugin-context identity and Tenant/run ownership.
 
 ### 4.1 Grafana Live operational notes

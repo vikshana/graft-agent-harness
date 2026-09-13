@@ -230,7 +230,7 @@ current `main`) and read directly, rather than assumed. Findings:
    - **Locked decision: drop `grafana-mcp`'s built-in hop-A caller-auth
      (`MCP_GRAFANA_SERVER_TOKEN`) and protect the Tool Gateway↔`grafana-mcp`
      hop with network-level isolation instead** (private network / mTLS /
-     service-mesh authorization policy — the same pattern already assumed for
+     service-mesh authorisation policy — the same pattern already assumed for
      other internal-service-to-internal-service calls in this architecture).
      This frees `Authorization` to carry only hop B's per-workspace Grafana SA
      token, forwarded verbatim end-to-end. See section 5 decision 2.
@@ -256,7 +256,7 @@ current `main`) and read directly, rather than assumed. Findings:
 | # | Decision |
 |---|---|
 | 1 | **One logical `grafana-mcp` service**, horizontally scaled as an ordinary stateless service — not one process per workspace. **Confirmed compatible with the real implementation (section 5).** |
-| 2 | **`grafana-mcp`'s built-in caller-auth (`MCP_GRAFANA_SERVER_TOKEN`) is not used.** The Tool Gateway↔`grafana-mcp` hop (hop A) is protected by network-level isolation (private network / mTLS / service-mesh authorization policy) instead. This frees the `Authorization` header, on every MCP call to `grafana-mcp`, to carry only the per-workspace Grafana SA token (hop B), forwarded verbatim to Grafana via `GRAFANA_FORWARD_HEADERS=Authorization`. **Locked 2026-09-12** — resolves the collision found in section 5 item 2. |
+| 2 | **`grafana-mcp`'s built-in caller-auth (`MCP_GRAFANA_SERVER_TOKEN`) is not used.** The Tool Gateway↔`grafana-mcp` hop (hop A) is protected by network-level isolation (private network / mTLS / service-mesh authorisation policy) instead. This frees the `Authorization` header, on every MCP call to `grafana-mcp`, to carry only the per-workspace Grafana SA token (hop B), forwarded verbatim to Grafana via `GRAFANA_FORWARD_HEADERS=Authorization`. **Locked 2026-09-12** — resolves the collision found in section 5 item 2. |
 | 3 | **Isolation between workspaces is enforced by the SA token Grafana receives, per call**, and confirmed at the `grafana-mcp` layer by its credential-keyed client cache (section 4.3/section 5 item 3) — not by which process or instance handled the request. |
 | 4 | **`grafana-mcp` never receives or reasons about which human triggered a call.** Per-user authorisation is fully resolved before dispatch; the service only ever acts as "the workspace." |
 

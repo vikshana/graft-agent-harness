@@ -40,10 +40,10 @@ Their eight mitigations, mapped to decisions already taken:
 
 | OWASP mitigation | Ours |
 |---|---|
-| 1. Minimize extensions | Layer 2/3 — deny-by-default catalogue |
-| 2. Minimize extension **functionality** | **Policy is per *tool*, not per *server*** (section 3.3) |
+| 1. "Minimize extensions" | Layer 2/3 — deny-by-default catalogue |
+| 2. "Minimize extension **functionality**" | **Policy is per *tool*, not per *server*** (section 3.3) |
 | 3. **Avoid open-ended extensions** | **ADR-0004** — no arbitrary code execution in v1 |
-| 4. Minimize extension permissions | **ADR-0022** — SA role recomputed to the minimum across enabled tools |
+| 4. "Minimize extension permissions" | **ADR-0022** — SA role recomputed to the minimum across enabled tools |
 | 5. Execute in the user's context | **ADR-0011 / ADR-0023** — check-then-act under the Principal's own identity |
 | 6. Require user approval | **ADR-0014 / ADR-0065** — re-authenticated, in Grafana, **by the current driver** (was initiator-only under ADR-0055, withdrawn 2026-09-13) |
 | 7. **Complete mediation** — *"implement authorization in downstream systems rather than relying on an LLM to decide if an action is allowed"* | **ADR-0007** — the Tool Gateway is a separate service precisely because in-process policy is not a boundary |
@@ -57,9 +57,9 @@ from the token and rejected at the gateway**.
 ### 2.2 MCP Security Best Practices *(index read 2026-09-13)*
 
 The MCP specification carries a dedicated security-best-practices document
-alongside its authorization spec, enumerating confused-deputy, **token
+alongside its authorisation spec, enumerating confused-deputy, **token
 passthrough**, SSRF, session hijacking, OAuth URL validation, stdio-proxy
-weaknesses and **scope minimization**. Two of its named attacks are already
+weaknesses and **scope minimisation**. Two of its named attacks are already
 closed by decisions we hold — **token passthrough** (ADR-0010/ADR-0019: the Tool Gateway
 is a Resource Server that validates independently and never forwards a caller's
 token onward as its own) and **stdio transport in proxy scenarios** (ADR-0070: no

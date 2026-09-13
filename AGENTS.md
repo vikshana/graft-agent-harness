@@ -107,12 +107,23 @@ if one fact changes, exactly one file should need editing.
 
 - **Commits:** Conventional Commits — `docs:`, `feat(docs):`, `chore:`. Explain *why*, not just what; this repo's
   history is used as evidence.
-- **Prose:** British English — `behaviour` (31 uses, 0 American), `licence`,
-  `catalogue`, `normalised`, `standardised`, `authorisation`. **One deliberate exception:** keep the American spelling
-  when the word is a protocol token or proper noun — the `Authorization` HTTP header, the **MCP Authorization Server**,
-  OAuth's "authorization server". Hence `authorization`
-  outnumbers `authorisation` roughly 4:1 without the prose being American. (`color` appears only inside Mermaid and CSS;
-  `colour` is the blue/green deploy colour of ADR-0046. Neither is a prose signal.)
+- **Prose: British English throughout — CI-enforced.** `behaviour`, `licence`
+  (noun), `catalogue`, `normalised`, `standardised`, `authorisation`.
+  Note `licensed`/`licensing` are correct British (licence = noun, license =
+  verb), so they are not flagged.
+  **Three exempt contexts**, and the way to use them is to mark the text as what
+  it is:
+  1. **Protocol tokens and proper nouns** — the `Authorization` HTTP header, the
+     **MCP Authorization Server**, OAuth's `authorization-code` grant. Backtick
+     them, or keep the capital.
+  2. **Verbatim quotations** — blockquote or quote them. Never "correct" a
+     source's spelling; that misquotes it. The MADR and OWASP quotes in this
+     repo keep `categorized`, `organizing`, `recognize`, `Minimize`.
+  3. **Filenames, URLs and code** — never rewritten. ADR-0056's file is still
+     `...-the-harness-authorizes.md` while its title reads *authorises*;
+     filenames are identifiers, and renaming would break every inbound link.
+  `color` appears only inside Mermaid and CSS; `colour` is ADR-0046's blue/green
+  deploy colour. Neither is a prose signal — do not "fix" either.
 - Direct and specific. State trade-offs plainly — "we deliberately trade X for Y" is a complete and acceptable sentence.
 - **Verification:** if you check a claim against a live or primary source, cite **what, against what, and when**.
   Undated verification decays invisibly.

@@ -29,7 +29,7 @@ legacy_id: D35
 
 ## 2. Decision
 
-**Unattended-run notification: Slack bot posts a completion summary message; Grafana and the web frontend surface an in-app badge/inbox.** No escalation path for unanswered `hitl_required` approvals in v1 (unlike ADR-0024, no revisit-trigger metric defined yet for this one) — the run simply waits for its owner (or, if shared, an authorized viewer) to return; revisit only if real usage shows abandoned approvals becoming a problem.
+**Unattended-run notification: Slack bot posts a completion summary message; Grafana and the web frontend surface an in-app badge/inbox.** No escalation path for unanswered `hitl_required` approvals in v1 (unlike ADR-0024, no revisit-trigger metric defined yet for this one) — the run simply waits for its owner (or, if shared, an authorised viewer) to return; revisit only if real usage shows abandoned approvals becoming a problem.
 
 ## 3. Considered options
 

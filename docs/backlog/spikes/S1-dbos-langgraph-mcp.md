@@ -120,6 +120,6 @@ version.
 
 ## 7. Out of scope
 
-Real prompts, real investigation quality, the Tool Gateway's authorization
+Real prompts, real investigation quality, the Tool Gateway's authorisation
 layers, streaming to a surface, multi-tenancy. This spike answers *does the
 execution substrate hold together* — nothing else.

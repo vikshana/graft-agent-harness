@@ -364,9 +364,9 @@ replay to be reproducible.
 
 ---
 
-## 5. Roles and authorization (C4 — ADR-0056)
+## 5. Roles and authorisation (C4 — ADR-0056)
 
-**The IdP authenticates; the harness authorizes.** The IdP establishes *who the
+**The IdP authenticates; the harness authorises.** The IdP establishes *who the
 Principal is* and nothing more. Role assignment, permission verbs and their
 evaluation are entirely ours, in our own tables. This satisfies the
 IdP-independence requirement (Entra / Keycloak / Auth0 / AD interchangeable
@@ -623,7 +623,7 @@ The identical pattern applies to `run_event` (ADR-0030), `audit_record` (ADR-001
 |---|---|---|
 | Capability token | `graft_tenant_id`, `graft_run_id`, `graft_principal_id`, tool classes | ADR-0010, ADR-0019 |
 | Event log rows | `graft_tenant_id`, `graft_run_id`, monotonic `graft_event_id` | ADR-0030 |
-| Grafana Live channel | `graft_tenant_id` + `graft_run_id` in the channel path; authorized in `SubscribeStream` | ADR-0031 |
+| Grafana Live channel | `graft_tenant_id` + `graft_run_id` in the channel path; authorised in `SubscribeStream` | ADR-0031 |
 | OTel spans | `graft_tenant_id` resource attribute, tagged at the Collector | ADR-0005, ADR-0008 |
 | Audit records | `graft_tenant_id`, `graft_principal_id`, `graft_run_id`, `caused_by` | ADR-0015 |
 | DBOS queue partition key | `graft_tenant_id` | ADR-0044 |

@@ -59,7 +59,7 @@ construction.
 
 Defence in depth at assembly time: enclose L2 and L3 in strict delimiters
 (`<tenant_instructions>`, `<principal_instructions>`) and state in L1 that they
-may never override L1 safety rules or authorization outcomes.
+may never override L1 safety rules or authorisation outcomes.
 
 **Both levels are versioned and recorded on the Run** — required for ADR-0015
 audit attribution and for ADR-0040's `fork_workflow` eval replay to be
@@ -100,7 +100,7 @@ The source research predated several locked decisions and is corrected here:
 | Topology context "from Neo4j" | Deferred — memory & knowledge is an unstarted session |
 | "Incident Memory — Mem0 / Vector DB" | Deferred — same session |
 | Single "Custom User Instructions" layer | **Two layers, Tenant then Principal, Tenant wins** (ADR-0062) |
-| User instructions stored in "User DB / Keycloak" | Our own tables. The IdP authenticates; it does not hold authorization or preference state (ADR-0056) |
+| User instructions stored in "User DB / Keycloak" | Our own tables. The IdP authenticates; it does not hold authorisation or preference state (ADR-0056) |
 
 ## 6. Implementation checklist
 

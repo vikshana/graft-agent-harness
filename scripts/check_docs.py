@@ -8,6 +8,8 @@
   5. no references to deleted directories (research/, open-questions/)
   6. every ADR is placed in a roadmap phase
   7. no bare section glyphs (ambiguous about which document)
+  8. no control/private-use characters (file corruption)
+  9. British spelling outside code, quotations and protocol tokens
 
 Usage: python3 scripts/check_docs.py
 """
@@ -27,6 +29,27 @@ DEAD_PATH_RE = re.compile(r"(?:research|open-questions)/[\w][\w.-]*")
 PROVENANCE = ("Promoted from", "Migrated from", "git history", "git show")
 
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)#][^)]*?)\)")
+
+# Spans exempt from the British-spelling rule: code, verbatim quotations,
+# filenames/URLs, OAuth grant types, and the capitalised `Authorization` header
+# / "MCP Authorization Server" proper noun. ONE alternation, so it cannot nest.
+EXEMPT_RE = re.compile(
+    r"(?s:```.*?```)"
+    r"|`[^`\n]*`"
+    r"|(?m:^>.*$)"
+    r"|\"[^\"\n]*\"|\u201c[^\u201d\n]*\u201d"
+    r"|\]\([^)\n]*\)"
+    r"|\S*(?:\.md|://)\S*"
+    r"|authorization[- ]code"
+    r"|Authoriz\w*"
+)
+AMERICAN_RE = re.compile(
+    r"\b(authoriz\w*|minimiz\w*|organiz\w*|categoriz\w*|recogniz\w*"
+    r"|normaliz\w*|standardiz\w*|summariz\w*|serializ\w*|behavior\w*)\b",
+    re.I)
+# NB: 'licensed'/'licensing' are correct British (licence = noun, license = verb),
+# so they are deliberately absent from the pattern above.
+CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ue000-\uf8ff]")
 ADR_REF_RE = re.compile(r"\bADR-(\d{4})\b")
 
 errors: list[str] = []
@@ -80,6 +103,26 @@ def main() -> int:
             aid = f"ADR-{num}"
             if aid not in adr_ids:
                 errors.append(f"{rel(p)}: reference to unknown {aid}")
+
+        # ---- 4b. no control characters or private-use placeholders
+        # (a masking bug once wrote NUL bytes into 97 files; links still
+        # resolved, so nothing else here would have caught it)
+        for m in CONTROL_RE.finditer(text):
+            errors.append(
+                f"{rel(p)}: control/private-use character "
+                f"{m.group(0)!r} at offset {m.start()} — corrupted file?")
+            break
+
+        # ---- 4c. British spelling outside exempt spans
+        for m in AMERICAN_RE.finditer(EXEMPT_RE.sub(lambda x: " " * len(x.group(0)), text)):
+            w = m.group(0)
+            if w.lower().endswith(("ise", "ised", "ises", "ising", "isation",
+                                   "isations", "iour", "iours", "ence")):
+                continue
+            errors.append(
+                f"{rel(p)}: American spelling '{w}' — use British form. "
+                f"Protocol tokens and quotations are exempt (backtick, quote "
+                f"or blockquote them).")
 
         # ---- 5a. the section glyph is ambiguous about *which* document
         if "\u00a7" in text and "check_docs" not in p.name:

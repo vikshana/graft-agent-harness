@@ -150,7 +150,7 @@ sequenceDiagram
 
 ## 5. What "spec-compliant" actually requires here — and what it doesn't
 
-Worth being precise, because the full interactive OAuth 2.1 dance (authorization
+Worth being precise, because the full interactive OAuth 2.1 dance (authorisation
 code + PKCE, dynamic client registration) is aimed at a **human-facing** client
 connecting to a **third-party** MCP server it doesn't already trust — e.g. a
 desktop AI app connecting to some external SaaS's MCP endpoint for the first
@@ -170,7 +170,7 @@ What we actually need from the spec for this hop is narrower:
 
 This matters because it would be easy to over-build here — implementing a full
 interactive OAuth AS for an internal, backend-only hop is effort spent on a
-problem (a human needing to authorize a third-party client) that doesn't exist
+problem (a human needing to authorise a third-party client) that doesn't exist
 yet in our system.
 
 ---

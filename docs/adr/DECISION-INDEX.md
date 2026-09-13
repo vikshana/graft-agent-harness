@@ -138,7 +138,7 @@ Mechanism: [`../design/tenancy-and-scoping.md`](../design/tenancy-and-scoping.md
 | [ADR-0053](tenancy/0053-tenant-lifecycle-is-discovered-provisioning-ready-suspended.md) | Tenant lifecycle is discovered, provisioning, ready, suspended | 🟢 accepted | 2026-09-13 |  |
 | [ADR-0054](tenancy/0054-run-ownership-is-private-by-default-and-irreversibly-promotable.md) | Run ownership is private by default and irreversibly promotable | 🟢 accepted | 2026-09-13 |  |
 | [ADR-0055](tenancy/0055-approval-authority-is-initiator-only.md) | ~~Approval authority is initiator-only~~ | ⚪ superseded | 2026-09-13 | **superseded by** [ADR-0065](identity/0065-approval-authority-follows-the-driver.md), [ADR-0066](streaming/0066-control-liveness-is-three-independent-server-side-clocks.md) |
-| [ADR-0056](tenancy/0056-the-idp-authenticates-and-the-harness-authorizes.md) | The IdP authenticates and the harness authorizes | 🟢 accepted | 2026-09-13 |  |
+| [ADR-0056](tenancy/0056-the-idp-authenticates-and-the-harness-authorizes.md) | The IdP authenticates and the harness authorises | 🟢 accepted | 2026-09-13 |  |
 | [ADR-0057](tenancy/0057-budget-ceilings-are-per-scope-with-distinct-at-cap-behaviour.md) | Budget ceilings are per-scope with distinct at-cap behaviour | 🟢 accepted | 2026-09-13 | amends [ADR-0017](tenancy/0017-limits-form-a-ceiling-chain.md) |
 | [ADR-0058](tenancy/0058-schedules-are-a-governed-tenant-scoped-resource.md) | Schedules are a governed Tenant-scoped resource | 🟢 accepted | 2026-09-13 |  |
 

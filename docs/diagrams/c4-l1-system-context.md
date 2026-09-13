@@ -63,7 +63,7 @@ attributable to, and why an **unlinked** human cannot start a Run at all (ADR-00
 **Role resolution order** (ADR-0056): explicit Group→Role mapping → explicit
 per-Principal grant → zero-config default derived from the live Grafana basic
 role, computed at token-mint time and never stored. **The IdP authenticates; the
-harness authorizes.**
+harness authorises.**
 
 ---
 
@@ -606,7 +606,7 @@ flowchart TB
   not a customer system either. That single fact closed r2's most dangerous open
   question: we control the version, so `idForwarding` is simply on.
 - **Grafana carries four roles now:** human surface (J3), gateway to telemetry
-  (J1), identity asserter (ADR-0009), *and* authorization oracle for check-then-act
+  (J1), identity asserter (ADR-0009), *and* authorisation oracle for check-then-act
   (ADR-0023). That concentration is the main structural risk in the design. It is
   mitigated by us operating it, not eliminated.
 - **Schedules are drawn as a trigger, not as config.** They start Runs, they
