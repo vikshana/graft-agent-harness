@@ -12,7 +12,7 @@
 
 ## 1. Who, and what they're actually doing
 
-**Actor:** `workspace_admin` (Grafana Org Admin, or IdP-mapped equivalent).
+**Actor:** `tenant_admin` (Grafana Org Admin, or IdP-mapped equivalent).
 
 They are not writing YAML. They are answering three questions per tool, in
 order:
@@ -53,7 +53,7 @@ actually an Admin, not just "was an Admin five minutes ago".
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  Connections & Tools ▸ Tool Servers                                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  Available to your workspace                                                 │
+│  Available to your Tenant                                                 │
 │                                                                                │
 │  ┌───────────────────────────────────────────────────────────────────────┐  │
 │  │ ● Grafana MCP           Connected via this Grafana instance      [ON] │  │
@@ -85,7 +85,7 @@ actually an Admin, not just "was an Admin five minutes ago".
   capability against a placeholder.
 - **Grafana MCP shows "Connected via this Grafana instance"** with no separate
   connect step — it rides the org's existing identity, consistent with
-  `grafana-authz-delegation.md` §3.2. This is the payoff of workspace = Grafana
+  `grafana-authz-delegation.md` §3.2. This is the payoff of Tenant ≡ Grafana
   Org: one fewer credential to manage, visibly, on the first screen the admin sees.
 - **Write-capable count is surfaced at the list level**, before drilling in. An
   admin scanning this list should see risk at a glance, not discover it three
@@ -127,7 +127,7 @@ Clicking **Configure** on Grafana MCP:
   an example call.
 - **Class is fixed per tool by the platform catalogue** — an admin cannot
   reclassify `update_alert_rule` as "Read". They choose *whether* to enable it,
-  not *what kind of action it is*. This stops policy drift where every workspace
+  not *what kind of action it is*. This stops policy drift where every Tenant
   quietly relabels risky tools as safe to avoid friction.
 - **Act-class tools carry a warning glyph inline in the list**, not only inside a
   detail view, because the scan-and-decide moment is here, in the checkbox list.
@@ -144,7 +144,7 @@ the write-gating rule from `c4-l1-system-context.md` §4:
 │  Enable "update_alert_rule"?                                                  │
 │                                                                                │
 │  This tool can modify alert rules directly. Enabling it means the agent      │
-│  may propose changes here, and — if your workspace policy allows — execute   │
+│  may propose changes here, and — if your Tenant policy allows — execute   │
 │  them after a human approves.                                                │
 │                                                                                │
 │  This will:                                                                   │
@@ -153,7 +153,7 @@ the write-gating rule from `c4-l1-system-context.md` §4:
 │   • Be recorded in the audit trail, attributed to you                        │
 │                                                                                │
 │  Scope this to:                                                               │
-│   ( ) All alert rules in this workspace                                       │
+│   ( ) All alert rules in this Tenant                                       │
 │   (•) Only alert rules in folders:  [ prod-alerts ▾ ] [ + ]                   │
 │                                                                                │
 │  Re-enter your password or approve via your identity provider to confirm.     │
@@ -205,12 +205,12 @@ sequenceDiagram
     participant UI as Plugin UI
     participant API as Harness API
     participant AUTHZ as Enforcement check
-    participant DB as Workspace policy store
+    participant DB as Tenant policy store
     participant AUD as Audit chain
 
     Admin->>UI: Save changes
-    UI->>API: PUT /workspaces/{id}/tool-policy
-    API->>AUTHZ: Is caller still workspace_admin, right now?
+    UI->>API: PUT /tenants/{id}/tool-policy
+    API->>AUTHZ: Is caller still tenant_admin, right now?
     AUTHZ-->>API: yes
     alt any tool moved to enabled AND class = Act
         API->>Admin: Require step-up (§5)
@@ -241,12 +241,12 @@ ambiguity:
 | Disabled | ☐ | greyed | Default, or admin turned it off |
 | **Enabled, awaiting step-up** | ☑ (pending) | Act ⚠ | Save clicked, re-auth not yet completed — must not silently activate |
 | **Blocked by connection** | ☐, disabled control | — | Server has no connection yet (Screen 1) |
-| **Blocked by platform** | ☐, disabled control, tooltip | — | Platform catalogue disables this tool globally, e.g. a CVE — workspace cannot override |
+| **Blocked by platform** | ☐, disabled control, tooltip | — | Platform catalogue disables this tool globally, e.g. a CVE — Tenant cannot override |
 | **Deprecated** | as configured | strikethrough badge | Platform marks it retiring; still runs, admin is warned |
 
 The "Blocked by platform" state matters for the ceiling chain in
 `c4-l1-system-context.md` §4 — the UI must make visible that some doors are not
-the workspace admin's to open, rather than just failing silently on save.
+the tenant admin's to open, rather than just failing silently on save.
 
 ---
 
@@ -270,7 +270,7 @@ admin has to correlate manually.
 
 ## 10. Open questions
 
-1. **Who can grant the step-up in §5 if the workspace admin's IdP session has no
+1. **Who can grant the step-up in §5 if the tenant admin's IdP session has no
    step-up mechanism configured** (no WebAuthn, no re-prompt configured at the
    IdP)? Falls back to password re-entry, but not all IdPs support that either
    for federated logins.

@@ -43,6 +43,7 @@ document, read it as **Tenant**.
 | **Group** | An IdP-supplied group used to grant Roles within a Tenant. An *abstraction* — never "AD group". | abstract `groups` claim value | N:M with Role |
 | **Role** | A named bundle of permission verbs, scoped to Platform or Tenant. Ours, stored as data, extensible without code changes. | `graft_role_id` | — |
 | **Run** | **Every** agent interaction — chat, dashboard/alert building, and RCA investigation alike (D36). One durable DBOS workflow (D39), one event stream (D30), one audit chain (D15). | `graft_run_id` | N:1 to Tenant |
+| **Driver** | The single Principal holding interactive control of a Run at a given moment — the only one who may steer, cancel **or approve** (D65). `NULL` means **unowned**; any `responder` or `tenant_admin` viewer may then claim it. A private Run's driver is its initiator by construction. **Control is authority**, so every transfer is audited. | `run_control.driver_graft_principal_id` | 0..1 per Run |
 | **Connection** | A Tenant-owned credentialed link to an external system (datasource, K8s cluster, repo, ticketing). | `graft_connection_id` | N:1 to Tenant |
 | **Schedule** | A Tenant-owned recurring trigger for a Run (D47). Always produces `system_initiated`, structurally read-only Runs (D13). | `graft_schedule_id` | N:1 to Tenant |
 | **CustomInstruction** | Prompt text influencing **how** the agent responds — tone, persona, format, house conventions. Exists at **Tenant** and **Principal** level. **Never grants capability** (D62). | — | N:1 to Tenant or Principal |
@@ -53,7 +54,7 @@ document, read it as **Tenant**.
 
 | Value | Meaning | Consequence |
 |---|---|---|
-| `user_initiated` | A human started it, or a human approved a proposal within it | May hold write tool classes |
+| `user_initiated` | A human started it, **or a human claimed control of it** (D66) — claiming control is the moment a human attaches, and is therefore the upgrade point | May hold write tool classes |
 | `system_initiated` | Webhook/alert or Schedule started it; no human present | **Structurally read-only** (D13) — the capability token never contains a write tool class |
 
 ---
@@ -226,3 +227,5 @@ An unprefixed identifier in any new code or document is a **review defect**.
 | "session" | **Run** | There is exactly one primitive (D36) |
 | "AD group" | **Group** | IdP-independence is an explicit requirement (D56) |
 | "investigation" (as a type) | **Run** with RCA intent | Not a distinct primitive (D36) |
+| "the initiator approves" | **the driver approves** | Approval follows control, not origin (D65). The initiator has no standing approval right |
+| "the agent writes to Slack" | **the agent narrates** | Surface output is not a ToolClass and never passes the Tool Gateway (D67) |

@@ -6,6 +6,11 @@
 > (C1–C5) and discharges **R3**, **R4** and risk **X6**.
 >
 > Vocabulary is normative per [`../GLOSSARY.md`](../GLOSSARY.md) (D52).
+>
+> ⚠️ **Partially superseded 2026-09-13 by D65/D66.** §4.1a and §4.2 below were
+> written under **D55's initiator-only approval**, which has been **withdrawn**.
+> **Approval now follows the driver.** Those two sections are updated in place;
+> everything else in this document (D49–D54, D56–D58) stands unchanged.
 
 ---
 
@@ -214,13 +219,36 @@ handed over.
 - **`viewer` can never drive** — it holds no `run:steer` verb (D56).
   `responder` and `tenant_admin` may request control.
 - **Explicit handover is the normal path.** Two escape hatches stop a
-  disconnected driver deadlocking the Run: **auto-release after 10 minutes** of
-  driver disconnect or idle, and **`tenant_admin` force-release**. Both emit an
-  audit record. This closes the driver-disconnect item left open in
+  disconnected driver deadlocking the Run, and they are governed by **three
+  independent server-side clocks** (D66), not one vague timeout:
+
+  | Clock | Anchored on | Default | Reset by | On expiry |
+  |---|---|---|---|---|
+  | **Idle** | `last_interaction_at` | 10 min | An *interactive act* | Warn at T−60s, then release |
+  | **Disconnect** | `disconnected_at` | 2 min | Transport reconnect | Release |
+  | **Approval** | the `action_proposed` event | ≥72h | **Never** | Run closes `expired` (D47) |
+
+  An **interactive act** is sending a prompt, steering, cancelling, requesting /
+  granting / releasing control, approving or rejecting, or clicking "keep
+  control". It is **not** receiving events, scrolling, replaying history or tab
+  focus — the idle clock asks *"is a human still deciding?"*, which is a
+  different question from the disconnect clock's *"is a browser still open?"*.
+
+  Slack has no transport liveness, so a **Slack driver runs on the idle clock
+  alone** — a documented asymmetry. Evaluation is a **30s scheduled sweep**, not
+  a durable timer reset per interaction, so release fires within 30s of nominal.
+  **On release, control goes to nobody** — never auto-handed to a specific
+  viewer. Both escape hatches emit an audit record. This closes the
+  driver-disconnect item left open in
   `../adr/open-questions/02-streaming-and-events.md` §0.4.
-- **Driving is not approving.** Approval remains initiator-only (D55), so a
-  handover — or a force-release — never transfers approval authority. This is
-  what keeps the escape hatches safe.
+- **Driving *is* approving — the wheel carries the authority** (D65, superseding
+  D64's framing). A handover or force-release therefore **does** transfer
+  approval authority, which is why every transfer is an audit record and why
+  **`tenant_admin` force-release is restricted and `platform_admin` does not
+  have it at all**. We chose **detection over friction**: no cool-down, because
+  during an incident a deliberate delay is itself a harm — but a force-release
+  followed by the forcer approving in the same Run is flagged as a
+  **self-escalation pattern** and tracked as a platform metric.
 
 **Run list filters: "Mine" and "Tenant".** Deliberately *not* the originally
 proposed "mine / my team / all": there is no "my team" because **Group is not a
@@ -229,27 +257,63 @@ scoping layer** (D51), and no "all" because cross-Tenant listing does not exist
 
 ### 4.2 Approval authority
 
-**Approval is initiator-only in v1**, on top of the existing constraints:
-approval is a distinct, re-authenticated act that always happens in Grafana
-(D14), and the action must independently pass **check-then-act** against the
-initiator's own Grafana permission (D23).
+**Approval belongs to the current driver** (D65, superseding D55's
+initiator-only rule), on top of the existing constraints: approval is a distinct,
+re-authenticated act that always happens in Grafana (D14), and the action must
+independently pass **check-then-act** against **the approver's own** Grafana
+permission (D23).
 
 ```
 may_approve(principal, run, action) =
-        principal == run.initiator                      (D55)
+        principal == run.control.driver                 (D65)
     AND re-authenticated in Grafana                     (D14)
     AND check-then-act passes for this action           (D23, D26 basic roles)
-    AND run.origin == user_initiated                    (D13)
+    AND run.origin == user_initiated                    (D13, D66)
+    AND principal's Role holds action:approve           (D56)
 ```
 
-**Accepted consequence — stated plainly:** if the initiator goes offline, the
-approval is **not** transferable, and the Run expires (D47, ≥72h). This
-deliberately trades R4's original "Bob approves when Alice is offline"
-rationale for a simpler, unambiguous attribution story in v1.
+Three properties make this safe, and all three are structural rather than
+procedural:
 
-**Revisit metric** (same pattern as D24): track the **expired-approval rate** —
-Runs closed `expired` with a pending `hitl_required`. If it becomes material,
-promote to a delegated-approval or tenant-approver model.
+1. **A private Run degenerates to the old rule.** It has exactly one
+   participant, who is the driver, so driver-based approval *is* initiator-only
+   there — with no special case to write or get wrong.
+2. **`viewer` can never drive, so `viewer` can never approve.** The Role lattice
+   already excludes the dangerous case (D56).
+3. **Approval binds to `proposal_hash`, never to intent.** A driver who inherits
+   a pending proposal approves exactly the artefact that was reviewed. A
+   proposal is therefore **not** invalidated by a control change — regenerating
+   it would mean re-running the agent and would make handover useless — and the
+   approving UI states *"proposed while X was driving; you are approving as Y"*.
+   The audit chain records proposer-context and approver separately, with the
+   control-transfer record as a `caused_by` edge, so it shows not just who
+   approved but **how they came to be allowed to**.
+
+**Claiming control on a `system_initiated` Run is the moment a human attaches,
+and is therefore the upgrade point to `user_initiated`** (D66) — refining D13,
+which located the upgrade at approval. Until someone claims, such a Run has no
+driver and nobody can approve, which is correct: it is structurally read-only
+until exactly that moment.
+
+**What changed, and what it cost.** D55 made approval non-transferable and
+accepted that an offline initiator meant an expired Run — deliberately trading
+R4's "Bob approves when Alice is offline" rationale for unambiguous attribution.
+**That trade is withdrawn.** D65 restores the handover and pays a different,
+smaller price: **control is now authority**, so taking the wheel is an
+authority-bearing act and must be audited as one.
+
+The property D55 was actually protecting was never *"only Alice may approve"* —
+it was *"a named, re-authenticated human, acting within their own permissions,
+approved this exact artefact, and we can prove how they came to be allowed to."*
+All four clauses survive. Only the one that was an implementation convenience
+was dropped.
+
+**Revisit metric** (same pattern as D24) is now the **force-release-then-
+self-approve rate** — a `tenant_admin` taking the wheel from a live driver and
+approving in the same Run. If that is common rather than exceptional, the answer
+is friction after all: a cool-down, or a second approver for force-released
+proposals. The **expired-approval rate** is retained as a secondary signal, but
+is expected to fall sharply now that any eligible `responder` can take over.
 
 ### 4.3 Platform admin break-glass
 
@@ -315,12 +379,18 @@ RBAC is Grafana-Enterprise-only.
 |---|---|---|---|
 | `platform_admin` | Platform | **GrafanaServerAdmin** | Tenant lifecycle, platform ceilings, quota overrides, break-glass read/cancel/suspend (§4.3). **Cannot approve.** |
 | `tenant_admin` | Tenant | **GrafanaOrgAdmin** | Connections, tool policy (D16), budgets, Schedules, Group→Role mapping, quota-increase requests. Plus everything `responder` can do. |
-| `responder` | Tenant | **Grafana Editor** | Create / steer / cancel / share own Runs; propose actions; **approve their own Run's actions** subject to §4.2 |
+| `responder` | Tenant | **Grafana Editor** | Create / steer / cancel / share own Runs; propose actions; **approve any Run they are driving**, subject to §4.2 |
 | `viewer` | Tenant | **Grafana Viewer** | Read tenant-shared Runs. No Run creation. |
 
-**`operator` was considered and removed.** A separate approve-granting role
-deadlocked against initiator-only approval: an Editor-mapped `responder` could
-start a Run whose proposed action nobody was permitted to approve. Approval
+**`operator` was considered and removed.** Under D55 the argument was a
+deadlock: a separate approve-granting role meant an Editor-mapped `responder`
+could start a Run whose proposed action nobody was permitted to approve.
+**D65 dissolves that particular deadlock** — a `responder` can now approve any
+Run they are driving — but the conclusion is unchanged and the reason is now
+cleaner: a standing approve-granting role is **redundant**, because approval
+authority is already resolved per action at call time from *who holds the wheel*
+plus check-then-act. A fifth role would add a second, stale source of truth for
+a question that is answered live. Approval
 authority is instead resolved **per action, at call time, by D23** — which is
 exactly D16's "per-user variation is an authorisation filter at call time,
 never a separate configuration". An Editor may approve a dashboard change
@@ -576,4 +646,9 @@ The identical pattern applies to `run_event` (D30), `audit_record` (D15),
 5. **Backfill reconciler run-book** — first execution against hundreds of
    existing GrafanaOrgs should be rehearsed; it is idempotent by design, but
    the first run is the one that proves it.
-6. **Expired-approval rate** instrumentation, as the D55 revisit trigger.
+6. **Force-release-then-self-approve rate** instrumentation, as the D65 revisit
+   trigger; **expired-approval rate** retained as a secondary signal (D55's
+   original trigger, now expected to fall sharply).
+7. **Control-clock defaults are guesses** (D66): 10 min idle, 2 min disconnect,
+   30s sweep granularity. These are now *security* parameters rather than UX
+   ones, and nothing has measured them. Instrument from day one.

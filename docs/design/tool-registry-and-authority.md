@@ -45,7 +45,7 @@ Their eight mitigations, mapped to decisions already taken:
 | 3. **Avoid open-ended extensions** | **D4** — no arbitrary code execution in v1 |
 | 4. Minimize extension permissions | **D22** — SA role recomputed to the minimum across enabled tools |
 | 5. Execute in the user's context | **D11 / D23** — check-then-act under the Principal's own identity |
-| 6. Require user approval | **D14 / D55** — re-authenticated, in Grafana, initiator-only |
+| 6. Require user approval | **D14 / D65** — re-authenticated, in Grafana, **by the current driver** (was initiator-only under D55, withdrawn 2026-09-13) |
 | 7. **Complete mediation** — *"implement authorization in downstream systems rather than relying on an LLM to decide if an action is allowed"* | **D7** — the Tool Gateway is a separate service precisely because in-process policy is not a boundary |
 | 8. Sanitise inputs and outputs | Collector scrubbing (D8/D25); §4.2 below |
 
@@ -171,7 +171,9 @@ Every value here is **configuration, not a constant**, and
 | Minimum Schedule interval | **1 hour** | D58 |
 | Budget warning threshold | **80% of ceiling** | D57 |
 | Approval expiry | **72 hours** | D47 |
-| Driver idle/disconnect auto-release | **10 minutes** | D64 |
+| Driver idle auto-release | **10 min** (warn at T−60s) | D66 |
+| Driver **disconnect** auto-release | **2 min** — a separate clock | D66 |
+| Control-clock evaluation | **30s sweep**, not a per-Run durable timer | D66 |
 | Per-Principal / per-Tenant monthly quota | **unset — platform-assigned at onboarding** | D57 |
 
 Monthly token/cost ceilings stay deliberately unset: any number chosen before

@@ -262,7 +262,9 @@ linked for the surface they are acting from.**
 - **D15 requires the audit actor to derive from a verified credential**, never
   from agent or tool output. An unlinked SlackUser cannot produce a compliant
   audit record — there is no `graft_principal_id` to attribute to.
-- **D55 makes approval initiator-only.** "Initiator" is meaningless without a
+- **D65 makes approval driver-based** (superseding D55's initiator-only rule,
+  withdrawn 2026-09-13). The argument below is unchanged and in fact
+  strengthened: *driver* is as meaningless as *initiator* without a
   resolved Principal.
 - **D24 remains true and is not weakened:** Slack-initiated Runs are still
   *authorized* by the Tenant service account's ceiling. Linking is about
