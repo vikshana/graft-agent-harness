@@ -79,12 +79,12 @@ Four, each with one job. Conflating them is how audit trails become unusable.
 
 | ID | Scope | Purpose |
 |---|---|---|
-| `run_id` | One investigation | The unit humans reason about. Appears in Slack, Grafana, PR bodies, downstream user-agents |
+| `graft_run_id` | One investigation | The unit humans reason about. Appears in Slack, Grafana, PR bodies, downstream user-agents |
 | `trace_id` | One investigation | OTel correlation. Joins audit to telemetry |
 | `record_id` | One audit record | Primary key |
 | `caused_by` | → `record_id` | The causal edge. Makes the DAG traversable in both directions |
 
-Plus `tenant_id` + `workspace_id` on **every** record, enforced by Postgres RLS.
+Plus `tenant_id` + `graft_tenant_id` on **every** record, enforced by Postgres RLS.
 
 **Rule:** telemetry may be sampled; **audit is never sampled**. They are different
 stores with different retention and different mutability guarantees. The
@@ -102,14 +102,14 @@ stores with different retention and different mutability guarantees. The
   "occurred_at": "timestamptz",
 
   "tenant_id":   "uuid",
-  "workspace_id": "uuid",
-  "run_id":      "uuid",
+  "graft_tenant_id": "uuid",
+  "graft_run_id":      "uuid",
   "trace_id":    "hex",
   "span_id":     "hex",
 
   // Derived server-side from the credential. Never from agent output.
   "actor": {
-    "principal_id":        "uuid | null",     // null => system-initiated
+    "graft_principal_id":        "uuid | null",     // null => system-initiated
     "on_behalf_of":        "uuid | null",
     "initiated_by_surface": "grafana|slack|webhook|schedule|api",
     "initiation_mode":     "user_initiated|system_initiated",
@@ -121,7 +121,7 @@ stores with different retention and different mutability guarantees. The
   "downstream_identity": {
     "mode":       "impersonated|service_account|oauth_passthru",
     "as":         "alice@corp.example | sa-graft-prod",
-    "connection_id": "uuid"
+    "graft_connection_id": "uuid"
   },
 
   "payload":     { },                  // kind-specific, scrubbed
@@ -152,7 +152,7 @@ stores with different retention and different mutability guarantees. The
 ### 5.1 Run-scoped capability token
 
 Minted once when a run starts. Audience-restricted to the Tool Gateway. Contains
-`{run_id, tenant_id, workspace_id, principal_id?, initiation_mode,
+`{graft_run_id, tenant_id, graft_tenant_id, graft_principal_id?, initiation_mode,
 allowed_tool_classes[], exp}`.
 
 - The agent worker holds **only** this. It has no other credential and cannot
@@ -191,15 +191,15 @@ anchor time. No blockchain required; this is just a Merkle chain with a notary.
 
 Our audit trail alone is insufficient. A customer must be able to answer *"what
 did this agent do to my cluster?"* from **their** logs, without trusting ours.
-So we propagate `run_id` outward wherever the protocol allows:
+So we propagate `graft_run_id` outward wherever the protocol allows:
 
 | System | Propagation | Where it lands |
 |---|---|---|
-| **Kubernetes** | `Impersonate-User` + `Impersonate-Group`, and `run_id` in the User-Agent | K8s audit log shows the real user with `impersonatedBy`, plus our run id |
-| **GitHub** | `run_id` in PR body and a commit trailer `Graft-Run-Id:` | Git history, permanently |
-| **Jira / ServiceNow** | `run_id` in a field or comment | Ticket record |
+| **Kubernetes** | `Impersonate-User` + `Impersonate-Group`, and `graft_run_id` in the User-Agent | K8s audit log shows the real user with `impersonatedBy`, plus our run id |
+| **GitHub** | `graft_run_id` in PR body and a commit trailer `Graft-Run-Id:` | Git history, permanently |
+| **Jira / ServiceNow** | `graft_run_id` in a field or comment | Ticket record |
 | **Prometheus / Loki / Tempo** | `X-Graft-Run-Id` header on queries | Datasource access logs |
-| **Slack** | `run_id` in the thread's message metadata | Conversation record |
+| **Slack** | `graft_run_id` in the thread's message metadata | Conversation record |
 
 This is the difference between "we have logs" and "you can independently verify
 what we did".
@@ -210,7 +210,7 @@ what we did".
 
 | Concern | Choice | Why |
 |---|---|---|
-| Queryable index | Append-only Postgres table, RLS by `tenant_id`/`workspace_id` | Joins, filters, the UI needs it |
+| Queryable index | Append-only Postgres table, RLS by `tenant_id`/`graft_tenant_id` | Joins, filters, the UI needs it |
 | Durable record | Object storage with object-lock, periodic export + signed chain head | Immutability that survives a compromised database |
 | Mutability | **Insert-only.** No `UPDATE`, no `DELETE`. Enforced by grants, not convention | A revision is a new record causally linked to the old one |
 | Retention | **12 months minimum, with the most recent 3 months immediately queryable (hot)** | Compliance regime is **PCI-DSS** (confirmed) — mirrors PCI-DSS 10.5.1's "at least 12 months, 3 immediately available" audit-log retention requirement |

@@ -108,8 +108,8 @@ sequenceDiagram
     participant GMCP as grafana-mcp<br/>(single shared service)
     participant GF as Grafana API
 
-    AGENT->>TG: call_tool(query_prometheus, run_id=R1)
-    Note over TG: R1 resolves to workspace_id=W1
+    AGENT->>TG: call_tool(query_prometheus, graft_run_id=R1)
+    Note over TG: R1 resolves to graft_tenant_id=W1
     TG->>SEC: get_credential(W1, "grafana-mcp")
     SEC-->>TG: SA token for graft-harness-W1
     TG->>GMCP: MCP tool call (hop A, network-isolated, no caller-auth header)<br/>Authorization: Bearer <W1 SA token>
@@ -119,8 +119,8 @@ sequenceDiagram
     TG-->>AGENT: Result
 
     Note over AGENT,GF: A concurrent call for a different run, workspace W2,<br/>on the same shared grafana-mcp process:
-    AGENT->>TG: call_tool(query_prometheus, run_id=R2)
-    Note over TG: R2 resolves to workspace_id=W2
+    AGENT->>TG: call_tool(query_prometheus, graft_run_id=R2)
+    Note over TG: R2 resolves to graft_tenant_id=W2
     TG->>SEC: get_credential(W2, "grafana-mcp")
     SEC-->>TG: SA token for graft-harness-W2
     TG->>GMCP: MCP tool call<br/>Authorization: Bearer <W2 SA token>
@@ -144,8 +144,8 @@ two, and they're handled at different layers.
 
 ### 4.1 Multiple workspaces (orgs) — handled above
 
-Covered by §3: different SA token per call, resolved by `run_id →
-workspace_id`. `grafana-mcp` never sees two workspaces' credentials conflated,
+Covered by §3: different SA token per call, resolved by `graft_run_id →
+graft_tenant_id`. `grafana-mcp` never sees two workspaces' credentials conflated,
 because it never sees "a workspace" at all — only "a credential for this one
 call," and its own client cache is keyed on exactly that credential.
 

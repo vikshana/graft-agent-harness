@@ -1,21 +1,107 @@
 # Open Question 03 — Tenancy, Scoping & Ownership
 
-> **Purpose of this document.** Self-contained briefing for a dedicated deep-dive
-> session. Nothing here is decided, **except C1 (deployment model), which was
-> resolved as a side effect of `01-identity-and-access.md`'s identity work —
-> see §0 below.**
+> **Status: 🟢 Fully resolved for v1 (2026-09-13).** The original briefing
+> (§0A–§6 below) is preserved as the historical record. **§0 summarises the
+> resolutions** — locked as **D49–D58** in
+> [`../DECISION-REGISTER.md`](../DECISION-REGISTER.md) and written up in
+> [`../../design/tenancy-and-scoping.md`](../../design/tenancy-and-scoping.md),
+> with vocabulary normalised in [`../../GLOSSARY.md`](../../GLOSSARY.md).
 >
-> Related: `01-identity-and-access.md` (who the principal is),
-> `02-streaming-and-events.md` (who may subscribe to a run).
->
-> **Why this one is urgent:** every other decision writes rows, events, spans and
-> audit records. If the scoping columns and the enforcement mechanism aren't
-> settled early, retrofitting isolation is one of the genuinely expensive
-> rewrites. It is cheap now and brutal later.
+> Discharges **R3**, **R4** and risk **X6**. Remaining items are
+> implementation-time, not architectural.
 
 ---
 
-## 0. What's already resolved, carried in from `01-identity-and-access.md`
+## 0. Resolution summary
+
+### 0.1 What changed the shape of this question
+
+Three corrections during the interview reshaped the briefing's premise:
+
+- **The four-layer scope tree collapsed to one layer.** `Tenant → Workspace
+  → Group → Principal` assumed Tenant and Workspace were distinct. They are
+  not: Workspace was defined as 1:1 with a GrafanaOrg, and a GrafanaOrg is
+  1:1 with a customer team, which is what `tenant_id` already identified.
+  **Two keys for one concept is a bug, not prudence.** `workspace_id` was
+  deleted; **`graft_tenant_id` is the single scoping key** (D51). Critically
+  this simplifies in the *reversible* direction — adding a billing parent
+  above Tenant later is a new table and a join; adding a scoping key *below*
+  every existing row is the expensive rewrite the briefing rightly feared.
+- **Vocabulary was actively ambiguous, in three directions at once.**
+  "tenant" is already Mimir/Loki's `X-Scope-OrgID`; "org" means both
+  GrafanaOrg and Slack Enterprise Grid org; "workspace" meant both ours and
+  Slack's. Resolved by a normative glossary (D52), a `graft_` prefix on our
+  own keys, a rule that foreign terms are never used bare, and by deleting
+  "Workspace" from our vocabulary entirely — which eliminated the Slack
+  collision for free.
+- **D28 was mis-framed as a scoping dimension.** `slack_enterprise_id` is not a
+  scope; it is part of *which external identifier we store* for the Slack
+  provider. It becomes a column on a standard identity-federation table
+  (`principal_identity`), and scopes nothing. `graft_principal_id` — ours — is the
+  key everything else hangs from.
+
+Two contradictions were surfaced and resolved rather than shipped:
+
+- **`operator`-as-approver deadlocked against initiator-only approval.** An
+  Editor-mapped member could start a Run whose proposed action *nobody* was
+  permitted to approve — not them (wrong role), not anyone else
+  (initiator-only). Resolved by deleting the `operator` role and letting
+  **check-then-act (D23) decide approval per action at call time**, which is
+  what D16 already specified.
+- **The briefing's C1 leaning ("model `tenant_id` anyway, the column is
+  nearly free") was right, but its four-layer companion was not.** Keeping
+  `workspace_id` "just in case" would have meant two columns that must always
+  agree — a standing source of isolation bugs, enforced by nothing.
+
+### 0.2 Resolutions, per original question
+
+| # | Question | Resolution | Decision |
+|---|---|---|---|
+| **C1** | Deployment model | **Grafana layer already resolved by D21.** Rest of stack: **two independent regional deployments** (GCP, AliCloud), shared-multi-tenant within each. `graft_tenant_id` globally unique across both, externally sourced from existing platform team metadata. **Run data, events, artifacts and audit records never leave their home region**; cross-region access is a read-path proxy via a globally-replicated, metadata-only Tenant Directory. Resolves D48's **X5**. | **D49** |
+| **C1′** | Isolation under hundreds of concurrent users | **Thread/async-task isolation is explicitly *not* a security boundary.** Isolation is the run-scoped capability token (D10) + Tool Gateway credential resolution by Tenant (D7/D18) + Postgres RLS. Two hard rules: **no ambient or thread-local Tenant context** (scope travels explicitly through D48's `runtime` seam), and **RLS via `SET LOCAL` per transaction**, never `SET` — pooler-safe, which matters because D48 named the pooler as the binding scale constraint. Concurrency is a *scheduling* problem, already solved by D44's partitioned queues. | **D50** |
+| **C2** | Grafana Org ↔ scope mapping | **Tenant ≡ GrafanaOrg, 1:1, single scoping layer.** `grafana_org_id` is a **mapped attribute**, not the key — it is a region-local integer assigned by Grafana and collides across the two deployments. Tenant resolution per surface: Grafana **follows the active GrafanaOrg** (no resolution logic at all in that surface); Slack uses **SlackChannel→Tenant binding** for channels and a per-Principal default for DMs, asking only as fallback. **No cross-Tenant Runs in v1** — no audited exception to build, and none to get wrong. | **D51**, **D52** |
+| **C2a** | Brownfield: hundreds of existing GrafanaOrgs | **Tenant lifecycle `discovered → provisioning → ready → suspended`.** A reconciler creates a **credential-less `discovered` row for every existing GrafanaOrg** — free, so the capability is one click away for all teams. **`discovered → ready` is the explicit admin act that fires D22's synchronous SA provisioning**, so D22 is untouched and we never hold hundreds of unused credentials. One idempotent code path for both backfill and new orgs. Platform SAs use a reserved `graft-platform-` prefix with a do-not-modify display name (a *signal*), backed by a **drift reconciler** (the *control*, since Grafana OSS cannot prevent an OrgAdmin editing them), scheduled rotation, and per-SA metrics: token age, time-to-expiry, last use, drift events. | **D53** |
+| **C3** | Run ownership & visibility | **D36 confirmed and supersedes R4.** `user_initiated` Runs are **private to the initiator**, promotable to tenant-shared; **promotion is irreversible** (un-sharing is security theatre). `system_initiated` Runs are **born tenant-shared** — nobody initiated them, so private-by-default would make them invisible to everyone. Archival changes storage tier and mutability, **not** visibility. A de-provisioned Principal's private Runs become **inaccessible in-product**; the end-to-end audit trail (D15, 12 months) is the forensic path, not the UI. | **D54** |
+| **C3a** | Approval authority | **Initiator-only in v1**, on top of D14 (re-authenticated, in Grafana) and D23 (check-then-act against the initiator's own Grafana permission). **Accepted consequence, stated plainly:** an offline initiator means the approval is not transferable and the Run expires (D47, ≥72h) — deliberately trading R4's "Bob approves when Alice is offline" rationale for unambiguous attribution. **Revisit metric: expired-approval rate** (same pattern as D24). **`platform_admin` break-glass = read/cancel/suspend in any Tenant, explicitly *not* approve** — separation of duties; the actor who can reach every Tenant must not authorise writes in every Tenant. Every break-glass act is a non-sampled audit record. **Two-person rule deferred** — mutually exclusive with initiator-only by definition. | **D55** |
+| **C4** | Role vocabulary & where mappings live | **The IdP authenticates; the harness authorizes.** Roles, verbs and evaluation are entirely ours, in our own tables — satisfying IdP-independence and sidestepping D26's Enterprise-only RBAC finding. **Four roles**: `platform_admin`, `tenant_admin`, `responder`, `viewer`. **`operator` deleted** (see §0.1). **Zero-config default mapping from the Grafana basic role** — essential for brownfield, since hundreds of Tenants cannot each need manual mapping before first use — overridden by explicit Group→Role mapping where an admin wants something different. Roles and verbs are **rows, not code**, so the model is extensible by data change plus a D16 policy version bump. **De-provisioning is TTL-only** (~10 min, D10), with the existing deny-list for incidents; no SCIM, no polling. | **D56** |
+| **C5** | Budget & quota scopes | Ceiling chain loses a layer: **`platform ≥ tenant ≥ principal ≥ run`**. At-cap behaviour is **per-scope, not uniform**: per-run → **graceful terminate** emitting the best hypothesis so far; per-principal and per-tenant → **hard stop** (new Runs rejected, in-flight finish); per-connection → **throttle/queue**, never failing the Run, because it protects *customer* infrastructure. **No degrade-to-a-cheaper-model** — model choice is a platform decision driven by evals and availability, and switching mid-Run would silently change the quality characteristics an operator is about to act on. **Monthly reset.** Quotas are platform-set and platform-customisable per Principal and per Tenant; increases are **requested from the UI**, creating a pre-filled, idempotency-keyed service-desk ticket. In-product quota indicator, threshold notification, and platform-side monitoring of consumption, at-cap rejections and request fulfilment. | **D57** |
+| **X6** | Schedules as a tenant-scoped resource | **Ceiling on Schedule count per Tenant + minimum interval** (proposed 10 and 1h, pending cost data), platform-customisable. **Versioned policy, never overwritten** (D16). Schedule consumption **counts against the Tenant's monthly quota** — a Schedule is not a budget bypass. **All scheduled Runs are `system_initiated` and therefore structurally read-only (D13)**, which bounds Schedule risk to *cost*, not *blast radius*. Platform-internal timers (infra-memory refresh, SA drift reconciliation) use the same substrate but are not user-facing Schedules and consume no ceiling. | **D58** |
+
+### 0.3 The vocabulary fix (D52)
+
+Full table in [`../../GLOSSARY.md`](../../GLOSSARY.md). The essentials:
+
+| Ours | Key | Maps to | Not to be confused with |
+|---|---|---|---|
+| **Tenant** | `graft_tenant_id` | **GrafanaOrg**, 1:1 | Mimir/Loki `LGTMTenant` (`X-Scope-OrgID`) |
+| **Principal** | `graft_principal_id` | Grafana user / **SlackUser** / bot / schedule | — |
+| **Group** | IdP `groups` claim | AD / Keycloak / Auth0 / Entra group | — |
+| **Run** | `graft_run_id` | — | "session", "investigation" (one primitive, D36) |
+| *(deleted)* | ~~`workspace_id`~~ | — | **SlackWorkspace** (`slack_workspace_id`) |
+
+`slack_enterprise_id`, `slack_workspace_id` and `slack_channel_id` are **attributes and locators, not
+scoping columns**. v1 supports a single SlackEnterprise and a single
+SlackWorkspace, which is precisely why SlackChannel→Tenant binding carries the
+weight: one Slack install serves every Tenant.
+
+### 0.4 Remaining action items (implementation-time, not open questions)
+
+- **Quota numbers** — per-Principal and per-Tenant monthly ceilings need real
+  cost data. Same status as D47's expiry duration: mechanism locked, number
+  untaken.
+- **Schedule defaults** (10/Tenant, 1h minimum) to confirm against expected
+  Run cost.
+- **Quota-increase path** — ITSM API integration in v1, or pre-filled
+  deep-link fallback first.
+- **Tenant Directory** replication substrate and staleness budget for the
+  cross-region read proxy.
+- **Backfill reconciler run-book** — idempotent by design, but the first run
+  against hundreds of existing GrafanaOrgs is the one that proves it.
+- **Expired-approval rate** instrumentation, as D55's revisit trigger.
+
+---
+
+## 0A. Inputs carried in from `01-identity-and-access.md`
 
 - **C1 (deployment model) is resolved: option (a)/(c) shape.** D21 confirms
   **the platform owns and operates a single, shared Grafana instance;
@@ -29,14 +115,14 @@
 - **New input for C2 (Grafana Org ↔ Workspace mapping): Slack Enterprise Grid
   needs a second scoping dimension.** Confirmed live against `docs.slack.dev`
   (2026-09-12, D28): Enterprise Grid workspaces expose a constant
-  `enterprise_id`, and **a single human can hold distinct per-workspace
+  `slack_enterprise_id`, and **a single human can hold distinct per-workspace
   identities within the same Grid org**, reconciled by Slack via "global user
-  IDs." This means `slack_workspace_id` (`team_id`) alone is not a stable
+  IDs." This means `slack_workspace_id` (`slack_workspace_id`) alone is not a stable
   enough key for a Slack-linked principal once a customer's Slack is on Grid.
   **When this session runs, R3's scope model (`Tenant → Workspace → Group →
-  Principal`) needs `enterprise_id` recognised as a first-class scoping
-  dimension for Slack-linked principals** — keyed by `enterprise_id` (+
-  global user id) where present, falling back to `team_id` (+ user id) for
+  Principal`) needs `slack_enterprise_id` recognised as a first-class scoping
+  dimension for Slack-linked principals** — keyed by `slack_enterprise_id` (+
+  global user id) where present, falling back to `slack_workspace_id` (+ user id) for
   non-Grid, single-workspace installs. This is additive to the existing model
   (an extra identity key, not a new tree layer) but should be designed in from
   the start of this session rather than retrofitted.
@@ -70,8 +156,8 @@ Tenant            — isolation & billing boundary. Separate data, possibly
                     Entra group). Grants roles within a workspace.
             └─ Principal — the human. Also service principals (webhooks, Slack bot,
                     scheduled runs). **For Slack-linked principals on Enterprise
-                    Grid, keyed by `enterprise_id` + global user id, not
-                    `team_id` + user id — see §0.**
+                    Grid, keyed by `slack_enterprise_id` + global user id, not
+                    `slack_workspace_id` + user id — see §0.**
 ```
 
 Why each layer earns its place:
@@ -117,7 +203,7 @@ deployment-topology question (tracked in the Decision Register §7).
 
 ---
 
-### C2 — Grafana Org ↔ Workspace mapping
+### C2 — Grafana Org ↔ Workspace mapping *(resolved — D51/D52, §0.2)*
 
 Proposed: a Grafana Org maps to a harness Workspace.
 
@@ -131,7 +217,7 @@ Proposed: a Grafana Org maps to a harness Workspace.
 - How do the **custom frontend** and **Slack** select a workspace, given neither
   has a Grafana org context? Slack channel → workspace mapping? User default?
   **Now sharper per §0: if the Slack workspace is on Enterprise Grid, this
-  mapping needs to consider `enterprise_id`, not just `team_id`/channel, since
+  mapping needs to consider `slack_enterprise_id`, not just `slack_workspace_id`/channel, since
   the same human may have different identities per Grid workspace.**
 - Can an investigation ever legitimately span workspaces (e.g. a cross-cloud
   incident touching two orgs' datasources)? If yes, the "never cross workspaces"
@@ -139,7 +225,7 @@ Proposed: a Grafana Org maps to a harness Workspace.
 
 ---
 
-### C3 — Investigation ownership and visibility
+### C3 — Investigation ownership and visibility *(resolved — D54/D55, §0.2)*
 
 *Current leaning:* investigations are **workspace-owned**, not user-owned, with
 visibility `private | workspace | link-shared`, defaulting to `workspace`.
@@ -161,7 +247,7 @@ multi-player activity.
 
 ---
 
-### C4 — Where do IdP-group → role mappings live?
+### C4 — Where do IdP-group → role mappings live? *(resolved — D56, §0.2)*
 
 | Option | Pros | Cons |
 |---|---|---|
@@ -179,7 +265,7 @@ revocation).
 
 ---
 
-### C5 — Budget and quota enforcement scopes
+### C5 — Budget and quota enforcement scopes *(resolved — D57/D58, §0.2)*
 
 Token/cost budgets, tool-call limits, and rate limits could be enforced per
 **workspace**, per **user**, per **run**, or all three.
@@ -202,11 +288,11 @@ Do budgets reset periodically or per-incident?
 
 ---
 
-## 4. Cross-cutting consequences to design for
+## 4. Cross-cutting consequences to design for *(superseded by `../../design/tenancy-and-scoping.md` §7)*
 
 - **Data model:** `tenant_id` + `workspace_id` on every row, event, span, and
   audit record. Enforced with **Postgres row-level security**, not application
-  code alone. **Slack-linked principal rows additionally carry `enterprise_id`
+  code alone. **Slack-linked principal rows additionally carry `slack_enterprise_id`
   where the source workspace is on Grid (§0).**
 - **Secrets:** namespaced per workspace. A workspace's datasource/cluster/repo
   credentials must be unreachable from another workspace's run, including via a
@@ -235,14 +321,14 @@ Do budgets reset periodically or per-incident?
 
 ---
 
-## 6. What a good outcome looks like
+## 6. What a good outcome looks like *(all met — see §0)*
 
 1. ~~A definitive answer on the deployment model (C1) and therefore how real
    `Tenant` is.~~ **Resolved for the Grafana layer by D21 — see §0.** Still
    need the equivalent answer for the rest of the stack (harness API, Tool
    Gateway, secret store deployment topology).
 2. A workspace-resolution rule for all four surfaces (C2), **now including the
-   Grid `enterprise_id` dimension (§0).**
+   Grid `slack_enterprise_id` dimension (§0).**
 3. An ownership + visibility + approval-authority model for investigations (C3).
 4. A role/permission vocabulary and where mappings live (C4).
 5. A budget enforcement matrix with defined at-cap behaviour (C5).

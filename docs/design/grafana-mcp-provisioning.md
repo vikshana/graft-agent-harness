@@ -48,13 +48,13 @@ sequenceDiagram
 
     OPS->>GF: (as platform Server Admin) POST /api/orgs<br/>{name: workspace display name}
     GF-->>OPS: org_id
-    OPS->>GF: POST /api/serviceaccounts (X-Grafana-Org-Id: org_id)<br/>{name: "graft-harness-{workspace_id}", role: Viewer}
+    OPS->>GF: POST /api/serviceaccounts (X-Grafana-Org-Id: org_id)<br/>{name: "graft-harness-{graft_tenant_id}", role: Viewer}
     GF-->>OPS: service_account_id (grafana-mcp SA)
-    OPS->>GF: POST /api/serviceaccounts (X-Grafana-Org-Id: org_id)<br/>{name: "graft-plugin-{workspace_id}", role: Viewer}
+    OPS->>GF: POST /api/serviceaccounts (X-Grafana-Org-Id: org_id)<br/>{name: "graft-plugin-{graft_tenant_id}", role: Viewer}
     GF-->>OPS: service_account_id (plugin enforcement SA)
     OPS->>GF: POST /api/serviceaccounts/{id}/tokens ×2<br/>{secondsToLive: 90d}
     GF-->>OPS: tokens (shown once)
-    OPS->>SEC: store both, keyed by workspace_id
+    OPS->>SEC: store both, keyed by graft_tenant_id
     OPS->>AUD: emit connection_provisioned ×2<br/>{actor: platform, initiation_mode: system_initiated}
     OPS-->>OPS: workspace marked ready — auto-triage may now be enabled
 ```

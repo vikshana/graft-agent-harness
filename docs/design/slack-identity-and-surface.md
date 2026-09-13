@@ -242,7 +242,7 @@ actions, which is the bar D14 is actually held to.
    the canonical identity model (§5 of `01-identity-and-access.md`)?** —
    **answered: yes** (§1.3, §5 decision 8). Still to do: thread this change
    through `03-tenancy-and-scoping.md`'s scope model (R3) concretely — it
-   currently assumes `workspace_id` as a stable key, and Grid may need
+   currently assumes `graft_tenant_id` as a stable key, and Grid may need
    `enterprise_id` recognised as a first-class scoping dimension alongside it.
 3. Read `docs.slack.dev/ai/agent-sessions` and `docs.slack.dev/ai/
    agent-context-management` before the L2 container pass — both are directly

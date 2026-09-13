@@ -88,8 +88,8 @@ Two things the customer's IdP cannot do:
    live IdP session at the moment a message arrives; a webhook has no user at
    all. Neither can complete a redirect-based OAuth flow against the customer's
    IdP per request. The IdP is only ever in the picture for the Grafana/UI path.
-2. **It cannot mint our claims.** The token hop-1 needs carries `run_id`,
-   `workspace_id`, `initiation_mode`, `allowed_tool_classes[]` (D10) — harness
+2. **It cannot mint our claims.** The token hop-1 needs carries `graft_run_id`,
+   `graft_tenant_id`, `initiation_mode`, `allowed_tool_classes[]` (D10) — harness
    concepts the customer's IdP has no notion of, and shouldn't be taught, since
    IdP-independence is an explicit requirement (`03-tenancy-and-scoping.md` C4).
 
@@ -138,7 +138,7 @@ sequenceDiagram
 
     SURF->>API: Native credential<br/>(X-Grafana-Id / linked Slack principal / webhook secret)
     API->>API: Verify (D9) · resolve principal · resolve roles ·<br/>decide initiation_mode (D13)
-    API->>API: Mint run-scoped token<br/>{aud: tool-gateway, run_id, workspace_id,<br/>initiation_mode, allowed_tool_classes[], exp: 10m}
+    API->>API: Mint run-scoped token<br/>{aud: tool-gateway, graft_run_id, graft_tenant_id,<br/>initiation_mode, allowed_tool_classes[], exp: 10m}
     API-->>AGENT: Start run with this token
     AGENT->>TG: MCP call, Authorization: Bearer <token>
     TG->>API: (independently) fetch JWKS, validate signature + aud + exp

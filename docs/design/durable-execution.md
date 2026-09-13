@@ -18,7 +18,7 @@
 | **E3** | **Pattern B primary** — the run *is* the durable workflow. Pattern A (durable-workflow-as-tool) used **only** for write actions. |
 | **E4** | **LangGraph keeps no checkpointer.** DBOS step checkpoints are the single source of execution truth. |
 | **E5** | **Step granularity: one LLM call = one step; one tool call = one step; one sub-agent = one child workflow; one run = one parent workflow.** |
-| **E6** | **Idempotency: `workflow_id` for run creation, `deduplication_id` for trigger dedupe, `(run_id, step_id, idempotency_key)` for write side effects.** Fork/eval runs are structurally read-only. |
+| **E6** | **Idempotency: `workflow_id` for run creation, `deduplication_id` for trigger dedupe, `(graft_run_id, step_id, idempotency_key)` for write side effects.** Fork/eval runs are structurally read-only. |
 | **E7** | **Cancellation is at the next step boundary.** No `preemptible` steps in v1. |
 | **E8** | **Budgets: queue partition keys for rate/concurrency, workflow deadlines for wall clock, agent + Tool Gateway for semantic breakers.** |
 | **E9** | **D33's signal table is replaced by DBOS `send`/`recv`.** D30's event log is unaffected. |
@@ -261,7 +261,7 @@ Three distinct layers, each with a different key:
 |---|---|---|
 | **Run creation** (duplicate webhook, retried API call, double-click) | `workflow_id` set from a caller-supplied idempotency key | Enqueuing twice with the same `workflow_id` yields one run |
 | **Trigger dedupe** (alert storm re-firing the same alert) | `deduplication_id` on the queue | Only one workflow with a given dedupe ID may be `ENQUEUED`/`PENDING` on a queue at a time |
-| **Write side effects** (PR, Jira, silence, remediation) | `(run_id, step_id, idempotency_key)` | Passed to the Tool Gateway and to the upstream API's own idempotency facility where one exists |
+| **Write side effects** (PR, Jira, silence, remediation) | `(graft_run_id, step_id, idempotency_key)` | Passed to the Tool Gateway and to the upstream API's own idempotency facility where one exists |
 
 The third layer is the one that carries real production risk and is the reason
 R8's "side-effect idempotent" clause exists. It must survive retry, reconnect,
@@ -323,7 +323,7 @@ rather than DBOS's `set_event`/streaming features, keeping D29/D30/D31 intact.
 | # | Use case | Mechanism | Notes |
 |---|---|---|---|
 | **a** | HITL approval wait | `recv(topic, timeout_seconds)` | **Now bounded** — see below. Survives restarts |
-| **b** | Scheduled / recurring RCA | `create_schedule` per workspace | Runtime-creatable/pausable/deletable, stored in the database — so per-workspace schedules are ordinary data, not config redeploys. **These are `system_initiated` runs and therefore structurally read-only per D13.** Must carry `tenant_id`/`workspace_id` per R3 and count against D17 ceilings |
+| **b** | Scheduled / recurring RCA | `create_schedule` per workspace | Runtime-creatable/pausable/deletable, stored in the database — so per-workspace schedules are ordinary data, not config redeploys. **These are `system_initiated` runs and therefore structurally read-only per D13.** Must carry `tenant_id`/`graft_tenant_id` per R3 and count against D17 ceilings |
 | **c** | Infra-memory refresh (`*/15`) | `apply_schedules` (static set, applied atomically at start) | Register §7 still defers the memory subsystem itself; only the timer mechanism is settled here |
 | **d** | Auto-close of stale runs | Sweeper schedule + per-run expiry | **Load-bearing for E10** — see below |
 | **e** | Per-run wall-clock deadline | `deadline_epoch_ms` at enqueue | Cancels the run **and all children**. Runaway protection and cancellation propagation in one field |
@@ -489,7 +489,7 @@ such as PgBouncer; (1) and (2) are the agent's and the Tool Gateway's problem.
 
 And if raw orchestration throughput *did* ever bind, DBOS's own answer is to
 **shard workflows across multiple Postgres databases** — for which R3's
-`tenant_id`/`workspace_id` is a natural shard key. That is a materially cheaper
+`tenant_id`/`graft_tenant_id` is a natural shard key. That is a materially cheaper
 escape than changing engines.
 
 ### 10.2 The realistic reasons to revisit — none of them are throughput
@@ -566,11 +566,11 @@ flows, so that domain and agent code never imports `dbos` directly:
 
 - `enqueue_run(...)` → `enqueue_workflow` with workflow ID, dedupe ID, partition
   key, deadline
-- `await_human(run_id, timeout)` → `recv`
-- `signal(run_id, message)` → `send`
+- `await_human(graft_run_id, timeout)` → `recv`
+- `signal(graft_run_id, message)` → `send`
 - `sleep_until(...)` → `DBOS.sleep`
-- `cancel(run_id)`, `resume(run_id)`, `fork(run_id, step)`
-- `list_runs(...)`, `list_steps(run_id)`
+- `cancel(graft_run_id)`, `resume(graft_run_id)`, `fork(graft_run_id, step)`
+- `list_runs(...)`, `list_steps(graft_run_id)`
 
 This is worth doing **regardless of migration**: it is the natural chokepoint for
 D15 audit emission, D29 event publication, R3 tenant scoping and D17 ceiling
