@@ -106,7 +106,7 @@ Not architectural questions — things to check before or during build.
 |---|---|
 | Grafana Live per-message size/throughput limits (undocumented) — prototype largest expected payload | ADR-0031 |
 | Exact `SubscribeStream` request/context shape against the plugin SDK | ADR-0031 |
-| DBOS system-DB migrations vs `FORCE ROW LEVEL SECURITY` / PCI scope — **[Gate S2](./spikes/S2-dbos-system-db-rls-pci.md): blocks C4 L3 *and* Phase 1** | ADR-0050 |
+| DBOS system-DB migrations vs `FORCE ROW LEVEL SECURITY` / PCI scope — **closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md)** | ADR-0050, ADR-0073 |
 | Reaper safety envelope | ADR-0038 |
 | Doubled worker capacity during blue/green drains | ADR-0046 |
 | Expired-approval rate instrumentation | ADR-0065 |

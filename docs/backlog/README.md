@@ -16,5 +16,6 @@ Anything decided moves to [`../adr/`](../adr/README.md); anything describing how
 a decided thing works moves to [`../design/`](../design/).
 
 **Which of these block delivery is answered in [`roadmap.md`](./roadmap.md) section 6.**
-Only one item gates Phase 1 as a real spike (**S2**); everything else resolves
-inside the phase that needs it.
+S2 was the Phase 1 spike gate and is closed by
+[`ADR-0073`](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).
+The remaining items resolve inside the phase that needs them.
