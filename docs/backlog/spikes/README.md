@@ -1,6 +1,6 @@
 1](./S1-dbos-langgraph-mcp.md) | Does LangGraph run beneath a DBOS workflow boundary with per-call step granularity? | **Phase 1** + C4 L3 | 5 days |
-| [S3](./S3-eval-sink.md) | Langfuse or Phoenix for the internal eval sink? | **Phase 1** | 2 days |
-| [S4](./S4-provisional-model.md) | Which model and serving stack for Phase 1? | **Phase 1** | 2 days |
+| S3 | Langfuse is the internal eval sink; see [ADR-0074](../../adr/observability/0074-langfuse-is-the-internal-evaluation-sink.md) | **Phase 1** | closed |
+| S4 | Model and serving arrangement follows organisation policy; see [ADR-0075](../../adr/platform/0075-organisation-policy-governs-model-and-serving-selection.md) | **Phase 1** | closed |
 
 S1 and S2 were the real blockers and are now closed. S2 is recorded in
 [`ADR-0073`](../../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).

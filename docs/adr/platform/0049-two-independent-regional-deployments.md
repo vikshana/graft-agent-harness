@@ -9,7 +9,7 @@ tags: [ platform, deployment ]
 supersedes: [ ]
 superseded_by: [ ]
 amends: [ ]
-amended_by: [ ]
+amended_by: [ ADR-0075 ]
 relates_to: [ ADR-0037 ]
 design: ../../design/platform-topology.md
 legacy_id: D49

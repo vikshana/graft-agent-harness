@@ -67,5 +67,7 @@ never a key.
 ## 4. Open work
 
 - Packaging (Helm/Terraform) and GPU/serving placement — tenancy itself is
-  settled, this is not.
+  settled, this is not. The approved model and serving arrangement is supplied
+  by organisation policy (ADR-0075); provider and routing detail remains a
+  Phase 2 decision.
 - Tenant Directory substrate.
