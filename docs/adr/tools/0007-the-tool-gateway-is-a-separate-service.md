@@ -25,24 +25,48 @@ legacy_id: D7
 
 ## 1. Context
 
-<!-- TODO(migration): extract the forces from the Decision text below. The register did not separate them. -->
+The agent needs to call tools against customer systems (Grafana,
+Kubernetes, GitHub, ticketing, etc.). The primary threat model is indirect
+prompt injection — malicious instructions arriving via application logs or
+other tool output — which means policy enforcement has to hold even when
+the agent process itself is compromised or manipulated. That rules out
+enforcement that lives inside the same process as the agent.
 
 ## 2. Decision
 
-**Tool Gateway** — the agent never calls MCP servers directly. A **separate service**, not a library, because in-process policy enforcement is not a security boundary (primary threat: indirect prompt injection from application logs).
+**Tool Gateway** — the agent never calls MCP servers directly. A
+**separate service**, not a library, because in-process policy enforcement
+is not a security boundary (primary threat: indirect prompt injection from
+application logs).
 
 ### 2.7b — folded from legacy `D7b`
 
-The Tool Gateway **speaks MCP in both directions**: an MCP server to the agent, an MCP client to upstreams. LangChain's `langchain-mcp-adapters` points at exactly one endpoint.
+The Tool Gateway **speaks MCP in both directions**: an MCP server to the
+agent, an MCP client to upstreams. LangChain's `langchain-mcp-adapters`
+points at exactly one endpoint.
 
 ## 3. Considered options
 
-<!-- TODO(migration): several register cells name the rejected option inline ("considered and rejected", "chosen over"). Lift them here. -->
+| Option | Verdict | Why |
+|---|---|---|
+| In-process policy enforcement (a library the agent calls into) | ❌ Rejected | Not a real security boundary against the primary threat (indirect prompt injection) — a compromised or manipulated agent process could bypass in-process checks. |
+| A separate Tool Gateway service, acting as an MCP server to the agent and an MCP client to upstream MCP servers | ✅ Chosen | Enforcement happens outside the agent process, so it holds even if the agent's own reasoning is manipulated; speaking MCP in both directions avoids `langchain-mcp-adapters`' single-endpoint limitation. |
 
 ## 4. Consequences
 
-<!-- TODO(migration): lift "accepted tension" / revisit metrics here. -->
+- **Positive —** policy enforcement is a genuine security boundary,
+  independent of what the agent process does or is tricked into doing.
+- **Negative / accepted trade —** an extra network hop and a service to
+  operate, rather than an in-process library call.
+- **Follow-on work —** the gateway must implement both MCP server and MCP
+  client roles, since `langchain-mcp-adapters` only points at one endpoint;
+  amended by ADR-0070 (streamable-HTTP only) and generalised by ADR-0068
+  (every customer system reached via gateway + MCP) and ADR-0069 (ships as
+  part of the Authority Service).
+- **Revisit trigger —** none observed.
 
 ## 5. Verification
 
-<!-- Claims marked "verified live" in the register carry their date inline in section 2; restate them here when this ADR is next touched. -->
+- Not separately verified against a live source; no claim in the original
+  register entry was marked "verified live" for this decision. Mechanism:
+  [`../../design/tool-registry-and-authority.md`](../../design/tool-registry-and-authority.md).

@@ -25,7 +25,13 @@ legacy_id: null
 
 ## 1. Context
 
-<!-- TODO(migration): extract the forces from the Decision text below. The register did not separate them. -->
+MCP servers can be exposed either over `stdio` (spawned as a local
+subprocess of the caller) or over streamable-HTTP (a network service). The
+Tool Gateway (ADR-0007) needs a transport for both its server role (facing
+the agent) and its client role (facing upstream MCP servers), and `stdio`
+carries known security implications for a service architecture — it is
+named in the MCP Security Best Practices document as the "stdio-in-proxy"
+risk.
 
 ## 2. Decision
 
@@ -33,12 +39,22 @@ legacy_id: null
 
 ## 3. Considered options
 
-<!-- TODO(migration): several register cells name the rejected option inline ("considered and rejected", "chosen over"). Lift them here. -->
+| Option | Verdict | Why |
+|---|---|---|
+| `stdio`-based MCP servers, spawned as local subprocesses | ❌ Rejected | Carries the "stdio-in-proxy" risk named in the MCP Security Best Practices document; does not fit a horizontally-scaled, network-isolated service architecture (ADR-0007, ADR-0018). |
+| Streamable-HTTP MCP servers exclusively | ✅ Chosen | Fits the Tool Gateway's network-service architecture and avoids the stdio-in-proxy risk class entirely. |
 
 ## 4. Consequences
 
-<!-- TODO(migration): lift "accepted tension" / revisit metrics here. -->
+- **Positive —** avoids the stdio-in-proxy risk class named in the MCP
+  Security Best Practices document; MCP servers can be deployed,
+  scaled and network-isolated like any other service.
+- **Negative / accepted trade —** any upstream MCP server or library that
+  only supports `stdio` cannot be used without an HTTP-facing wrapper.
+- **Follow-on work —** amends ADR-0007, which now specifies the transport
+  for the gateway's dual MCP server/client role.
+- **Revisit trigger —** none observed.
 
 ## 5. Verification
 
-<!-- Claims marked "verified live" in the register carry their date inline in section 2; restate them here when this ADR is next touched. -->
+- Confirmed by **spike S1** (2026-09-13, experiments E2/E6, per ADR-0041's Verification): step granularity was confirmed for a real streamable-HTTP MCP tool call, exercising this transport choice end to end.

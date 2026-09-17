@@ -1,70 +1,61 @@
 ---
 id: ADR-NNNN
-title: <Imperative, single decision. No "and".>
+title: <imperative, present-tense summary of the decision>
 status: proposed          # proposed | accepted | rejected | superseded | deprecated
 date: YYYY-MM-DD
-deciders: []
-tags: []
+deciders: [<name>]
+category: <platform|agent|tools|identity|tenancy|streaming|observability|conventions>
+tags: [<free-form>]
 supersedes: []
 superseded_by: []
 amends: []
 amended_by: []
 relates_to: []
-# verified: YYYY-MM-DD    # only if claims were checked against a live/primary source
+design: ../../design/<doc>.md   # or `none` if this decision has no living mechanism doc
+verified: YYYY-MM-DD       # omit unless checked against a live/primary source
 ---
 
-# ADR-NNNN — <Title>
+# ADR-NNNN — <title>
 
-> **Status: <status> (<date>).** <One sentence: what this decides, and what it
-> changes about a previous ADR, if anything.>
->
-> Vocabulary per [`../GLOSSARY.md`](../GLOSSARY.md).
+> Vocabulary per [`../../GLOSSARY.md`](../../GLOSSARY.md). Mechanism:
+> [`../../design/<doc>.md`](../../design/<doc>.md).
 
 ---
 
 ## 1. Context
 
-What forces this? State the problem, the constraints that are not negotiable
-(product constraints, compliance regime, prior accepted ADRs), and what breaks
-if we do nothing. Written so someone with no memory of the session understands
-why the question was even asked.
+What forces make this decision necessary right now? State the problem and the
+constraints, not the answer. No solution language here.
 
 ## 2. Decision
 
-**One paragraph, bolded lead, active voice.** The decision itself, stated so it
-can be checked against code in review.
-
-Then the operative detail — the rule, the shape, the invariant — only as far as
-is needed to make the decision unambiguous. Elaboration goes to `../design/`.
+One short paragraph: what was decided, stated as a direct, quotable claim.
+If this needs a design write-up longer than that, the surplus belongs in
+`design/`, not here (see [`README.md`](./README.md) section 4, rule 1).
 
 ## 3. Considered options
 
-Mandatory. Every serious option, including the chosen one, and **why each
-rejected one was rejected**. An option rejected without a recorded reason will
-be re-proposed within six months.
+Mandatory. Name every option that was seriously considered, including the one
+rejected, and say *why* it lost — not just that it did.
 
 | Option | Verdict | Why |
 |---|---|---|
-| **<Chosen>** | ✅ Chosen | |
-| <Alternative> | ❌ Rejected | |
-| <Alternative> | ⏸ Deferred | To <which ADR/backlog item>, and on what trigger |
+| <chosen option> | ✅ Chosen | <reason> |
+| <rejected option> | ❌ Rejected | <reason> |
 
 ## 4. Consequences
 
-Both directions. The good ones justify the decision; the bad ones are what stop
-it being relitigated as a surprise.
+Include the negative ones.
 
-- **Positive —**
-- **Negative / accepted trade —** State it plainly. "We deliberately trade X for
-  Y" is a complete and acceptable sentence.
-- **Follow-on work —** What must now exist because of this.
-- **Revisit trigger —** The observable condition or metric that reopens this.
-  Prefer a measurable one over "if it becomes a problem".
+- **Positive —** …
+- **Negative / accepted trade —** …
+- **Follow-on work —** …
+- **Revisit trigger —** what would make this worth reopening, or "none observed".
 
 ## 5. Verification
 
-Only for claims checked against a primary source. Cite **what** was checked,
-**against what**, and **when** — undated verification decays invisibly.
+How and when this was checked against a live/primary source (a spike, a
+running system, an upstream doc). Cite the source and the date. Omit only if
+truly nothing has been verified yet — say so explicitly rather than leaving
+this section silently empty.
 
-- `<claim>` — verified <date> against <source: live instance, RFC, vendor doc,
-  upstream source code>. Result: <what was actually observed>.

@@ -89,12 +89,13 @@ def main() -> int:
         text = p.read_text(encoding="utf-8")
 
         # ---- 1. relative links resolve
-        for link in LINK_RE.findall(text):
-            link = link.split("#")[0].strip()
-            if not link or link.startswith(("http://", "https://", "mailto:")):
-                continue
-            if not (p.parent / link).resolve().exists():
-                errors.append(f"{rel(p)}: dead link -> {link}")
+        if p.name != "0000-template.md":
+            for link in LINK_RE.findall(text):
+                link = link.split("#")[0].strip()
+                if not link or link.startswith(("http://", "https://", "mailto:")):
+                    continue
+                if not (p.parent / link).resolve().exists():
+                    errors.append(f"{rel(p)}: dead link -> {link}")
 
         # ---- 2. ADR references resolve
         for num in ADR_REF_RE.findall(text):
