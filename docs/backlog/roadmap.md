@@ -1,10 +1,11 @@
 # Delivery roadmap
 
-> **Status: 🟡 Proposed.** Rewritten 2026-09-13 against ADR-0001–ADR-0072.
+> **Status: 🟡 Proposed.** Rewritten 2026-09-13 and updated 2026-09-17 against
+> ADR-0001–ADR-0075.
 > Supersedes the pre-decision phase plan (in git history only).
 >
 > Phases 1–4 together deliver **v1**. Phase 5 is post-v1.
-> Four decisions gate Phase 1 — see section 6.
+> The Phase 1 decision gates are closed — see section 6.
 
 ---
 
@@ -69,14 +70,14 @@ Irreversible or prohibitively expensive to retrofit. These are not phased.
 
 ### Phase 1 — Walking skeleton *(MVP; internal only)*
 
-**Goal:** one alert → investigation → narrated finding, end to end, read-only, single region, with section 3's foundations
-correct.
+**Goal:** one alert → investigation → narrated finding, end to end, read-only, single region, with section 3's
+foundations correct.
 
 **In scope:** ADR-0021 · ADR-0001 · ADR-0009 · ADR-0003 · ADR-0036 · ADR-0037 · ADR-0039 · ADR-0040 · ADR-0041 ·
 ADR-0043 · ADR-0048 · ADR-0030 · ADR-0006 · ADR-0029 · ADR-0031 · ADR-0034 · ADR-0007 · ADR-0068 · ADR-0070 · ADR-0018 ·
 ADR-0010 · ADR-0013 · ADR-0004 · ADR-0063 (L1/L2/L4) · ADR-0050 · ADR-0051 · ADR-0052 · ADR-0059 · ADR-0005 · ADR-0008 ·
 ADR-0071 · ADR-0015 (chain, not yet WORM-anchored) · ADR-0054 (private runs only) · ADR-0062 · ADR-0067 (read class)
-ADR-0074  ADR-0075
+ADR-0074 (eval sink) · ADR-0075 (organisation-policy model selection; routing deferred to Phase 2)
 
 **Explicitly deferred:** every write path, approval, Slack, run sharing and the driver model, Schedules, second region,
 blue/green, quota ceilings, PAN scrubbing.
@@ -165,26 +166,30 @@ L2-denied** and need their own decision, never a phase.
 
 ## 6. Decision gates — what must be clarified before each phase
 
-**Two items gate Phase 1.** Both are cheap selections. S1 closed on
-2026-09-13 (see [ADR-0039](../adr/agent/0039-the-run-is-the-durable-workflow.md),
+**No open decision gates currently block Phase 1.** S1 closed on 2026-09-13
+(see [ADR-0039](../adr/agent/0039-the-run-is-the-durable-workflow.md),
 [ADR-0040](../adr/agent/0040-langgraph-is-compiled-with-no-checkpointer.md),
-[ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md)).
-Each remaining item has a self-contained brief in [`spikes/`](./spikes/README.md), written to
-be taken into its own session.
+[ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md)). S2 is closed by ADR-0073, S3 by
+ADR-0074, and S4 by ADR-0075. The remaining items are later-phase sessions with their own backlog entries.
 
-| #      | Item                                                                                                   | Gates           | Why it blocks                                                                                                                                                                                                                  | Cost        |
-|--------|--------------------------------------------------------------------------------------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
-| **S3** | Langfuse vs Phoenix for the eval sink                                                                  | **Phase 1**     | "Start testing and evaluating" requires somewhere to *look at* trajectories from day one                                                                                                                                       | ~1 day      |
-| **S4** | Model and serving arrangement follows organisation policy                                                  | **Closed**       | [ADR-0075](../adr/platform/0075-organisation-policy-governs-model-and-serving-selection.md) delegates the Phase 1 choice to organisation policy; the full routing session remains Phase 2                                         | closed       |
-| **S5** | Context compaction mechanics                                                                           | **Phase 2**     | Locked hierarchy, unlocked mechanics ([`../design/context-assembly.md`](../design/context-assembly.md) section 3). Long investigations overflow without it — but Phase 1 runs are short enough to defer                               |             |
-| **S6** | Eval methodology: ground truth, metrics, corpus size                                                   | **Phase 2**     | `fork_workflow` is the mechanism (ADR-0040); "good" is undefined. Phase 1 can rely on qualitative trajectory review                                                                                                            |             |
-| **S7** | HITL & write-action model; two-person rule                                                             | **Phase 3**     | Re-openable now that ADR-0055 is superseded                                                                                                                                                                                    |             |
-| **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link                                | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                                               |             |
-| **S9** | Tenant Directory substrate                                                                             | **Phase 4**     | Single region until then                                                                                                                                                                                                       |             |
+| #      | Item                                                                    | Gates           | Why it blocks                                                                                                                                                                                           | Cost   |
+|--------|-------------------------------------------------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
+| **S3** | Langfuse vs Phoenix for the eval sink                                   | **Closed**      | [ADR-0074](../adr/observability/0074-langfuse-is-the-internal-evaluation-sink.md) records the Phase 1 eval-sink selection.                                                                              | closed |
+| **S4** | Model and serving arrangement follows organisation policy               | **Closed**      | [ADR-0075](../adr/platform/0075-organisation-policy-governs-model-and-serving-selection.md) delegates the Phase 1 choice to organisation policy; the full routing session remains Phase 2               | closed |
+| **S5** | Context compaction mechanics                                            | **Phase 2**     | Locked hierarchy, unlocked mechanics ([`../design/context-assembly.md`](../design/context-assembly.md) section 3). Long investigations overflow without it — but Phase 1 runs are short enough to defer |        |
+| **S6** | Eval methodology: ground truth, metrics, corpus size                    | **Phase 2**     | `fork_workflow` is the mechanism (ADR-0040); "good" is undefined. Phase 1 can rely on qualitative trajectory review                                                                                     |        |
+| **S7** | HITL & write-action model; two-person rule                              | **Phase 3**     | Re-openable now that ADR-0055 is superseded                                                                                                                                                             |        |
+| **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                        |        |
+| **S9** | Tenant Directory substrate                                              | **Phase 4**     | Single region until then                                                                                                                                                                                |        |
 
-**S2 is closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).** Its findings determine the Phase 1 topology, RLS boundary and PCI treatment. **S4 is closed by [ADR-0075](../adr/platform/0075-organisation-policy-governs-model-and-serving-selection.md).** S3 remains a Phase 1 selection.
+**S2 is closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).** Its findings
+determine the Phase 1 topology, RLS boundary and PCI treatment. **S3 is closed
+by [ADR-0074](../adr/observability/0074-langfuse-is-the-internal-evaluation-sink.md), and S4
+by [ADR-0075](../adr/platform/0075-organisation-policy-governs-model-and-serving-selection.md).** The Phase 2
+model-routing session remains open.
 
-Everything else resolves inside the phase that needs it. **The backlog does not need clearing before the roadmap is finalised** — it is not a prerequisite planning round.
+Everything else resolves inside the phase that needs it. **The backlog does not need clearing before the roadmap is
+finalised** — it is not a prerequisite planning round.
 
 ## 7. What this roadmap deliberately does not do
 
