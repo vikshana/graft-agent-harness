@@ -274,3 +274,19 @@ independent compatibility and rollback proof.
 
 Both ADRs are proposed only; no accepted ADR was edited and no plan checkbox
 was changed. Parent validation and project-owner approval remain required.
+
+## Documentation reconciliation: proposed Gate 0.3 safety follow-ups
+
+> **Date:** 2026-09-18
+
+The roadmap now places proposed ADR-0076 and ADR-0077 in the Phase 1
+decision-gate text as Gate 0.3 safety follow-ups. ADR-0076 covers the unresolved
+recovery-fencing boundary; ADR-0077 covers dependency-version effects on
+application-version drains. Both remain proposed and require the project
+owner's decision; no accepted or proposed ADR, plan/spec, index, code, workflow,
+or phase commitment was changed.
+
+Gate 0.3 remains unresolved, and Gate 1 remains blocked until those owner
+decisions and the associated safety follow-up are complete. This note records a
+documentation reconciliation only and does not claim either proposal is
+accepted or close any gate.
