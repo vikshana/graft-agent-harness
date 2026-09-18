@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graft-agent-harness"
+version = "0.1.0"
+description = "API-first Phase 1 harness contract and provider core"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+include = ["harness*"]
+
+
