@@ -97,6 +97,25 @@ configured to repeat the supported baseline checks on Python 3.11, 3.12, and
 3.13. The plan was already present as an untracked file when this work began;
 it was preserved and was not regenerated.
 
+## Gate 0.2 Closure
+
+> **Date:** 2026-09-18
+
+The project owner approved the inventory-only licence control and the narrow
+Collector prerequisite ordering deviation. Pull request
+[`#1`](https://github.com/vikshana/graft-agent-harness/pull/1) then verified
+the committed baseline: the documentation workflow passed in 6 seconds and
+the `python-quality` matrix passed on Python 3.11 (30 seconds), 3.12 (30
+seconds), and 3.13 (34 seconds). The workflow run links are
+[`docs`](https://github.com/vikshana/graft-agent-harness/actions/runs/35387574257)
+and
+[`python-quality`](https://github.com/vikshana/graft-agent-harness/actions/runs/35387574218).
+
+PLAN Gate 0.2 is checked on the basis of that retained CI evidence. Docker was
+unavailable locally, so image-level validation of
+`otel/opentelemetry-collector-contrib:0.161.0` remains an observability
+integration follow-up; it is not claimed by this closure.
+
 ## Gate 0.2 Collector prerequisite
 
 > **Date:** 2026-09-18
