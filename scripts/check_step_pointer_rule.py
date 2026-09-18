@@ -15,6 +15,7 @@ of the configured pointer type names, fails. The default names are the
 contract-level names currently reserved for Phase 1; application code may add
 its concrete pointer type with ``--pointer-type``.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -132,11 +133,7 @@ def main() -> int:
 
     pointer_types = set(args.pointer_types or DEFAULT_POINTER_TYPES)
     files = python_files(args.paths)
-    errors = [
-        error
-        for path in files
-        for error in check_file(path, pointer_types)
-    ]
+    errors = [error for path in files for error in check_file(path, pointer_types)]
     for error in errors:
         print(f"ERROR {error}")
     print(f"checked {len(files)} Python file(s)")
@@ -146,5 +143,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-

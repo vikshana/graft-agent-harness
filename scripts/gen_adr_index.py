@@ -4,6 +4,7 @@
 The index is generated so it cannot drift from the ADRs it summarises.
 Run after adding or changing any ADR:  python3 scripts/gen_adr_index.py
 """
+
 from __future__ import annotations
 
 import re
@@ -33,13 +34,33 @@ STATUS_MARK = {
     "deprecated": "⚪",
 }
 
-CORE = ["ADR-0021", "ADR-0051", "ADR-0052", "ADR-0059", "ADR-0002", "ADR-0036",
-        "ADR-0037", "ADR-0039", "ADR-0007", "ADR-0068", "ADR-0063", "ADR-0010",
-        "ADR-0013", "ADR-0014", "ADR-0065", "ADR-0015", "ADR-0049"]
+CORE = [
+    "ADR-0021",
+    "ADR-0051",
+    "ADR-0052",
+    "ADR-0059",
+    "ADR-0002",
+    "ADR-0036",
+    "ADR-0037",
+    "ADR-0039",
+    "ADR-0007",
+    "ADR-0068",
+    "ADR-0063",
+    "ADR-0010",
+    "ADR-0013",
+    "ADR-0014",
+    "ADR-0065",
+    "ADR-0015",
+    "ADR-0049",
+]
 
 R_REDIRECTS = {
-    "R3": "ADR-0051", "R4": "ADR-0054", "R5": "ADR-0010",
-    "R6": "ADR-0011", "R7": "ADR-0033", "R8": "ADR-0037",
+    "R3": "ADR-0051",
+    "R4": "ADR-0054",
+    "R5": "ADR-0010",
+    "R6": "ADR-0011",
+    "R7": "ADR-0033",
+    "R8": "ADR-0037",
 }
 
 
@@ -58,7 +79,7 @@ def parse_front_matter(path: Path) -> dict[str, str] | None:
     return fm
 
 
-def rel_links(raw: str, index: dict[str, dict]) -> str:
+def rel_links(raw: str, index: dict[str, dict[str, str]]) -> str:
     ids = [x.strip() for x in raw.strip("[]").split(",") if x.strip()]
     out = []
     for i in ids:
@@ -70,7 +91,7 @@ def rel_links(raw: str, index: dict[str, dict]) -> str:
 
 
 def main() -> int:
-    adrs: dict[str, dict] = {}
+    adrs: dict[str, dict[str, str]] = {}
     for p in sorted(ADR_DIR.rglob("*.md")):
         if p.name.startswith("0000-") or p.parent == ADR_DIR:
             continue
@@ -92,12 +113,13 @@ def main() -> int:
     )
     total = len(adrs)
     active = sum(1 for a in adrs.values() if a.get("status") == "accepted")
-    L.append(f"\n**{total} decisions · {active} accepted · "
-             f"{total - active} superseded/other**\n")
+    L.append(f"\n**{total} decisions · {active} accepted · {total - active} superseded/other**\n")
 
     L.append("\n---\n\n## Start here — the core reading path\n")
-    L.append("The decisions that constrain everything else, in dependency order. "
-             "Roughly one sitting; the rest are consulted on demand.\n")
+    L.append(
+        "The decisions that constrain everything else, in dependency order. "
+        "Roughly one sitting; the rest are consulted on demand.\n"
+    )
     for i, aid in enumerate(CORE, 1):
         a = adrs.get(aid)
         if a:
@@ -105,13 +127,12 @@ def main() -> int:
     L.append("")
 
     for key, label, blurb in CATEGORY_ORDER:
-        rows = sorted((a for a in adrs.values() if a.get("category") == key),
-                      key=lambda x: x["id"])
+        rows = sorted((a for a in adrs.values() if a.get("category") == key), key=lambda x: x["id"])
         if not rows:
             continue
         L.append(f"\n---\n\n## {label}\n")
         L.append(f"*{blurb}*\n")
-        designs = {r.get("design") for r in rows if r.get("design")}
+        designs = {r["design"] for r in rows if r.get("design")}
         for d in sorted(designs):
             clean = d.replace("../../", "../")
             L.append(f"Mechanism: [`{clean}`]({clean})\n")
@@ -132,17 +153,24 @@ def main() -> int:
             title = r["title"]
             if st == "superseded":
                 title = f"~~{title}~~"
-            L.append(f"| [{r['id']}]({r['_path']}) | {title} | {mark} {st} | "
-                     f"{r.get('date','')} | {'; '.join(links)} |")
+            L.append(
+                f"| [{r['id']}]({r['_path']}) | {title} | {mark} {st} | "
+                f"{r.get('date', '')} | {'; '.join(links)} |"
+            )
 
     L.append("\n---\n\n## Legacy identifier map\n")
-    L.append("The register used `D`-numbers and `R`-numbers. Both are accepted "
-             "aliases in prose; these are the canonical targets.\n")
+    L.append(
+        "The register used `D`-numbers and `R`-numbers. Both are accepted "
+        "aliases in prose; these are the canonical targets.\n"
+    )
     L.append("| Legacy | Canonical |")
     L.append("|---|---|")
     legacy = sorted(
-        ((a["legacy_id"], a) for a in adrs.values()
-         if a.get("legacy_id") and a["legacy_id"] != "null"),
+        (
+            (a["legacy_id"], a)
+            for a in adrs.values()
+            if a.get("legacy_id") and a["legacy_id"] != "null"
+        ),
         key=lambda kv: int(kv[0][1:]),
     )
     for lid, a in legacy:
@@ -155,9 +183,17 @@ def main() -> int:
     L.append("| Legacy | Now |")
     L.append("|---|---|")
     L.append("| `D4a` | section 2 of [ADR-0004](tools/0004-no-arbitrary-code-execution-in-v1.md) |")
-    L.append("| `D7b` | section 2 of [ADR-0007](tools/0007-the-tool-gateway-is-a-separate-service.md) |")
-    L.append("| `D7a` | promoted to [ADR-0070](tools/0070-all-mcp-servers-are-streamable-http-never-stdio.md) |")
-    L.append("| `D8a` | promoted to [ADR-0071](observability/0071-two-telemetry-sinks-with-an-internal-only-eval-sink.md) |")
+    L.append(
+        "| `D7b` | section 2 of [ADR-0007](tools/0007-the-tool-gateway-is-a-separate-service.md) |"
+    )
+    L.append(
+        "| `D7a` | promoted to [ADR-0070](tools/0070-all-mcp-servers-are-streamable-http-never-"
+        "stdio.md) |"
+    )
+    L.append(
+        "| `D8a` | promoted to [ADR-0071](observability/0071-two-telemetry-sinks-with-"
+        "an-internal-only-eval-sink.md) |"
+    )
     L.append("")
 
     OUT.write_text("\n".join(L) + "\n", encoding="utf-8")
