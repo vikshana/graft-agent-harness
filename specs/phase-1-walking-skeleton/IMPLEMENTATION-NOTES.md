@@ -116,6 +116,24 @@ unavailable locally, so image-level validation of
 `otel/opentelemetry-collector-contrib:0.161.0` remains an observability
 integration follow-up; it is not claimed by this closure.
 
+## Gate 0.3 Environment Blocker
+
+> **Date:** 2026-09-18
+
+Gate 0.3 is the next unchecked task and cannot be bypassed: it requires real
+PostgreSQL and a transaction-mode PgBouncer environment to reproduce DBOS
+async, alive-but-silent recovery, executor-filtering, and application-version
+behaviour. The local machine has Docker and Colima installed, but the Docker
+daemon and Colima are stopped; `psql`, `pg_ctl`, and `pgbouncer` are not
+installed. No runnable prior S1/S2 experiment artefacts are in the repository.
+
+The locked current application baseline is DBOS 3.0.0, LangGraph 1.2.11, and
+`langchain-mcp-adapters` 0.3.1. Historic design evidence recorded DBOS 2.31.1
+and adapter 0.3.2, so Gate 0.3 must record the current resolved versions and
+must not represent historical results as reproduction evidence. The four
+experiments remain blocked until a disposable local container runtime or an
+approved external CI environment is available.
+
 ## Gate 0.2 Collector prerequisite
 
 > **Date:** 2026-09-18
@@ -179,3 +197,57 @@ evidence, not as the current result.
 The local Docker daemon remains unavailable. Image-level validation against
 `otel/opentelemetry-collector-contrib:0.161.0` is therefore deferred to
 observability integration and is not claimed here.
+
+## Gate 0.3 DBOS experiment harness
+
+> **Date:** 2026-09-18
+
+Added a bounded, throwaway experiment under `deployment/gate-0.3/` with only
+PostgreSQL 16 application/system databases and transaction-mode PgBouncer. The
+runner generates synthetic local runtime credentials into an ignored `.env`,
+never embeds real secrets, has no customer-system access, and writes redacted
+JSON evidence under `specs/phase-1-walking-skeleton/evidence/gate-0.3/`.
+
+The `gate_0_3` marker is registered separately from the fast `unit` and
+`contract` markers. Fast CI's `-m "unit or contract"` expression therefore does
+not silently run container experiments.
+
+The runner targets DBOS 3.0.0 from the lock and records dependency/runtime
+versions and exact commands. It covers async DBOS decorated steps, a no-
+checkpointer LangGraph capability boundary, streamable-HTTP MCP client
+construction, executor-id `list_workflows` filtering without Conductor, and
+same-source application-version stability plus source-change hashes. The
+isolated synthetic idempotency exercise is explicitly not alive-but-silent
+recovery proof. Public DBOS APIs do not safely prove alive-but-silent recovery;
+that question remains unresolved, and a timeout is not treated as proof.
+
+Gate 0.3 remains unchecked. Parent validation owns the container run and the
+interpretation of all experiment evidence.
+
+
+## Gate 0.3 experiment evidence
+
+> **Date:** 2026-09-18
+
+Added the bounded throwaway harness under `deployment/gate-0.3/`, with pinned
+local PostgreSQL 16 and PgBouncer image digests, separate application/system
+databases, transaction pooling, ignored synthetic runtime environment
+creation, and redacted evidence output. The `gate_0_3` pytest marker is
+registered separately; fast CI continues to select only `unit or contract`.
+
+The Docker experiment ran successfully on Docker 29.5.2 / Compose
+v2.40.3-desktop.1 using DBOS 3.0.0, Python 3.12.6, and the locked dependency
+graph. Application and transaction-mode pooler database probes connected. The
+redacted evidence files are `result.json` and `commands.json` under
+`specs/phase-1-walking-skeleton/evidence/gate-0.3/`.
+
+| Question | Actual result |
+|----------|---------------|
+| G03-A | Compatibility was corrected to `langchain-mcp-adapters==0.3.2` with `mcp==1.28.1`. The real synthetic streamable-HTTP MCP server/client invocation passed inside the DBOS workflow; the no-checkpointer LangGraph graph, decorated graph/MCP/failure-injection steps, and MCP failure capture also passed. |
+| G03-B | Alive-but-silent recovery remains unresolved through public APIs. Timeout is not treated as proof. The isolated synthetic idempotency exercise repeated one workflow ID/input and is not recovery proof. |
+| G03-C | Conductor-free `list_workflows(executor_id=...)` filtering passed: one matching workflow for `gate03-executor-a`, zero for the synthetic non-matching executor. |
+| G03-D | Identical-source application-version recomputation was stable; an in-process source-change registration produced a different recomputed hash. A second-process/reloaded-source deployment check remains required before claiming full source-change runtime behaviour. |
+
+Gate 0.3 remains unchecked. The raw local `.env` and containers were removed
+after the run; no credentials were written to evidence. Parent validation owns
+interpretation of this partial evidence and the remaining blockers.

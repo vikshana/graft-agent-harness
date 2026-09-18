@@ -9,10 +9,10 @@ description = "API-first Phase 1 harness contract and provider core"
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "dbos>=3.0,<4",
-    "langchain-mcp-adapters>=0.1,<1",
+    "langchain-mcp-adapters==0.3.2",
     "langchain-openai>=1.6,<2",
     "langgraph>=1.2,<2",
-    "mcp>=2.2,<3",
+    "mcp==1.28.1",
 ]
 
 [dependency-groups]
@@ -60,5 +60,6 @@ addopts = ["--strict-config", "--strict-markers", "-ra"]
 markers = [
     "unit: fast in-process unit tests",
     "contract: transport and machine-readable contract tests",
+    "gate_0_3: Gate 0.3 DBOS integration experiments requiring containers",
 ]
 filterwarnings = ["error"]
