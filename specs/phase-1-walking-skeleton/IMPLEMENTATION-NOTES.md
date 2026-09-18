@@ -251,3 +251,26 @@ redacted evidence files are `result.json` and `commands.json` under
 Gate 0.3 remains unchecked. The raw local `.env` and containers were removed
 after the run; no credentials were written to evidence. Parent validation owns
 interpretation of this partial evidence and the remaining blockers.
+
+## Proposed ADR dispositions from Gate 0.3
+
+> **Date:** 2026-09-18
+
+Drafted proposed [ADR-0076](../../docs/adr/agent/0076-recovery-requires-confirmed-termination-or-an-independent-fence.md)
+to amend ADR-0038. The Gate 0.3 G03-B evidence does not prove safe ownership
+fencing for an alive-but-silent executor, so stale heartbeat or timeout alone is
+not a safe recovery trigger. The proposal requires confirmed termination or an
+independently proven fence/lease compare-and-set before re-enqueueing, while
+leaving the production mechanism undecided pending crash, partition and
+concurrent-reaper tests.
+
+Drafted proposed [ADR-0077](../../docs/adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md)
+to amend ADR-0046. Gate 0.3 records DBOS 3 auto-version stability for identical
+source/runtime and a changed source hash; DBOS 3 also includes its package
+version in the computed hash. The proposal accepts dependency-upgrade drains as
+the conservative disposition, preserves version-compatible recovery, and keeps
+Git/image version pinning rejected. A controlled alternative requires an
+independent compatibility and rollback proof.
+
+Both ADRs are proposed only; no accepted ADR was edited and no plan checkbox
+was changed. Parent validation and project-owner approval remain required.
