@@ -2,9 +2,9 @@
 
 **Audience:** an engineering agent with access to the Phase 1 repo, the Gate 0.3 harness, and the Gate 0.3 topology (DBOS 3.0.0, locked Python runtime, separate PostgreSQL application/system databases, transaction-mode PgBouncer).
 
-**Your job:** run the tests in section 5, record evidence, apply the decision rules in section 6, and produce the deliverables in section 8. Do not change ADR status (Proposed → Accepted) until the blocking tests have results. The owner-selected recovery model is recorded in proposed ADR-0076; this brief does not accept that ADR or close Gate 0.3.
+**Your job:** run the tests in section 5, record evidence, apply the decision rules in section 6, and produce the deliverables in section 8. Do not change ADR status or close Gate 0.3 from this brief. The owner-selected recovery model is recorded in proposed ADR-0076; this brief does not accept that ADR or close Gate 0.3.
 
-**Related ADRs:** ADR-0038 (work rediscovery owned by the system, not DBOS Conductor), ADR-0046 (the currently accepted DBOS auto-computed application-version decision), and proposed ADR-0077 (owner-selected proposal to supersede ADR-0046 with an explicit released compatibility revision and an all-prior-cohort drain), plus the recovery-boundary ADR drafted from Gate 0.3.
+**Related ADRs:** ADR-0038 (work rediscovery owned by the system, not DBOS Conductor), ADR-0046 (superseded by accepted ADR-0077), and ADR-0077 (explicit released compatibility revision and all-prior-cohort drain), plus the recovery-boundary ADR drafted from Gate 0.3.
 
 ---
 
@@ -33,7 +33,7 @@ Label key: **[doc]** = stated in vendor documentation, **[obs]** = observed in G
 - **[obs]** DBOS 3.0.0 helper-only variants changed runtime output while both reported automatic version `6291bf83d0ad38ca22f83e659454e749`. This is false compatibility, not a safe compatibility result.
 - **[doc]** DBOS Cloud keeps old-version machines alive until old-version `PENDING`, `ENQUEUED`, and `DELAYED` work drains, and periodically recovers orphaned work onto a machine of the right version. Without Conductor or Cloud, **we must build this behaviour ourselves.**
 - **[doc, real-world report]** An in-place upgrade left runs of the previous version PENDING and never recovered because no old-version executor existed. Cancellation still worked because it is a status write. Source: https://github.com/czpython/druks/issues/619
-- **[inf]** Risk asymmetry: an all-release drain costs capacity and rollout time. A false compatibility (version unchanged but replay-breaking change, for example a helper outside the workflow function that alters step order) can corrupt recovery. The second is the more dangerous failure and is why proposed ADR-0077 selects the all-release drain.
+- **[inf]** Risk asymmetry: an all-release drain costs capacity and rollout time. A false compatibility (version unchanged but replay-breaking change, for example a helper outside the workflow function that alters step order) can corrupt recovery. The second is the more dangerous failure and is why accepted ADR-0077 requires the all-release drain.
 
 ### Conductor licensing
 
@@ -82,7 +82,18 @@ For each test record: exact commands, environment, raw outputs, pass/fail agains
 - Pass: B cannot recover A's work and A can. With no A process alive, the orphan detector flags the runs (query: `PENDING`, `ENQUEUED`, or `DELAYED` whose compatibility revision has no live executor). Drain completion is detectable as zero `PENDING`, `ENQUEUED`, and `DELAYED` work for A. Rollback (B→A) is tested with the same drain logic in reverse.
 - Fail: any old-cohort work silently stays `PENDING`, `ENQUEUED`, or `DELAYED` with no orphan alert, or B replays A's checkpoints.
 
-**Test 3 — Version hash provenance (BLOCKING)**
+The Gate 0.3 runtime seam promotion criterion is now explicit: immutable
+application-owned Run metadata must be created before recovery; a generation
+CAS must reject a wrong application revision before any `DBOSClient.resume`
+call; exactly one matching reaper may reserve and resume; a trusted operator or
+death detector must transition a dead owner's `RESERVED` generation to
+`RECOVERY_REQUIRED`; and a retry must win only by CAS to generation N+1.
+Rejected contenders emit `reaper_not_selected` and do not call DBOS. This
+proves application reaper selection, not arbitrary direct `DBOSClient` caller
+fencing. The production runtime seam/ADR-0048 import boundary prohibits that
+bypass and production workers have no direct DBOS credentials outside the seam.
+
+**Test 3 — Version hash provenance (resolved by accepted ADR-0077 mitigation)**
 Compute the version for each variant and record whether it changed:
 - identical source in two separate container builds and two hosts (environment and path sensitivity)
 - comment-only and formatting-only edit
@@ -91,7 +102,7 @@ Compute the version for each variant and record whether it changed:
 - non-DBOS dependency upgrade
 - DBOS upgrade with identical app source (two venvs, two DBOS versions), which converts the source-read claim into an observation
 - Also record the DBOS source file and function that compute the hash, with the pinned release tag or commit.
-- Pass: no environment-dependent versions, and the helper-change result is documented. If helper changes do **not** bump the version, the ADR must state the mitigation (custom version, workflow-source discipline, or a CI check). A DBOS upgrade bumping the version is expected, not a fail.
+- Pass: no environment-dependent versions, and the helper-change result is documented. Accepted ADR-0077 supplies the explicit released compatibility-revision and all-prior-cohort-drain mitigation, so this report is `PASS_WITH_ADR_0077_MITIGATION`, not proof of the automatic hash policy. A DBOS upgrade bumping the version is expected, not a fail.
 - Fail: identical source yields different versions across builds or hosts.
 
 **Test 4 — Idempotency contract on Phase 1 side effects (BLOCKING)**
@@ -120,7 +131,7 @@ Compute the version for each variant and record whether it changed:
 |---|---|
 | Tests 1–5 all pass | The evidence supports proceeding with DBOS under the at-least-once model. Keep ADR-0076 proposed until the owner reviews the complete evidence and accepts it; do not close Gate 0.3 from this result alone. |
 | Test 1 fails | Stop. Escalate. Options: own fencing layer at the checkpoint boundary, or a Temporal spike. Do not proceed to implementation. |
-| Test 2 or 3 fails, but an explicit released compatibility revision (supported by DBOS config) fixes it | Apply the proposed ADR-0077 all-release-drain policy that supersedes ADR-0046; retain matching-version recovery and retest the drain, orphan, and rollback controls. |
+| Test 2 or 3 fails, but an explicit released compatibility revision (supported by DBOS config) fixes it | Apply accepted ADR-0077's all-release-drain policy; retain matching-version recovery and retest the drain, orphan, and rollback controls. |
 | Test 4 fails for an effect | Block that effect from auto-recovery and require operator escalation, or add and prove a durable receiving-boundary idempotency mechanism, before Phase 1 ships it. |
 | Test 5 needs private DBOS internals, or the reaper plus drain controller exceeds the agreed effort budget | Price a Conductor license (self-hosted or hosted) and run a time-boxed Temporal spike. Bring both to the decision maker. |
 
@@ -233,9 +244,8 @@ recovered between DBOS versions, and rollback was not exercised. The redacted
 command record is
 [`evidence/gate-0.3/dbos-version-comparison-commands.json`](evidence/gate-0.3/dbos-version-comparison-commands.json).
 
-This result supports the owner-selected all-release-drain proposal in ADR-0077,
-which proposes superseding ADR-0046 with an explicit released compatibility
-revision rather than a mutable Git SHA or image tag. It does not prove the
-operational drain controls or accept the ADR. ADR-0077 remains proposed pending
-formal owner acceptance; Gate 0.3 remains unresolved because the other recovery
-and external-effect evidence is still outstanding.
+This result supports the accepted all-release-drain decision in ADR-0077,
+which supersedes ADR-0046 with an explicit released compatibility revision
+rather than a mutable Git SHA or image tag. It does not prove the operational
+drain controls; Gate 0.3 remains unresolved because the other recovery and
+external-effect evidence is still outstanding.

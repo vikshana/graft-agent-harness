@@ -8,21 +8,25 @@
   "environment": {
     "application_database": "PostgreSQL 16 container",
     "customer_system_access": false,
+    "explicit_application_revisions": {
+      "new": "release-compat-new-2026-09-19",
+      "old": "release-compat-old-2026-09-19"
+    },
     "pooler": "transaction-mode PgBouncer container",
-    "process_isolation": "separate host processes; each cohort has a distinct executor ID",
+    "process_isolation": "separate host processes; reduced-fidelity legacy lane",
     "python": "3.13.0",
     "system_database": "PostgreSQL 16 container"
   },
-  "finished_at": "2026-09-19T15:04:51.438190+00:00",
+  "finished_at": "2026-09-19T19:25:03.457942+00:00",
   "forward": {
-    "direction": "gate03-old-v1->gate03-new-v1",
+    "direction": "release-compat-old-2026-09-19->release-compat-new-2026-09-19",
     "new_cohort": {
       "command": [
         "/Users/av/Repositories/vikshana/graft-agent-harness/.venv/bin/python3",
         "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/matrix_worker.py",
         "observe",
         "--application-version",
-        "gate03-new-v1",
+        "release-compat-new-2026-09-19",
         "--executor-id",
         "gate03-new-b",
         "--run-prefix",
@@ -35,7 +39,7 @@
       "event": {
         "after": {
           "forward-delayed": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -45,7 +49,7 @@
             "workflow_id": "forward-delayed"
           },
           "forward-enqueued": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -55,7 +59,7 @@
             "workflow_id": "forward-enqueued"
           },
           "forward-pending": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -67,7 +71,7 @@
         },
         "before": {
           "forward-delayed": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -77,7 +81,7 @@
             "workflow_id": "forward-delayed"
           },
           "forward-enqueued": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -87,7 +91,7 @@
             "workflow_id": "forward-enqueued"
           },
           "forward-pending": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -97,7 +101,7 @@
             "workflow_id": "forward-pending"
           }
         },
-        "cohort": "gate03-new-v1",
+        "cohort": "release-compat-new-2026-09-19",
         "event": "observed",
         "public_observation": {
           "api": "DBOSClient.list_workflows",
@@ -107,7 +111,7 @@
         },
         "target_executor_id": "gate03-old-a"
       },
-      "output": "18:03:45 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n18:03:45 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-new-b\n18:03:45 [    INFO] (dbos:_dbos.py:550) Application version: gate03-new-v1\n18:03:45 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n18:03:45 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:03:45 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n18:03:45 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-new-v1\n18:03:45 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n18:03:45 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n18:03:46 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n18:03:46 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n18:03:46 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:03:46 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n{\"after\": {\"forward-delayed\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"forward-pending\"}}, \"before\": {\"forward-delayed\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"forward-pending\"}}, \"cohort\": \"gate03-new-v1\", \"event\": \"observed\", \"public_observation\": {\"api\": \"DBOSClient.list_workflows\", \"cross_executor_recovery_attempted\": false, \"listed_count\": 3, \"note\": \"The public client can list and resume by workflow ID, but it cannot condition resume on an expected executor or version.\"}, \"target_executor_id\": \"gate03-old-a\"}\n18:03:46 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n18:03:46 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "output": "22:23:57 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n22:23:57 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-new-b\n22:23:57 [    INFO] (dbos:_dbos.py:550) Application version: release-compat-new-2026-09-19\n22:23:57 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n22:23:57 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:23:57 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n22:23:58 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version release-compat-new-2026-09-19\n22:23:58 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n22:23:58 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n22:23:58 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n22:23:58 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n22:23:58 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:23:58 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n{\"after\": {\"forward-delayed\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"forward-pending\"}}, \"before\": {\"forward-delayed\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"forward-pending\"}}, \"cohort\": \"release-compat-new-2026-09-19\", \"event\": \"observed\", \"public_observation\": {\"api\": \"DBOSClient.list_workflows\", \"cross_executor_recovery_attempted\": false, \"listed_count\": 3, \"note\": \"The public client can list and resume by workflow ID, but it cannot condition resume on an expected executor or version.\"}, \"target_executor_id\": \"gate03-old-a\"}\n22:23:58 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n22:23:58 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
       "public_cross_executor_recovery_attempted": false
     },
     "old_cohort_replacement": {
@@ -116,7 +120,7 @@
         "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/matrix_worker.py",
         "recover",
         "--application-version",
-        "gate03-old-v1",
+        "release-compat-old-2026-09-19",
         "--executor-id",
         "gate03-old-a-replacement",
         "--run-prefix",
@@ -128,12 +132,12 @@
       ],
       "drained": true,
       "event": {
-        "cohort": "gate03-old-v1",
+        "cohort": "release-compat-old-2026-09-19",
         "event": "drained",
         "initial_snapshots": [
           {
             "forward-delayed": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -143,7 +147,7 @@
               "workflow_id": "forward-delayed"
             },
             "forward-enqueued": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -153,7 +157,7 @@
               "workflow_id": "forward-enqueued"
             },
             "forward-pending": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -165,7 +169,7 @@
           },
           {
             "forward-delayed": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -175,7 +179,7 @@
               "workflow_id": "forward-delayed"
             },
             "forward-enqueued": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -185,7 +189,7 @@
               "workflow_id": "forward-enqueued"
             },
             "forward-pending": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -197,7 +201,7 @@
           },
           {
             "forward-delayed": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -207,7 +211,7 @@
               "workflow_id": "forward-delayed"
             },
             "forward-enqueued": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -217,7 +221,7 @@
               "workflow_id": "forward-enqueued"
             },
             "forward-pending": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -231,7 +235,7 @@
         "public_resume_api": "DBOSClient.resume_workflows",
         "statuses": {
           "forward-delayed": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a-replacement",
@@ -241,7 +245,7 @@
             "workflow_id": "forward-delayed"
           },
           "forward-enqueued": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a-replacement",
@@ -251,7 +255,7 @@
             "workflow_id": "forward-enqueued"
           },
           "forward-pending": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a-replacement",
@@ -267,7 +271,7 @@
           "forward-pending"
         ]
       },
-      "output": "18:03:47 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n18:03:47 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-old-a-replacement\n18:03:47 [    INFO] (dbos:_dbos.py:550) Application version: gate03-old-v1\n18:03:47 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n18:03:47 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:03:47 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n18:03:47 [ WARNING] (dbos:_dbos.py:611) Current version 'gate03-old-v1' is not the latest version. Latest version is 'gate03-new-v1'.\n18:03:47 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-old-v1\n18:03:47 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n18:03:47 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n18:03:47 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n18:03:47 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n18:03:47 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:03:47 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n{\"cohort\": \"gate03-old-v1\", \"event\": \"drained\", \"initial_snapshots\": [{\"forward-delayed\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-pending\"}}, {\"forward-delayed\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-pending\"}}, {\"forward-delayed\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-pending\"}}], \"public_resume_api\": \"DBOSClient.resume_workflows\", \"statuses\": {\"forward-delayed\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a-replacement\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a-replacement\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a-replacement\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"forward-pending\"}}, \"workflow_ids\": [\"forward-enqueued\", \"forward-delayed\", \"forward-pending\"]}\n18:04:18 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n18:04:18 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "output": "22:23:58 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n22:23:58 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-old-a-replacement\n22:23:58 [    INFO] (dbos:_dbos.py:550) Application version: release-compat-old-2026-09-19\n22:23:58 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n22:23:58 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:23:58 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n22:23:58 [ WARNING] (dbos:_dbos.py:611) Current version 'release-compat-old-2026-09-19' is not the latest version. Latest version is 'release-compat-new-2026-09-19'.\n22:23:58 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version release-compat-old-2026-09-19\n22:23:58 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n22:23:58 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n22:23:58 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n22:23:58 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n22:23:58 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:23:58 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n{\"cohort\": \"release-compat-old-2026-09-19\", \"event\": \"drained\", \"initial_snapshots\": [{\"forward-delayed\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-pending\"}}, {\"forward-delayed\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-pending\"}}, {\"forward-delayed\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-pending\"}}], \"public_resume_api\": \"DBOSClient.resume_workflows\", \"statuses\": {\"forward-delayed\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a-replacement\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a-replacement\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a-replacement\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"forward-pending\"}}, \"workflow_ids\": [\"forward-enqueued\", \"forward-delayed\", \"forward-pending\"]}\n22:24:29 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n22:24:29 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
       "public_resume_api": "DBOSClient.resume_workflows"
     },
     "orphan_detector": {
@@ -289,7 +293,7 @@
         "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/matrix_worker.py",
         "seed",
         "--application-version",
-        "gate03-old-v1",
+        "release-compat-old-2026-09-19",
         "--executor-id",
         "gate03-old-a",
         "--run-prefix",
@@ -300,7 +304,7 @@
         "snapshots": [
           {
             "forward-delayed": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -310,7 +314,7 @@
               "workflow_id": "forward-delayed"
             },
             "forward-enqueued": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -320,7 +324,7 @@
               "workflow_id": "forward-enqueued"
             },
             "forward-pending": {
-              "app_version": "gate03-old-v1",
+              "app_version": "release-compat-old-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-old-a",
@@ -333,7 +337,7 @@
         ],
         "statuses": {
           "forward-delayed": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -343,7 +347,7 @@
             "workflow_id": "forward-delayed"
           },
           "forward-enqueued": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -353,7 +357,7 @@
             "workflow_id": "forward-enqueued"
           },
           "forward-pending": {
-            "app_version": "gate03-old-v1",
+            "app_version": "release-compat-old-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-old-a",
@@ -370,24 +374,46 @@
         ]
       },
       "killed": true,
-      "output": "18:03:43 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n18:03:43 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-old-a\n18:03:43 [    INFO] (dbos:_dbos.py:550) Application version: gate03-old-v1\n18:03:43 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n18:03:43 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:03:43 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 1\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 2\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 3\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 4\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 5\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 6\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 7\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 8\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 9\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 10\n18:03:43 [    INFO] (dbos:_migration.py:258) Migration 10 skipped, primary key already exists\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 11\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 12\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 13\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 14\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 15\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 16\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 17\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 18\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 19\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 20\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 21\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 22\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 23\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 24\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 25\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 26\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 27\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 28\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 29\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 30\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 31\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 32\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 33\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 34\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 35\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 36\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 37\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 38\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 39\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 40\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 41\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 42\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 43\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 44\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 45\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 46\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 47\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 100\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 101\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 102\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 103\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 104\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 105\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 106\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 107\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 108\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 109\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 110\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 111\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 112\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 113\n18:03:43 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 114\n18:03:43 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-old-v1\n18:03:43 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n18:03:43 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n18:03:43 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n18:03:43 [    INFO] (dbos:_dbos.py:997) Registered and listening to new queue:\n18:03:43 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n{\"event\": \"seeded\", \"snapshots\": [{\"forward-delayed\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"forward-pending\"}}], \"statuses\": {\"forward-delayed\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"gate03-old-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"forward-pending\"}}, \"workflow_ids\": [\"forward-enqueued\", \"forward-delayed\", \"forward-pending\"]}\n"
+      "output": "22:23:56 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n22:23:56 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-old-a\n22:23:56 [    INFO] (dbos:_dbos.py:550) Application version: release-compat-old-2026-09-19\n22:23:56 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n22:23:57 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:23:57 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 1\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 2\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 3\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 4\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 5\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 6\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 7\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 8\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 9\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 10\n22:23:57 [    INFO] (dbos:_migration.py:258) Migration 10 skipped, primary key already exists\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 11\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 12\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 13\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 14\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 15\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 16\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 17\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 18\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 19\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 20\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 21\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 22\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 23\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 24\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 25\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 26\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 27\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 28\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 29\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 30\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 31\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 32\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 33\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 34\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 35\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 36\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 37\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 38\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 39\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 40\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 41\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 42\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 43\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 44\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 45\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 46\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 47\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 100\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 101\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 102\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 103\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 104\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 105\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 106\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 107\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 108\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 109\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 110\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 111\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 112\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 113\n22:23:57 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 114\n22:23:57 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version release-compat-old-2026-09-19\n22:23:57 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n22:23:57 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n22:23:57 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n22:23:57 [    INFO] (dbos:_dbos.py:997) Registered and listening to new queue:\n22:23:57 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n{\"event\": \"seeded\", \"snapshots\": [{\"forward-delayed\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"forward-pending\"}}], \"statuses\": {\"forward-delayed\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"forward-delayed\"}, \"forward-enqueued\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"forward-enqueued\"}, \"forward-pending\": {\"app_version\": \"release-compat-old-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-old-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"forward-pending\"}}, \"workflow_ids\": [\"forward-enqueued\", \"forward-delayed\", \"forward-pending\"]}\n"
     }
   },
   "limitations": [
-    "The new cohort was not permitted to attempt recovery: public DBOS APIs do not provide an expected-executor/version conditional recovery call.",
+    "The public DBOS APIs do not provide a safe expected-executor and explicit-application-revision conditional recovery call.",
+    "This legacy lane uses host subprocesses and is not the container-isolated Test 5 reaper prototype.",
     "The replacement drain used DBOSClient.resume_workflows and therefore does not prove the proposed reaper ownership semantics.",
     "The orphan detector is a synthetic application-level query, not DBOS Conductor or a verified executor-liveness detector.",
     "The prior private recovery probe is not evidence and is not run by this lane."
   ],
+  "operational_drain_evidence": {
+    "blocker": "DBOS public resume API cannot condition on expected executor/application revision.",
+    "forward_matching_revision_recovery": true,
+    "forward_old_revision": "release-compat-old-2026-09-19",
+    "forward_orphan_alert": true,
+    "forward_states_observed": [
+      "PENDING",
+      "ENQUEUED",
+      "DELAYED"
+    ],
+    "reverse_matching_revision_recovery": true,
+    "reverse_new_revision": "release-compat-new-2026-09-19",
+    "reverse_orphan_alert": true,
+    "reverse_states_observed": [
+      "PENDING",
+      "ENQUEUED",
+      "DELAYED"
+    ],
+    "revision_selection_safe": false
+  },
+  "report_disposition": "REDUCED_FIDELITY",
   "rollback": {
-    "direction": "gate03-new-v1->gate03-old-v1",
+    "direction": "release-compat-new-2026-09-19->release-compat-old-2026-09-19",
     "new_cohort": {
       "command": [
         "/Users/av/Repositories/vikshana/graft-agent-harness/.venv/bin/python3",
         "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/matrix_worker.py",
         "observe",
         "--application-version",
-        "gate03-old-v1",
+        "release-compat-old-2026-09-19",
         "--executor-id",
         "gate03-old-b",
         "--run-prefix",
@@ -400,7 +426,7 @@
       "event": {
         "after": {
           "rollback-delayed": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -410,7 +436,7 @@
             "workflow_id": "rollback-delayed"
           },
           "rollback-enqueued": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -420,7 +446,7 @@
             "workflow_id": "rollback-enqueued"
           },
           "rollback-pending": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -432,7 +458,7 @@
         },
         "before": {
           "rollback-delayed": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -442,7 +468,7 @@
             "workflow_id": "rollback-delayed"
           },
           "rollback-enqueued": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -452,7 +478,7 @@
             "workflow_id": "rollback-enqueued"
           },
           "rollback-pending": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -462,7 +488,7 @@
             "workflow_id": "rollback-pending"
           }
         },
-        "cohort": "gate03-old-v1",
+        "cohort": "release-compat-old-2026-09-19",
         "event": "observed",
         "public_observation": {
           "api": "DBOSClient.list_workflows",
@@ -472,7 +498,7 @@
         },
         "target_executor_id": "gate03-new-a"
       },
-      "output": "18:04:19 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n18:04:19 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-old-b\n18:04:19 [    INFO] (dbos:_dbos.py:550) Application version: gate03-old-v1\n18:04:19 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n18:04:19 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:04:19 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n18:04:19 [ WARNING] (dbos:_dbos.py:611) Current version 'gate03-old-v1' is not the latest version. Latest version is 'gate03-new-v1'.\n18:04:19 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-old-v1\n18:04:19 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n18:04:19 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n18:04:19 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n18:04:19 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n18:04:19 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:04:19 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n{\"after\": {\"rollback-delayed\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"rollback-pending\"}}, \"before\": {\"rollback-delayed\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"rollback-pending\"}}, \"cohort\": \"gate03-old-v1\", \"event\": \"observed\", \"public_observation\": {\"api\": \"DBOSClient.list_workflows\", \"cross_executor_recovery_attempted\": false, \"listed_count\": 3, \"note\": \"The public client can list and resume by workflow ID, but it cannot condition resume on an expected executor or version.\"}, \"target_executor_id\": \"gate03-new-a\"}\n18:04:19 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n18:04:19 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "output": "22:24:31 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n22:24:31 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-old-b\n22:24:31 [    INFO] (dbos:_dbos.py:550) Application version: release-compat-old-2026-09-19\n22:24:31 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n22:24:31 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:24:31 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n22:24:31 [ WARNING] (dbos:_dbos.py:611) Current version 'release-compat-old-2026-09-19' is not the latest version. Latest version is 'release-compat-new-2026-09-19'.\n22:24:31 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version release-compat-old-2026-09-19\n22:24:31 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n22:24:31 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n22:24:31 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n22:24:31 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n22:24:31 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:24:31 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n{\"after\": {\"rollback-delayed\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"rollback-pending\"}}, \"before\": {\"rollback-delayed\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"rollback-pending\"}}, \"cohort\": \"release-compat-old-2026-09-19\", \"event\": \"observed\", \"public_observation\": {\"api\": \"DBOSClient.list_workflows\", \"cross_executor_recovery_attempted\": false, \"listed_count\": 3, \"note\": \"The public client can list and resume by workflow ID, but it cannot condition resume on an expected executor or version.\"}, \"target_executor_id\": \"gate03-new-a\"}\n22:24:31 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n22:24:31 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
       "public_cross_executor_recovery_attempted": false
     },
     "old_cohort_replacement": {
@@ -481,7 +507,7 @@
         "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/matrix_worker.py",
         "recover",
         "--application-version",
-        "gate03-new-v1",
+        "release-compat-new-2026-09-19",
         "--executor-id",
         "gate03-new-a-replacement",
         "--run-prefix",
@@ -493,12 +519,12 @@
       ],
       "drained": true,
       "event": {
-        "cohort": "gate03-new-v1",
+        "cohort": "release-compat-new-2026-09-19",
         "event": "drained",
         "initial_snapshots": [
           {
             "rollback-delayed": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -508,7 +534,7 @@
               "workflow_id": "rollback-delayed"
             },
             "rollback-enqueued": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -518,7 +544,7 @@
               "workflow_id": "rollback-enqueued"
             },
             "rollback-pending": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -530,7 +556,7 @@
           },
           {
             "rollback-delayed": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -540,7 +566,7 @@
               "workflow_id": "rollback-delayed"
             },
             "rollback-enqueued": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -550,7 +576,7 @@
               "workflow_id": "rollback-enqueued"
             },
             "rollback-pending": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -562,7 +588,7 @@
           },
           {
             "rollback-delayed": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -572,7 +598,7 @@
               "workflow_id": "rollback-delayed"
             },
             "rollback-enqueued": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -582,7 +608,7 @@
               "workflow_id": "rollback-enqueued"
             },
             "rollback-pending": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -596,7 +622,7 @@
         "public_resume_api": "DBOSClient.resume_workflows",
         "statuses": {
           "rollback-delayed": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a-replacement",
@@ -606,7 +632,7 @@
             "workflow_id": "rollback-delayed"
           },
           "rollback-enqueued": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a-replacement",
@@ -616,7 +642,7 @@
             "workflow_id": "rollback-enqueued"
           },
           "rollback-pending": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a-replacement",
@@ -632,7 +658,7 @@
           "rollback-pending"
         ]
       },
-      "output": "18:04:20 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n18:04:20 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-new-a-replacement\n18:04:20 [    INFO] (dbos:_dbos.py:550) Application version: gate03-new-v1\n18:04:20 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n18:04:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:04:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n18:04:20 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-new-v1\n18:04:20 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n18:04:20 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n18:04:20 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n18:04:20 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n18:04:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:04:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n{\"cohort\": \"gate03-new-v1\", \"event\": \"drained\", \"initial_snapshots\": [{\"rollback-delayed\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-pending\"}}, {\"rollback-delayed\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-pending\"}}, {\"rollback-delayed\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-pending\"}}], \"public_resume_api\": \"DBOSClient.resume_workflows\", \"statuses\": {\"rollback-delayed\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a-replacement\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a-replacement\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a-replacement\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"rollback-pending\"}}, \"workflow_ids\": [\"rollback-enqueued\", \"rollback-delayed\", \"rollback-pending\"]}\n18:04:51 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n18:04:51 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "output": "22:24:32 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n22:24:32 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-new-a-replacement\n22:24:32 [    INFO] (dbos:_dbos.py:550) Application version: release-compat-new-2026-09-19\n22:24:32 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n22:24:32 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:24:32 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n22:24:32 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version release-compat-new-2026-09-19\n22:24:32 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n22:24:32 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n22:24:32 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n22:24:32 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=0)\n22:24:32 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:24:32 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n{\"cohort\": \"release-compat-new-2026-09-19\", \"event\": \"drained\", \"initial_snapshots\": [{\"rollback-delayed\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-pending\"}}, {\"rollback-delayed\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-pending\"}}, {\"rollback-delayed\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-pending\"}}], \"public_resume_api\": \"DBOSClient.resume_workflows\", \"statuses\": {\"rollback-delayed\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a-replacement\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a-replacement\", \"name\": \"matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a-replacement\", \"name\": \"pending_matrix_workflow\", \"queue_name\": \"_dbos_internal_queue\", \"status\": \"SUCCESS\", \"workflow_id\": \"rollback-pending\"}}, \"workflow_ids\": [\"rollback-enqueued\", \"rollback-delayed\", \"rollback-pending\"]}\n22:25:03 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n22:25:03 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
       "public_resume_api": "DBOSClient.resume_workflows"
     },
     "orphan_detector": {
@@ -654,7 +680,7 @@
         "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/matrix_worker.py",
         "seed",
         "--application-version",
-        "gate03-new-v1",
+        "release-compat-new-2026-09-19",
         "--executor-id",
         "gate03-new-a",
         "--run-prefix",
@@ -665,7 +691,7 @@
         "snapshots": [
           {
             "rollback-delayed": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -675,7 +701,7 @@
               "workflow_id": "rollback-delayed"
             },
             "rollback-enqueued": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -685,7 +711,7 @@
               "workflow_id": "rollback-enqueued"
             },
             "rollback-pending": {
-              "app_version": "gate03-new-v1",
+              "app_version": "release-compat-new-2026-09-19",
               "application_name": "gate-0-3-recovery-matrix",
               "application_version": null,
               "executor_id": "gate03-new-a",
@@ -698,7 +724,7 @@
         ],
         "statuses": {
           "rollback-delayed": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -708,7 +734,7 @@
             "workflow_id": "rollback-delayed"
           },
           "rollback-enqueued": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -718,7 +744,7 @@
             "workflow_id": "rollback-enqueued"
           },
           "rollback-pending": {
-            "app_version": "gate03-new-v1",
+            "app_version": "release-compat-new-2026-09-19",
             "application_name": "gate-0-3-recovery-matrix",
             "application_version": null,
             "executor_id": "gate03-new-a",
@@ -735,10 +761,10 @@
         ]
       },
       "killed": true,
-      "output": "18:04:19 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n18:04:19 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-new-a\n18:04:19 [    INFO] (dbos:_dbos.py:550) Application version: gate03-new-v1\n18:04:19 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n18:04:19 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n18:04:19 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n18:04:19 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-new-v1\n18:04:19 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n18:04:19 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n18:04:19 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n18:04:19 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=1)\n{\"event\": \"seeded\", \"snapshots\": [{\"rollback-delayed\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"rollback-pending\"}}], \"statuses\": {\"rollback-delayed\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"gate03-new-v1\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"rollback-pending\"}}, \"workflow_ids\": [\"rollback-enqueued\", \"rollback-delayed\", \"rollback-pending\"]}\n"
+      "output": "22:24:30 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n22:24:30 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-new-a\n22:24:30 [    INFO] (dbos:_dbos.py:550) Application version: release-compat-new-2026-09-19\n22:24:30 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-recovery-matrix\n22:24:30 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n22:24:30 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n22:24:30 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version release-compat-new-2026-09-19\n22:24:30 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n22:24:30 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-recovery-matrix\n22:24:30 [    INFO] (dbos:_queue.py:944) Listening to 1 queues:\n22:24:30 [    INFO] (dbos:_queue.py:919) Queue: gate03-matrix-dormant (worker_concurrency=1)\n{\"event\": \"seeded\", \"snapshots\": [{\"rollback-delayed\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"rollback-pending\"}}], \"statuses\": {\"rollback-delayed\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"DELAYED\", \"workflow_id\": \"rollback-delayed\"}, \"rollback-enqueued\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"matrix_workflow\", \"queue_name\": \"gate03-matrix-dormant\", \"status\": \"ENQUEUED\", \"workflow_id\": \"rollback-enqueued\"}, \"rollback-pending\": {\"app_version\": \"release-compat-new-2026-09-19\", \"application_name\": \"gate-0-3-recovery-matrix\", \"application_version\": null, \"executor_id\": \"gate03-new-a\", \"name\": \"pending_matrix_workflow\", \"queue_name\": null, \"status\": \"PENDING\", \"workflow_id\": \"rollback-pending\"}}, \"workflow_ids\": [\"rollback-enqueued\", \"rollback-delayed\", \"rollback-pending\"]}\n"
     }
   },
-  "started_at": "2026-09-19T15:03:41.987810+00:00",
+  "started_at": "2026-09-19T19:23:56.505660+00:00",
   "test": "Test 2 - Version-scoped recovery and drain",
   "verdict": "REDUCED_FIDELITY"
 }

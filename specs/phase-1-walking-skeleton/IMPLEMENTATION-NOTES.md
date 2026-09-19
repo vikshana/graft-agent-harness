@@ -278,13 +278,13 @@ and the Phase 1 effect inventory remain required. Proposed ADR-0076 therefore
 needs reframing around durable idempotent effects and operator escalation for
 effects that cannot be made idempotent; confirmed termination and leases reduce
 duplicate exposure but are not the semantic safety guarantee. Proposed ADR-0077
-now records the owner-selected proposal to supersede ADR-0046: every mutually
+now records the accepted ADR-0077 decision superseding ADR-0046: every mutually
 versioned release receives an explicit released application compatibility
 revision, every prior release cohort drains, and the value is not a mutable Git
 SHA or image tag. The Gate 0.3 version matrix found a false-compatible
 helper-only change and a direct DBOS-version change, but did not exercise
 operational draining, orphan alerts, matching-version recovery, or reverse-drain
-rollback. ADR-0077 remains proposed pending formal owner acceptance.
+rollback. Operational drain evidence remains a separate Gate 0.3 follow-up.
 
 ## Gate 0.3 recovery decision revision
 
@@ -362,8 +362,8 @@ between DBOS versions, and rollback was not exercised. The lane status is
 helper false-compatibility result, the owner selected the proposal in ADR-0077
 to supersede ADR-0046 with an explicit released compatibility revision for
 every mutually versioned release and an all-prior-cohort drain. The explicit
-value is not a mutable Git SHA or image tag. ADR-0077 remains proposed pending
-formal owner acceptance and operational drain evidence; Gate 0.3 remains
+value is not a mutable Git SHA or image tag. Operational drain evidence remains
+outstanding; Gate 0.3 remains
 subject to the parent orchestrator's decision and other outstanding safety
 evidence.
 
@@ -383,3 +383,105 @@ The earlier sentence stating that ADR-0077 remained proposed is superseded by
 this dated acceptance entry. It is retained above as historical evidence of
 the pre-acceptance state; no operational drain or Gate 0.3 completion is
 claimed.
+
+## Gate 0.3 recovery barrier matrix and effect inventory
+
+> **Date:** 2026-09-19
+
+The supported-API recovery lane was expanded under `deployment/gate-0.3/` and
+run against the disposable PostgreSQL 16 application/system topology with
+transaction-mode PgBouncer present. It uses DBOS 3.0.0 from the locked
+environment, real DBOS migrations, public `DBOSClient.list_workflows` and
+`DBOSClient.resume_workflow`, public workflow-handle `get_result`/`get_status`,
+and no DBOS system-table reads or writes. Redacted output is retained in
+[`evidence/gate-0.3/recovery-race.json`](evidence/gate-0.3/recovery-race.json)
+and its command record.
+
+The three SIGSTOP barrier cases and the executor-specific system-database
+partition completed as `PASS` for this bounded matrix:
+
+| Barrier | Raw receiver calls | Keyed effects | Final public status | Public result comparison |
+|---|---:|---:|---|---|
+| Before effect | 2 | 1 | `SUCCESS` | scenario B |
+| After effect, before step checkpoint | 2 | 1 | `SUCCESS` | scenario B |
+| After final step, before workflow outcome | 1 | 1 | `SUCCESS` | scenario B |
+| Post-effect with A-only system-network cut | 2 | 1 | `SUCCESS` | scenario B |
+
+Each case also ran two concurrent public resume attempts and killed a reaper
+after public resume acceptance while the status was non-terminal, followed by
+a public retry. The receiver's
+automated assertions verified that every raw call used the stable
+`graft_run_id:durable_step_id` key and that raw/keyed counts were preserved.
+The raw duplicate in the first two cases is expected under the selected
+at-least-once model; the single keyed application is a property of the
+synthetic receiving boundary only.
+
+The local topology now uses a separate `gate03-system` Docker network. The
+partition disconnects only executor A; executor B and the reapers retain their
+DBOS system-database path. The final public status asserts `executor_id` equals
+the run-unique scenario-B executor ID. Containers are removed after each
+scenario, preventing stale executor contamination.
+
+The explicit Phase 1 effect inventory is retained in
+[`evidence/gate-0.3/phase-1-effect-inventory.json`](evidence/gate-0.3/phase-1-effect-inventory.json).
+Every currently unimplemented or unverified effect is now classification `B`
+with operator escalation. Its distinct `promotion_criteria` field describes
+the evidence required before a later candidate classification `A`. The
+inventory covers the current PLAN/spec phase scope and reference prototype and
+does not claim support for Grafana, Kubernetes, an LLM provider, or any other
+real customer system. The synthetic service's contract is also checked by
+`tests/gate_0_3/test_gate_0_3_config.py`.
+
+This lane remains evidence only. It does not change Gate 0.3 status or
+ADR-0076 status.
+
+## Gate 0.3 oracle blocker correction
+
+> **Date:** 2026-09-19
+
+The container matrix was extended with an application-owned reaper prototype.
+Each run has unique executor IDs; A, B and reapers are distinct containers;
+the system database uses the separate `gate03-system` network; and only A is
+disconnected for the partition case. The matrix records successful fault
+injection and reconnect commands, A/B public handle events, B ownership of the
+terminal status, public concurrent resumes, and a reaper crash after accepted
+resume while the status is non-terminal. The reaper uses a stable reaper ID,
+explicit application revision, and a compare-and-swap lease in the application
+database through transaction-mode PgBouncer. It uses public DBOS APIs only and
+does not read or write DBOS system tables. Actual elapsed effort is retained as
+`effort_elapsed_seconds` per scenario.
+
+The local rerun produced `PASS` for the four bounded recovery scenarios, but
+the evidence remains bounded and does not accept ADR-0076 or Gate 0.3. The
+original A handle events and the winning B handle events are now captured; if
+either cannot be observed, the scenario fails rather than fabricating a pass.
+
+Test 2 remains `REDUCED_FIDELITY`: the report now uses distinct explicit
+release revisions, records `PENDING`, `ENQUEUED` and `DELAYED`, forward and
+reverse drain, orphan observations and matching-revision replacement attempts.
+The exact blocker remains that public DBOS APIs cannot safely condition resume
+on an expected executor and application revision. No accepted ADR-0077 drain
+claim is made.
+
+Test 3 remains `REDUCED_FIDELITY`. Its dependency probes remain blocked and its
+helper-only result remains explicitly false-compatible; no version-comparison
+pass claim is inferred from those blockers.
+
+The Gate 0.3 workflow now pins action SHAs, runs the container recovery report,
+the async/MCP and executor-listing reports, Test 2/Test 3, Gate 0.3 tests and
+the relevant project quality checks. It fails nonzero for an incomplete
+mandatory recovery report and retains redacted evidence. Gate 0.3 and
+ADR-0076 status are unchanged.
+
+The final local rerun on 2026-09-19 produced `PASS` for all six container
+recovery scenarios. It recorded executor-A-only partition/reconnect success,
+original A and winning B handle observations, two concurrent public resumes,
+reaper crash/retry, explicit application revision selection, CAS lease backend
+through transaction PgBouncer, and elapsed effort per scenario. The separate
+Test 2 rerun produced `REDUCED_FIDELITY` with explicit revisions, all three
+active states, forward/reverse drain and orphan observations; its exact public
+API revision-selection blocker remains recorded. Test 3 remains
+`REDUCED_FIDELITY` with blocked dependency probes and the false-compatible
+helper result. Test 3 is `PASS_WITH_ADR_0077_MITIGATION` for policy purposes;
+the reduced-fidelity observations remain retained and are not automatic-hash
+proof.

@@ -502,7 +502,9 @@ def run() -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["mcp-server", "prepare", "run", "versions"])
+    parser.add_argument(
+        "command", choices=["mcp-server", "prepare", "run", "async-mcp", "listing", "versions"]
+    )
     args = parser.parse_args()
     if args.command == "mcp-server":
         import uvicorn
@@ -516,6 +518,10 @@ def main() -> int:
     if args.command == "versions":
         print(json.dumps(_redact(_versions()), indent=2, sort_keys=True))
         return 0
+    if args.command == "async-mcp":
+        return run()
+    if args.command == "listing":
+        return run()
     return run()
 
 

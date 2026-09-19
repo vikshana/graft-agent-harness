@@ -377,10 +377,10 @@ def run() -> int:
                 "distinct runtime application-version fields."
             )
         result["adr_0077_disposition"] = (
-            "evidence supports selecting the dependency-upgrade-drain option, but ADR-0077 "
-            "remains proposed until the parent orchestrator makes the owner decision"
+            "PASS_WITH_ADR_0077_MITIGATION: accepted ADR-0077 requires explicit "
+            "release revisions and all-prior-cohort drain"
             if result["status"] == "passed"
-            else "blocked; ADR-0077 cannot be selected from this incomplete comparison"
+            else "blocked; ADR-0077 mitigation evidence is incomplete"
         )
     finally:
         compose_down = _compose("down", "-v", timeout=180)

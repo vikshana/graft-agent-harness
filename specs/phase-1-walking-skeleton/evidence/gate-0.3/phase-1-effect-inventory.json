@@ -1,0 +1,141 @@
+{
+  "classification_rule": "Every currently unimplemented or unverified effect is B/operator escalation. A is only a later promotion candidate after the receiving-boundary contract is proven.",
+  "effects": [
+    {
+      "classification": "B",
+      "effect": "Run trigger deduplication and Run creation",
+      "evidence_limit": "No PostgreSQL durability or multi-process support is claimed",
+      "operator_escalation": true,
+      "phase_scope": "Gate 1 API and trigger idempotency",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove durable receiving-boundary duplicate handling in the real implementation."
+      },
+      "prototype_observation": "harness/store.py has an in-memory deduplication map",
+      "required_receiving_boundary": "unique graft_tenant_id plus request idempotency key, returning the original graft_run_id"
+    },
+    {
+      "classification": "B",
+      "effect": "DBOS workflow, step checkpoint and terminal outcome",
+      "evidence_limit": "No general DBOS recovery guarantee is claimed",
+      "operator_escalation": true,
+      "phase_scope": "Gate 2 runtime seam; one Run is one durable workflow",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove the supported recovery and outcome contract in the real runtime seam."
+      },
+      "prototype_observation": "No production runtime module exists; this lane observed only the synthetic DBOS matrix",
+      "required_receiving_boundary": "DBOS system database durable workflow/step identity and convergent outcome"
+    },
+    {
+      "classification": "B",
+      "effect": "Run status and durable event insertion",
+      "evidence_limit": "PostgreSQL transactions, RLS and LISTEN/NOTIFY are not implemented here",
+      "operator_escalation": true,
+      "phase_scope": "Gate 1 PostgreSQL repository and Gate 3 event log",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove PostgreSQL transaction, uniqueness, RLS and replay behaviour."
+      },
+      "prototype_observation": "harness/store.py appends events in memory",
+      "required_receiving_boundary": "transactional graft_run_id and graft_event_id uniqueness, with NOTIFY as a hint only"
+    },
+    {
+      "classification": "B",
+      "effect": "Audit-chain record insertion",
+      "evidence_limit": "No audit storage or chain verification support is claimed",
+      "operator_escalation": true,
+      "phase_scope": "Gate 3 audit writer",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove append-only durable audit storage and duplicate handling."
+      },
+      "prototype_observation": "No audit writer exists in the reference prototype",
+      "required_receiving_boundary": "append-only durable record keyed by graft_run_id and audit action identity"
+    },
+    {
+      "classification": "B",
+      "effect": "Reduced Tool result or artefact write",
+      "evidence_limit": "No object store or conditional-write support is claimed",
+      "operator_escalation": true,
+      "phase_scope": "Gate 2 Tool Registry and result-reduction path",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove the real object-store conditional-write contract."
+      },
+      "prototype_observation": "harness/gateway.py returns an ArtifactPointer but does not write an artefact",
+      "required_receiving_boundary": "conditional object write keyed by graft_run_id, durable step identity and artefact identity"
+    },
+    {
+      "classification": "B",
+      "effect": "LLM provider invocation",
+      "evidence_limit": "Duplicate cost or non-identical provider output requires operator escalation",
+      "operator_escalation": true,
+      "phase_scope": "Gate 2 agent; one LLM call is one DBOS step",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove the stable durable receiving-boundary key contract in the real implementation and duplicate-execution test."
+      },
+      "prototype_observation": "No LLM provider call exists in the reference prototype",
+      "required_receiving_boundary": "provider-side durable idempotency or an approved durable response cache"
+    },
+    {
+      "classification": "B",
+      "effect": "Grafana MCP read call through the Tool Gateway",
+      "evidence_limit": "No Grafana system support or idempotency contract is claimed",
+      "operator_escalation": true,
+      "phase_scope": "Gate 2 mandatory Grafana MCP integration",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove the stable durable receiving-boundary key contract in the real implementation and duplicate-execution test."
+      },
+      "prototype_observation": "Only a local synthetic MCP tool is exercised by the prototype",
+      "required_receiving_boundary": "upstream or wrapper must durably honour the Run/step key"
+    },
+    {
+      "classification": "B",
+      "effect": "Kubernetes MCP read call through the Tool Gateway",
+      "evidence_limit": "No Kubernetes system support or idempotency contract is claimed",
+      "operator_escalation": true,
+      "phase_scope": "Gate 2 mandatory Kubernetes MCP design and integration",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove the stable durable receiving-boundary key contract in the real implementation and duplicate-execution test."
+      },
+      "prototype_observation": "No Kubernetes MCP integration exists in the reference prototype",
+      "required_receiving_boundary": "upstream or wrapper must durably honour the Run/step key"
+    },
+    {
+      "classification": "B",
+      "effect": "Generic curated ToolGateway.call invocation",
+      "evidence_limit": "Unclassified tools require operator escalation",
+      "operator_escalation": true,
+      "phase_scope": "Gate 2 curated Tool Registry",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove each registered tool's receiving-boundary duplicate contract."
+      },
+      "prototype_observation": "harness/gateway.py accepts an invoke callable without an idempotency key",
+      "required_receiving_boundary": "each registered tool must prove the keyed contract before auto-recovery"
+    },
+    {
+      "classification": "B",
+      "effect": "Cancellation and policy/configuration status writes",
+      "evidence_limit": "No durable database or live-policy support is claimed",
+      "operator_escalation": true,
+      "phase_scope": "Gate 1 contract and Gate 2 cancellation/configuration controls",
+      "promotion_criteria": {
+        "candidate_classification": "A",
+        "required": "Prove durable status/configuration CAS and duplicate handling."
+      },
+      "prototype_observation": "cancellation is idempotent in the in-memory reference service; policy storage is absent",
+      "required_receiving_boundary": "idempotent status/CAS update keyed by graft_run_id and policy/configuration identity"
+    }
+  ],
+  "inventory_basis": [
+    "specs/phase-1-walking-skeleton/PLAN.md Gate 1 and Gate 2 tasks",
+    "specs/phase-1-walking-skeleton/SPEC.md DBOS, Tool Gateway, MCP, event, audit and artefact scope",
+    "harness/service.py, harness/store.py and harness/gateway.py reference prototype"
+  ],
+  "real_system_support_claimed": false
+}

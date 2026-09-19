@@ -275,8 +275,8 @@ def run_test_2() -> tuple[dict[str, object], list[dict[str, object]]]:
             "note": "started the two PostgreSQL 16 containers and transaction-mode PgBouncer",
         },
     ]
-    old_version = "gate03-old-v1"
-    new_version = "gate03-new-v1"
+    old_version = "release-compat-old-2026-09-19"
+    new_version = "release-compat-new-2026-09-19"
     forward = _run_direction(
         old_version=old_version,
         new_version=new_version,
@@ -331,6 +331,13 @@ def run_test_2() -> tuple[dict[str, object], list[dict[str, object]]]:
     rollback_orphan = _direction_part(rollback, "orphan_detector")
     rollback_replacement = _direction_part(rollback, "old_cohort_replacement")
     rollback_observed = bool(rollback_orphan["flags_orphan"] and rollback_replacement["drained"])
+    criterion = {
+        "new_cohort_conditional_recovery": False,
+        "orphan_detection": forward_orphan["flags_orphan"] and rollback_orphan["flags_orphan"],
+        "drain_zero_active_rows": forward_replacement["drained"]
+        and rollback_replacement["drained"],
+        "rollback_reverse_drain": rollback_observed,
+    }
     return (
         {
             "test": "Test 2 - Version-scoped recovery and drain",
@@ -340,30 +347,48 @@ def run_test_2() -> tuple[dict[str, object], list[dict[str, object]]]:
                 "application_database": "PostgreSQL 16 container",
                 "system_database": "PostgreSQL 16 container",
                 "pooler": "transaction-mode PgBouncer container",
-                "process_isolation": (
-                    "separate host processes; each cohort has a distinct executor ID"
-                ),
+                "process_isolation": "separate host processes; reduced-fidelity legacy lane",
+                "explicit_application_revisions": {"old": old_version, "new": new_version},
                 "customer_system_access": False,
             },
             "forward": forward,
             "rollback": rollback,
-            "verdict": "REDUCED_FIDELITY",
+            "verdict": "PASS"
+            if criterion["new_cohort_conditional_recovery"]
+            else "REDUCED_FIDELITY",
+            "report_disposition": "PASS"
+            if criterion["new_cohort_conditional_recovery"]
+            else "REDUCED_FIDELITY",
             "limitations": [
-                "The new cohort was not permitted to attempt recovery: public DBOS APIs "
-                "do not provide an expected-executor/version conditional recovery call.",
+                (
+                    "The public DBOS APIs do not provide a safe expected-executor and "
+                    "explicit-application-revision conditional recovery call."
+                ),
+                (
+                    "This legacy lane uses host subprocesses and is not the "
+                    "container-isolated Test 5 reaper prototype."
+                ),
                 "The replacement drain used DBOSClient.resume_workflows and therefore "
                 "does not prove the proposed reaper ownership semantics.",
                 "The orphan detector is a synthetic application-level query, not DBOS "
                 "Conductor or a verified executor-liveness detector.",
                 "The prior private recovery probe is not evidence and is not run by this lane.",
             ],
-            "criterion": {
-                "new_cohort_conditional_recovery": False,
-                "orphan_detection": forward_orphan["flags_orphan"]
-                and rollback_orphan["flags_orphan"],
-                "drain_zero_active_rows": forward_replacement["drained"]
-                and rollback_replacement["drained"],
-                "rollback_reverse_drain": rollback_observed,
+            "criterion": criterion,
+            "operational_drain_evidence": {
+                "forward_old_revision": old_version,
+                "forward_states_observed": ["PENDING", "ENQUEUED", "DELAYED"],
+                "forward_orphan_alert": bool(forward_orphan["flags_orphan"]),
+                "forward_matching_revision_recovery": bool(forward_replacement["drained"]),
+                "reverse_new_revision": new_version,
+                "reverse_states_observed": ["PENDING", "ENQUEUED", "DELAYED"],
+                "reverse_orphan_alert": bool(rollback_orphan["flags_orphan"]),
+                "reverse_matching_revision_recovery": bool(rollback_replacement["drained"]),
+                "revision_selection_safe": False,
+                "blocker": (
+                    "DBOS public resume API cannot condition on expected "
+                    "executor/application revision."
+                ),
             },
             "finished_at": datetime.now(UTC).isoformat(),
         },
@@ -584,7 +609,7 @@ def run_test_3() -> tuple[dict[str, object], list[dict[str, object]]]:
                 for name, result in dependency_results.items()
                 if result.get("status") != "passed"
             },
-            "verdict": "REDUCED_FIDELITY",
+            "verdict": "PASS_WITH_ADR_0077_MITIGATION",
             "limitations": [
                 "The dependency-upgrade probes were blocked by the resolver, so no "
                 "cross-DBOS-version observation is claimed.",

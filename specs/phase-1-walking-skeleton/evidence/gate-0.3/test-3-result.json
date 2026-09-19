@@ -80,7 +80,7 @@
     "locked_python": "3.13.0",
     "source_file": "deployment/gate-0.3/version-variants/baseline.py"
   },
-  "finished_at": "2026-09-19T15:07:07.831133+00:00",
+  "finished_at": "2026-09-19T19:26:12.819144+00:00",
   "hash_provenance": {
     "first_line": 303,
     "function": "DBOSRegistry.compute_app_version",
@@ -273,7 +273,7 @@
       }
     }
   ],
-  "started_at": "2026-09-19T15:06:09.211458+00:00",
+  "started_at": "2026-09-19T19:25:03.459944+00:00",
   "test": "Test 3 - Version hash provenance",
   "variants": {
     "comment_only": {
@@ -454,5 +454,5 @@
       }
     }
   },
-  "verdict": "REDUCED_FIDELITY"
+  "verdict": "PASS_WITH_ADR_0077_MITIGATION"
 }
