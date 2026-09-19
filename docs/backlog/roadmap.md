@@ -1,10 +1,15 @@
 # Delivery roadmap
 
-> **Status: 🟡 Proposed.** Rewritten 2026-09-13 against ADR-0001–ADR-0072.
+> **Status: 🟡 Proposed.** Rewritten 2026-09-13 and updated 2026-09-19 against
+> ADR-0001–ADR-0078.
 > Supersedes the pre-decision phase plan (in git history only).
 >
 > Phases 1–4 together deliver **v1**. Phase 5 is post-v1.
-> Four decisions gate Phase 1 — see section 6.
+> The original Phase 1 decision gates are closed — see section 6. Gate 0.3
+> safety implementation and evidence follow-ups remain prerequisites for Gate 1;
+> ADR-0077 and ADR-0078 are accepted. The required implementation, effect, and
+> operational evidence remains outstanding. ADR-0078 acceptance fixes the Phase 1
+> scope boundary; it does not claim Gate 0.3 or Phase 1 completion.
 
 ---
 
@@ -15,7 +20,8 @@ to mean *explicitly deferred*. Mapping v1 → Phase 1 directly does not work:
 
 > v1 includes two regional deployments (ADR-0049), PCI-DSS compliance
 > (ADR-0025), a hash-chained audit DAG anchored to WORM storage (ADR-0015),
-> blue/green deploys with a version-aware reaper (ADR-0038, ADR-0046), five
+> blue/green deploys with a version-aware reaper and release drain policy
+> (ADR-0038, ADR-0046, ADR-0077), five
 > durable-timer use cases (ADR-0047), governed Schedules (ADR-0058), Tenant
 > lifecycle with SA provisioning and drift reconciliation (ADR-0053), three
 > surfaces, and the full approval and control-liveness model
@@ -69,21 +75,47 @@ Irreversible or prohibitively expensive to retrofit. These are not phased.
 
 ### Phase 1 — Walking skeleton *(MVP; internal only)*
 
-**Goal:** one alert → investigation → narrated finding, end to end, read-only, single region, with section 3's foundations
-correct.
+**Goal:** one alert → investigation → narrated finding, end to end, read-only, single region, with section 3's
+foundations correct.
 
 **In scope:** ADR-0021 · ADR-0001 · ADR-0009 · ADR-0003 · ADR-0036 · ADR-0037 · ADR-0039 · ADR-0040 · ADR-0041 ·
 ADR-0043 · ADR-0048 · ADR-0030 · ADR-0006 · ADR-0029 · ADR-0031 · ADR-0034 · ADR-0007 · ADR-0068 · ADR-0070 · ADR-0018 ·
 ADR-0010 · ADR-0013 · ADR-0004 · ADR-0063 (L1/L2/L4) · ADR-0050 · ADR-0051 · ADR-0052 · ADR-0059 · ADR-0005 · ADR-0008 ·
 ADR-0071 · ADR-0015 (chain, not yet WORM-anchored) · ADR-0054 (private runs only) · ADR-0062 · ADR-0067 (read class)
+ADR-0074 (eval sink) · ADR-0075 (organisation-policy model selection; routing deferred to Phase 2)
+
+**Gate 0.3 safety follow-ups:** [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md)
+records the owner-selected at-least-once recovery model and remains proposed
+pending its own decision and implementation evidence. Accepted [ADR-0078](../adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md),
+formally accepted by the owner on 2026-09-19, fixes the Phase 1 scope change:
+there is no automatic cross-executor recovery; only a returning matching
+executor identity and explicit released compatibility revision may restart a
+Run automatically, while ambiguous or stuck Runs are operator-escalated.
+[ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md)
+is accepted and supersedes ADR-0046: it requires an explicit released
+application compatibility revision for every mutually versioned release and
+draining every prior release cohort. ADR-0077 acceptance does not claim the
+required operational drain evidence. The retained [Gate 0.3 and comparison
+evidence index](../../specs/phase-1-walking-skeleton/evidence/README.md)
+records the bounded DBOS matrix and partial reaper discovery, the Conductor
+commercial/capability research, and the Temporal comparison. The unresolved
+custom DBOS Test 2 is not required to establish this accepted boundary or to
+make a post-acceptance Gate 0.3 scope claim; it remains reduced-fidelity
+research and is not a foundation for future cross-executor recovery. Gate 0.3
+implementation/effect evidence and Gate 1 remain subject to their respective
+remaining checks; this does not claim completion or alter other phase
+commitments.
 
 **Explicitly deferred:** every write path, approval, Slack, run sharing and the driver model, Schedules, second region,
-blue/green, quota ceilings, PAN scrubbing.
+blue/green and its all-release drain policy, quota ceilings, PAN scrubbing.
 
 **Exit criteria**
 
-- A webhook-triggered run produces a narrated finding in the Grafana plugin with token-level streaming, and survives a
-  worker kill mid-run (resumes, no duplicate tool calls).
+- A webhook-triggered Run produces a narrated finding in the Grafana plugin with
+  token-level streaming. A worker kill resumes automatically only when the same
+  executor identity returns with the matching released compatibility revision;
+  an ambiguous or stuck Run is operator-escalated, and no automatic
+  cross-executor recovery is claimed under accepted ADR-0078.
 - Every tool call is a DBOS step; `list_workflow_steps()` returns a readable trajectory.
 - RLS proven: a query under Tenant A's GUC cannot see Tenant B's rows, including through a transaction-mode pooler.
 - Zero direct clients to customer systems (assert in CI by dependency rule).
@@ -138,11 +170,14 @@ authority with no expiry.
 ### Phase 4 — Production hardening *(v1 GA)*
 
 **In scope:** ADR-0025 (PAN scrubbing) · ADR-0015 (WORM anchoring, 12-month retention) · ADR-0038 (reaper) · ADR-0046
-(blue/green) · ADR-0047 (timers) · ADR-0058 (Schedules) · ADR-0035 (notification) · ADR-0049 (second region, Tenant
+(blue/green) · ADR-0077 (accepted decision: explicit release compatibility revision and all prior-cohort drain) · ADR-0047 (timers) · ADR-0058 (Schedules) · ADR-0035 (notification) · ADR-0049 (second region, Tenant
 Directory) · ADR-0057 (quota request flow)
 
-**Exit criteria:** colour retirement gated on a machine check, not a human eyeball (ADR-0046); PANs demonstrably
-stripped before reaching either sink; cross-region read proxy returns without persisting outside the home region.
+**Exit criteria:** colour retirement gated on a machine check, not a human eyeball (ADR-0046); under accepted ADR-0077,
+every mutually versioned release has an explicit released compatibility revision, all prior release cohorts remain
+available until `PENDING`, `ENQUEUED`, and `DELAYED` work drains, orphaned cohorts alert, and rollback is a reverse
+drain; PANs demonstrably stripped before reaching either sink; cross-region read proxy returns without persisting outside
+the home region.
 
 ---
 
@@ -164,28 +199,52 @@ L2-denied** and need their own decision, never a phase.
 
 ## 6. Decision gates — what must be clarified before each phase
 
-**Two items gate Phase 1.** Both are cheap selections. S1 closed on
-2026-09-13 (see [ADR-0039](../adr/agent/0039-the-run-is-the-durable-workflow.md),
+**The original Phase 1 decision gates are closed.** S1 closed on 2026-09-13
+(see [ADR-0039](../adr/agent/0039-the-run-is-the-durable-workflow.md),
 [ADR-0040](../adr/agent/0040-langgraph-is-compiled-with-no-checkpointer.md),
-[ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md)).
-Each remaining item has a self-contained brief in [`spikes/`](./spikes/README.md), written to
-be taken into its own session.
+[ADR-0041](../adr/agent/0041-step-granularity-is-one-llm-call-or-one-tool-call.md)). S2 is closed by ADR-0073, S3 by
+ADR-0074, and S4 by ADR-0075. The remaining items are later-phase sessions with their own backlog entries.
 
-| #      | Item                                                                                                   | Gates           | Why it blocks                                                                                                                                                                                                                  | Cost        |
-|--------|--------------------------------------------------------------------------------------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
-| **S3** | Langfuse vs Phoenix for the eval sink                                                                  | **Phase 1**     | "Start testing and evaluating" requires somewhere to *look at* trajectories from day one                                                                                                                                       | ~1 day      |
-| **S4** | Provisional model + serving choice                                                                     | **Phase 1**     | Phase 1 needs a model. ADR-0057 forbids mid-run degradation but picks nothing. A provisional choice is enough; the full routing session is Phase 2                                                                             | ~1 day      |
-| **S5** | Context compaction mechanics                                                                           | **Phase 2**     | Locked hierarchy, unlocked mechanics ([`../design/context-assembly.md`](../design/context-assembly.md) section 3). Long investigations overflow without it — but Phase 1 runs are short enough to defer                               |             |
-| **S6** | Eval methodology: ground truth, metrics, corpus size                                                   | **Phase 2**     | `fork_workflow` is the mechanism (ADR-0040); "good" is undefined. Phase 1 can rely on qualitative trajectory review                                                                                                            |             |
-| **S7** | HITL & write-action model; two-person rule                                                             | **Phase 3**     | Re-openable now that ADR-0055 is superseded                                                                                                                                                                                    |             |
-| **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link                                | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                                               |             |
-| **S9** | Tenant Directory substrate                                                                             | **Phase 4**     | Single region until then                                                                                                                                                                                                       |             |
+| #      | Item                                                                    | Gates           | Why it blocks                                                                                                                                                                                           | Cost   |
+|--------|-------------------------------------------------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
+| **S3** | Langfuse vs Phoenix for the eval sink                                   | **Closed**      | [ADR-0074](../adr/observability/0074-langfuse-is-the-internal-evaluation-sink.md) records the Phase 1 eval-sink selection.                                                                              | closed |
+| **S4** | Model and serving arrangement follows organisation policy               | **Closed**      | [ADR-0075](../adr/platform/0075-organisation-policy-governs-model-and-serving-selection.md) delegates the Phase 1 choice to organisation policy; the full routing session remains Phase 2               | closed |
+| **S5** | Context compaction mechanics                                            | **Phase 2**     | Locked hierarchy, unlocked mechanics ([`../design/context-assembly.md`](../design/context-assembly.md) section 3). Long investigations overflow without it — but Phase 1 runs are short enough to defer |        |
+| **S6** | Eval methodology: ground truth, metrics, corpus size                    | **Phase 2**     | `fork_workflow` is the mechanism (ADR-0040); "good" is undefined. Phase 1 can rely on qualitative trajectory review                                                                                     |        |
+| **S7** | HITL & write-action model; two-person rule                              | **Phase 3**     | Re-openable now that ADR-0055 is superseded                                                                                                                                                             |        |
+| **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                        |        |
+| **S9** | Tenant Directory substrate                                              | **Phase 4**     | Single region until then                                                                                                                                                                                |        |
+| **Gate 0.3 safety follow-ups** | [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) — **proposed**; [ADR-0078](../adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md) — **accepted 2026-09-19**; [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) — **accepted** | **Gate 1** | ADR-0078 fixes the accepted Phase 1 boundary: automatic restart recovery requires a returning matching executor identity and explicit released compatibility revision; ambiguous or stuck Runs require operator escalation; automatic cross-executor recovery is not claimed. The retained DBOS matrix, partial reaper discovery, Conductor commercial/capability record, and Temporal comparison are indexed in the Phase 1 evidence README. The unresolved custom DBOS Test 2 is not required for this accepted boundary or a post-acceptance Gate 0.3 scope claim; it remains reduced-fidelity research and is not a foundation for future cross-executor recovery. Matching-identity implementation evidence, operator-escalation evidence, receiving-boundary effect classifications, and ADR-0077 operational drain evidence remain outstanding. ADR-0076 remains proposed and is not accepted by this change. | evidence and owner decision |
 
-**S2 is closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).** Its findings determine the Phase 1 topology, RLS boundary and PCI treatment. S3 and S4 are a day's work and can run in parallel.
+**S2 is closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).** Its findings
+determine the Phase 1 topology, RLS boundary and PCI treatment. **S3 is closed
+by [ADR-0074](../adr/observability/0074-langfuse-is-the-internal-evaluation-sink.md), and S4
+by [ADR-0075](../adr/platform/0075-organisation-policy-governs-model-and-serving-selection.md).** The Phase 2
+model-routing session remains open.
 
-Everything else resolves inside the phase that needs it. **The backlog does not need clearing before the roadmap is finalised** — it is not a prerequisite planning round.
+Everything else resolves inside the phase that needs it. **The backlog does not need clearing before the roadmap is
+finalised** — it is not a prerequisite planning round.
 
 ## 7. What this roadmap deliberately does not do
+
+### Recovery-boundary revisit backlog
+
+ADR-0078 is the accepted Phase 1 boundary. Reconsidering automatic
+cross-executor recovery requires a **new proposed ADR**; it must not be done by
+editing ADR-0078 or by treating a retained experiment as an implicit waiver.
+The new ADR must identify the proposed boundary, alternatives, supported API
+and dependency versions, and a repeatable evidence set covering alive-but-
+silent and partition cases, concurrent resume, reaper failure, explicit
+executor and released-revision selection, external-effect inventory, and
+operator escalation. A Conductor revisit additionally requires the outstanding
+vendor quote and entitlement answers in the retained commercial record; a
+Temporal revisit requires a separate engine and migration decision. Until a
+new ADR is accepted, Phase 1 remains no-automatic-cross-executor-recovery.
+
+The retained research entry points are the [evidence index](../../specs/phase-1-walking-skeleton/evidence/README.md),
+[DBOS Gate 0.3 record](../../specs/phase-1-walking-skeleton/evidence/gate-0.3/README.md),
+[Conductor record](../../specs/phase-1-walking-skeleton/evidence/conductor-evaluation/2026-09-19-conductor-commercial-capability-evidence.md),
+and [Temporal record](../../specs/phase-1-walking-skeleton/evidence/temporal-spike/README.md).
 
 - **No estimates.** Phase content is decided; duration is not, and the Phase 1 shape is now settled.
 - **No parallel tracks.** Phases 1–3 are strictly ordered by the sequencing rules.

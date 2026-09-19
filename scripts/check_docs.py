@@ -13,10 +13,10 @@
 
 Usage: python3 scripts/check_docs.py
 """
+
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,7 +46,8 @@ EXEMPT_RE = re.compile(
 AMERICAN_RE = re.compile(
     r"\b(authoriz\w*|minimiz\w*|organiz\w*|categoriz\w*|recogniz\w*"
     r"|normaliz\w*|standardiz\w*|summariz\w*|serializ\w*|behavior\w*)\b",
-    re.I)
+    re.I,
+)
 # NB: 'licensed'/'licensing' are correct British (licence = noun, license = verb),
 # so they are deliberately absent from the pattern above.
 CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ue000-\uf8ff]")
@@ -111,25 +112,29 @@ def main() -> int:
         for m in CONTROL_RE.finditer(text):
             errors.append(
                 f"{rel(p)}: control/private-use character "
-                f"{m.group(0)!r} at offset {m.start()} — corrupted file?")
+                f"{m.group(0)!r} at offset {m.start()} — corrupted file?"
+            )
             break
 
         # ---- 4c. British spelling outside exempt spans
         for m in AMERICAN_RE.finditer(EXEMPT_RE.sub(lambda x: " " * len(x.group(0)), text)):
             w = m.group(0)
-            if w.lower().endswith(("ise", "ised", "ises", "ising", "isation",
-                                   "isations", "iour", "iours", "ence")):
+            if w.lower().endswith(
+                ("ise", "ised", "ises", "ising", "isation", "isations", "iour", "iours", "ence")
+            ):
                 continue
             errors.append(
                 f"{rel(p)}: American spelling '{w}' — use British form. "
                 f"Protocol tokens and quotations are exempt (backtick, quote "
-                f"or blockquote them).")
+                f"or blockquote them)."
+            )
 
         # ---- 5a. the section glyph is ambiguous about *which* document
         if "\u00a7" in text and "check_docs" not in p.name:
             errors.append(
                 f"{rel(p)}: uses '\u00a7'. Write 'section N', and name the "
-                f"document unless it is this one.")
+                f"document unless it is this one."
+            )
 
         # ---- 5. dead directories
         if "check_docs" not in p.name:
@@ -138,8 +143,7 @@ def main() -> int:
                 if any(k in line for k in PROVENANCE):
                     continue
                 for hit in set(DEAD_PATH_RE.findall(line)):
-                    warnings.append(
-                        f"{rel(p)}: reference to removed path '{hit}'")
+                    warnings.append(f"{rel(p)}: reference to removed path '{hit}'")
 
     # ---- 3 & 4. ADR front matter
     for p in sorted(ADR_DIR.rglob("*.md")):
@@ -156,8 +160,7 @@ def main() -> int:
             errors.append(f"{rel(p)}: invalid status '{fm.get('status')}'")
         if fm.get("category") != p.parent.name:
             errors.append(
-                f"{rel(p)}: category '{fm.get('category')}' "
-                f"!= directory '{p.parent.name}'"
+                f"{rel(p)}: category '{fm.get('category')}' != directory '{p.parent.name}'"
             )
         design = fm.get("design", "")
         if fm.get("status") == "accepted":
@@ -174,8 +177,7 @@ def main() -> int:
         cited = set(ADR_REF_RE.findall(roadmap.read_text(encoding="utf-8")))
         for aid in sorted(adr_ids):
             if aid.removeprefix("ADR-") not in cited:
-                warnings.append(
-                    f"docs/backlog/roadmap.md: {aid} is not placed in any phase")
+                warnings.append(f"docs/backlog/roadmap.md: {aid} is not placed in any phase")
 
     for w in warnings:
         print(f"WARN  {w}")

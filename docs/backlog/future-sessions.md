@@ -44,8 +44,11 @@ the superseded initiator-only rule (ADR-0055) and is now re-openable.
 
 ## 4. Model routing & provider strategy
 
-**[Gate S4](./spikes/S4-provisional-model.md) — a *provisional* choice blocks Phase 1; the full session is Phase 2.**
-LiteLLM, local (vLLM/Qwen) vs commercial, per-node model selection, fallbacks.
+**Gate S4 — closed by [ADR-0075](../adr/platform/0075-organisation-policy-governs-model-and-serving-selection.md).**
+Phase 1 uses the model and serving arrangement dictated by organisation policy;
+the full model-routing session remains a Phase 2 revisit. LiteLLM, local
+(vLLM/Qwen) vs commercial, per-node model selection, and fallbacks remain open
+there.
 
 **Inherits a hard constraint:** **no degrade-to-a-cheaper-model at budget cap**
 (ADR-0057) — switching mid-Run silently changes the quality characteristics an
@@ -53,7 +56,7 @@ operator is about to act on.
 
 ## 5. Evals & benchmarks
 
-**[Gate S3](./spikes/S3-eval-sink.md) (sink choice) blocks Phase 1; Gate S6 (methodology) blocks Phase 2.**
+**Gate S3 is closed by [ADR-0074](../adr/observability/0074-langfuse-is-the-internal-evaluation-sink.md); Gate S6 (methodology) blocks Phase 2.**
 Incident replay suite, trajectory evals, DeepEval, O11y-Bench, shadow deployments.
 
 **Also owns two handed-off items:**

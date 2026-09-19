@@ -1,0 +1,110 @@
+services:
+  app-postgres:
+    image: postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94
+    environment:
+      POSTGRES_DB: ${G03_APP_DB:?run the runner prepare command first}
+      POSTGRES_USER: ${G03_DB_USER:?run the runner prepare command first}
+      POSTGRES_PASSWORD: ${G03_DB_PASSWORD:?run the runner prepare command first}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gate03 -d gate03_app"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    ports:
+      - "55432:5432"
+    volumes:
+      - gate03_app_data:/var/lib/postgresql/data
+    networks:
+      - gate03-app
+
+  system-postgres:
+    image: postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94
+    environment:
+      POSTGRES_DB: ${G03_SYSTEM_DB:?run the runner prepare command first}
+      POSTGRES_USER: ${G03_DB_USER:?run the runner prepare command first}
+      POSTGRES_PASSWORD: ${G03_DB_PASSWORD:?run the runner prepare command first}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gate03 -d gate03_system"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    ports:
+      - "55433:5432"
+    volumes:
+      - gate03_system_data:/var/lib/postgresql/data
+    networks:
+      - gate03-system
+
+  pgbouncer:
+    image: edoburu/pgbouncer@sha256:4c1ca296ef525f108f5d3552cc337c0c09587cf8dae7f0067fd93349e47dc1cd
+    depends_on:
+      app-postgres:
+        condition: service_healthy
+      system-postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URLS: >-
+        postgresql://${G03_DB_USER:?run the runner prepare command first}:${G03_DB_PASSWORD:?run the runner prepare command first}@app-postgres:5432/${G03_APP_DB:?run the runner prepare command first},
+        postgresql://${G03_DB_USER:?run the runner prepare command first}:${G03_DB_PASSWORD:?run the runner prepare command first}@system-postgres:5432/${G03_SYSTEM_DB:?run the runner prepare command first}
+      AUTH_TYPE: plain
+      POOL_MODE: transaction
+      LISTEN_PORT: 6432
+      MAX_CLIENT_CONN: 100
+      DEFAULT_POOL_SIZE: 10
+    ports:
+      - "56432:6432"
+    networks:
+      - gate03-app
+      - gate03-system
+
+  effect-service:
+    build:
+      context: .
+      dockerfile: recovery.Dockerfile
+    image: gate03-recovery:local
+    command: ["effect-server", "--db-path", "/var/lib/gate-0-3/effects.sqlite3"]
+    environment:
+      G03_EFFECT_PORT: "59998"
+    depends_on:
+      system-postgres:
+        condition: service_healthy
+    ports:
+      - "59998:59998"
+    volumes:
+      - gate03_effect_data:/var/lib/gate-0-3
+    networks:
+      - gate03-effect
+    healthcheck:
+      test:
+        ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:59998/health')"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  gate-runner:
+    profiles: ["worker"]
+    build:
+      context: .
+      dockerfile: recovery.Dockerfile
+    image: gate03-recovery:local
+    environment:
+      G03_SYSTEM_DATABASE_URL: postgresql://gate03:gate03_local_only@system-postgres:5432/gate03_system
+      G03_APP_DATABASE_URL: postgresql://gate03:gate03_local_only@pgbouncer:6432/gate03_app
+      G03_EFFECT_URL: http://effect-service:59998/effect
+      G03_BARRIER_URL: http://effect-service:59998/barrier
+    depends_on:
+      system-postgres:
+        condition: service_healthy
+
+networks:
+  gate03-app:
+    name: gate03-app
+  gate03-system:
+    name: gate03-system
+  gate03-effect:
+    name: gate03-effect
+
+volumes:
+  gate03_app_data:
+  gate03_system_data:
+  gate03_effect_data:

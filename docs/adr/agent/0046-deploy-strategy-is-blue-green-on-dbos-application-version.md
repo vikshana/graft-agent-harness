@@ -7,7 +7,7 @@ deciders: [ ]
 category: agent
 tags: [ agent, orchestration, durability ]
 supersedes: [ ]
-superseded_by: [ ]
+superseded_by: [ADR-0077]
 amends: [ ]
 amended_by: [ ]
 relates_to: [ ]

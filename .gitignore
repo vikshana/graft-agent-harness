@@ -1,0 +1,12 @@
+.idea/
+
+# Python environments and generated caches
+.venv/
+__pycache__/
+*.py[cod]
+
+# Local spike/runtime state
+*.log
+.env
+.env.*
+

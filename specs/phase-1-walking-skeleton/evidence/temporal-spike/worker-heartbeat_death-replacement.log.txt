@@ -1,0 +1,2 @@
+{"worker": "ready", "identity": "graft-temporal-heartbeat_death-replacement", "task_queue": "graft-temporal-spike", "crash_first": false}
+[2m2026-09-19T19:49:43.300182Z[0m [33m WARN[0m [2mtemporalio_sdk_core::worker::heartbeat[0m[2m:[0m Worker heartbeating configured for runtime, but server version does not support it.

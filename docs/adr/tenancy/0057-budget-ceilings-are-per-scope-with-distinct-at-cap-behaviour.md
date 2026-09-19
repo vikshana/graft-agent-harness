@@ -9,7 +9,7 @@ tags: [tenancy, scoping, rbac]
 supersedes: []
 superseded_by: []
 amends: [ADR-0017]
-amended_by: []
+amended_by: [ADR-0075]
 relates_to: []
 design: ../../design/tenancy-and-scoping.md
 legacy_id: D57

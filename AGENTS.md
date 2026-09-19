@@ -4,11 +4,13 @@ Instructions for AI coding agents working in this repository.
 
 ---
 
-## 1. Read this first: there is no application code yet
+## 1. Read this first: the package is a reference prototype
 
-This repository currently contains **documentation and two Python scripts**. There is no `/api`, no `/worker`, no
-`src/`. That is not an omission — Phase 1 has not started, and is deliberately gated on two spikes
-(`docs/backlog/spikes/`).
+This repository contains architecture documentation, quality scripts, and a
+small Python reference prototype under `harness/` with tests under `tests/`.
+It is not production completion evidence: PostgreSQL, DBOS recovery,
+streamable-HTTP MCP, OTel, Grafana, and Authority Service integrations remain
+gated work in the Phase 1 plan.
 
 **If you are asked to implement a feature, stop and check
 [`docs/backlog/roadmap.md`](docs/backlog/roadmap.md) first.** Building ahead of the roadmap here is expensive: the
@@ -27,15 +29,34 @@ scripts/          documentation hygiene tooling
 ## 2. Commands
 
 ```sh
-python3 scripts/check_docs.py      # MUST pass before any commit touching docs/
-python3 scripts/gen_adr_index.py   # regenerate the ADR index after ADR changes
+uv sync --locked --all-groups      # create the locked development environment
+uv run ruff format --check .      # verify formatting
+uv run ruff check .              # lint
+uv run mypy                       # strict type checking for harness/scripts/tests
+uv run pytest -m "unit or contract" # unit and contract tests
+uv run python scripts/check_step_pointer_rule.py harness
+uv run python scripts/check_architecture.py harness
+uv run python scripts/check_docs.py
+uv export --locked --no-dev --no-emit-project --format requirements-txt \
+  --output-file /tmp/graft-locked-requirements.txt
+uv run pip-audit --strict --requirement /tmp/graft-locked-requirements.txt
+uv run pip-licenses --format=markdown --with-urls
+python3 scripts/gen_adr_index.py  # regenerate the ADR index after ADR changes
 ```
 
-Both run in CI (`.github/workflows/docs.yml`). `check_docs.py` currently reports **0 errors, 0 warnings** — keep it that
-way.
+`check_docs.py` runs in CI (`.github/workflows/docs.yml` and
+`.github/workflows/python-quality.yml`). The canonical
+`deployment/otel-collector/config.yaml` prerequisite is present, and local
+verification passed with 0 errors and 0 warnings. Do not mark the plan task
+complete without the parent orchestrator's final validation.
 
-There is no test suite, linter or build yet. When Phase 1 starts, the quality gates are specified in the roadmap, not
-invented ad hoc.
+The licence inventory is retained as a non-empty locked-environment evidence
+artefact. The project owner has approved this inventory-only control; no
+allow/deny licence policy is defined.
+
+The package quality gates are defined in `pyproject.toml` and the locked
+environment. Production integrations and their additional gates are specified
+in the Phase 1 plan rather than invented ad hoc.
 
 ## 3. Hard rules — violating these fails review
 

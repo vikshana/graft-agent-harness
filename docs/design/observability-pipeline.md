@@ -1,7 +1,8 @@
 # Observability pipeline
 
 > **Status: 🟢 Resolved for v1; one open tension (section 4).** Mechanism for
-> **ADR-0005**, **ADR-0008**, **ADR-0071**; compliance from **ADR-0025**.
+> **ADR-0005**, **ADR-0008**, **ADR-0071**, and **ADR-0074**; compliance from
+> **ADR-0025**.
 >
 > Vocabulary per [`../GLOSSARY.md`](../GLOSSARY.md). Related:
 > [`audit-and-attribution.md`](./audit-and-attribution.md).
@@ -19,7 +20,7 @@ OpenLIT auto-instrumentation (LiteLLM, vLLM, LangChain, vector DBs, GPU metrics)
         ▼
    OTel Collector  ── PII / secret / PAN scrubbing, sampling, graft_tenant_id tagging
         ├──▶ Operational sink: Tempo / Mimir / Loki (or customer's OTLP endpoint)
-        └──▶ Eval sink (internal only): Langfuse or Phoenix
+        └──▶ Eval sink (internal only): self-hosted Langfuse
                  — trajectory review, prompt version comparison,
                    annotation, eval dataset curation
 ```
@@ -27,14 +28,14 @@ OpenLIT auto-instrumentation (LiteLLM, vLLM, LangChain, vector DBs, GPU metrics)
 ## 2. Why two sinks
 
 LGTM is strong for traces, metrics and logs, and weak for **trajectory review** —
-comparing prompt v1.2 against v1.3 across 50 historical incidents, annotating
-runs, building eval datasets. Hence a second, internal-only sink.
+comparing prompt versions across historical incidents, annotating runs and
+building evaluation datasets. Hence a second, internal-only sink.
 
 **The one-way rule (ADR-0071): no product feature may read from the eval sink's
 API.** This is what stops an eval tool becoming a runtime dependency.
 
-Note that the eval sink is fed by OTel spans (ADR-0008) and the event log
-(ADR-0030) — never by a checkpointer, which does not exist (ADR-0040). DBOS's
+The eval sink is fed by OTel spans (ADR-0008) and the event log (ADR-0030) —
+never by a checkpointer, which does not exist (ADR-0040). DBOS's
 `list_workflow_steps()` and `fork_workflow()` supply ordered, SQL-queryable
 trajectories and historical replay respectively.
 
@@ -58,17 +59,20 @@ investigated log line, so **the eval sink must pass through the same PAN-scrubbi
 pipeline as the audit chain**, or it becomes an unscrubbed compliance liability
 sitting next to a compliant one.
 
-This still sits awkwardly against ADR-0071's "never a runtime dependency" framing
-for forensics. **Not resolved — clarified.** The PAN-scrubbing implementation
-(Luhn-check-backed detection) and this tension are both owned by the
+This remains separate from product runtime dependency: the sink is internal-only
+and the Collector is the scrubbing boundary. The PAN-scrubbing implementation
+(Luhn-check-backed detection) and the storage tension remain owned by the
 **Evals & Benchmarks** session; see [`../backlog/future-sessions.md`](../backlog/future-sessions.md).
 
 ## 5. Open questions
 
-- Langfuse vs. Phoenix for the eval sink.
 - Sampling policy — research suggests 100% for RCA mode. **Audit records are
   never sampled** (ADR-0015).
-- Whether customers get the operational sink pointed at their own OTLP endpoint
-  by default.
+- Whether customers get the operational sink pointed at their own OTLP endpoint.
 - PCI scope now extends to the DBOS system database (ADR-0037 risk X1) — hand
   off to the Evals session alongside ADR-0025.
+
+The canonical eval pipeline is
+[`../../deployment/otel-collector/config.yaml`](../../deployment/otel-collector/config.yaml).
+It scrubs before the Langfuse exporter and accepts regional endpoint and
+credential values from the deployment secret manager.

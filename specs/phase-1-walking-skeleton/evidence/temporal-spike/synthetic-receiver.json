@@ -1,0 +1,14 @@
+{
+  "keyed_logical_effect_count": 1,
+  "raw_call_count": 2,
+  "raw_calls": [
+    {
+      "effect_key": "graft-temporal-spike-run-effect-001",
+      "run_id": "graft-temporal-spike-run-001"
+    },
+    {
+      "effect_key": "graft-temporal-spike-run-effect-001",
+      "run_id": "graft-temporal-spike-run-001"
+    }
+  ]
+}

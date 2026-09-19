@@ -1,0 +1,141 @@
+{
+  "events": [
+    {
+      "eventId": "1",
+      "eventTime": "2026-09-19T19:50:09.904089457Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_EXECUTION_STARTED",
+      "taskId": "1048587",
+      "workflowExecutionStartedEventAttributes": {
+        "attempt": 1,
+        "firstExecutionRunId": "01a0bb38-14f0-7158-b247-570dd9724ad0",
+        "firstWorkflowTaskBackoff": "0s",
+        "identity": "65315@[redacted-host]",
+        "originalExecutionRunId": "01a0bb38-14f0-7158-b247-570dd9724ad0",
+        "priority": {},
+        "taskQueue": {
+          "kind": "TASK_QUEUE_KIND_NORMAL",
+          "name": "graft-temporal-spike"
+        },
+        "workflowId": "graft-temporal-spike-compatibility-323b42a0",
+        "workflowTaskTimeout": "10s",
+        "workflowType": {
+          "name": "graft-temporal-spike-compatibility"
+        }
+      }
+    },
+    {
+      "eventId": "2",
+      "eventTime": "2026-09-19T19:50:09.904327143Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+      "taskId": "1048588",
+      "workflowTaskScheduledEventAttributes": {
+        "attempt": 1,
+        "startToCloseTimeout": "10s",
+        "taskQueue": {
+          "kind": "TASK_QUEUE_KIND_NORMAL",
+          "name": "graft-temporal-spike"
+        }
+      }
+    },
+    {
+      "eventId": "3",
+      "eventTime": "2026-09-19T19:50:09.914434970Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
+      "taskId": "1048593",
+      "workflowTaskStartedEventAttributes": {
+        "historySizeBytes": "308",
+        "identity": "graft-temporal-compatibility",
+        "requestId": "746f9830-8042-4e91-8080-46a83dd0385f",
+        "scheduledEventId": "2",
+        "workerVersion": {
+          "buildId": "d7108bb4ebea5137ade665893b529539"
+        }
+      }
+    },
+    {
+      "eventId": "4",
+      "eventTime": "2026-09-19T19:50:09.923909246Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
+      "taskId": "1048597",
+      "workflowTaskCompletedEventAttributes": {
+        "identity": "graft-temporal-compatibility",
+        "meteringMetadata": {},
+        "scheduledEventId": "2",
+        "sdkMetadata": {
+          "coreUsedFlags": [
+            1,
+            3,
+            2
+          ],
+          "sdkName": "temporal-python",
+          "sdkVersion": "1.20.0"
+        },
+        "startedEventId": "3",
+        "workerVersion": {
+          "buildId": "d7108bb4ebea5137ade665893b529539"
+        }
+      }
+    },
+    {
+      "eventId": "5",
+      "eventTime": "2026-09-19T19:50:09.924385660Z",
+      "eventType": "EVENT_TYPE_MARKER_RECORDED",
+      "markerRecordedEventAttributes": {
+        "details": {
+          "patch-data": {
+            "payloads": [
+              {
+                "data": "eyJpZCI6ImdyYWZ0LXRlbXBvcmFsLXNwaWtlLWNvbXBhdC12MSIsImRlcHJlY2F0ZWQiOmZhbHNlfQ==",
+                "metadata": {
+                  "encoding": "anNvbi9wbGFpbg=="
+                }
+              }
+            ]
+          }
+        },
+        "markerName": "core_patch",
+        "workflowTaskCompletedEventId": "4"
+      },
+      "taskId": "1048598"
+    },
+    {
+      "eventId": "6",
+      "eventTime": "2026-09-19T19:50:09.924603094Z",
+      "eventType": "EVENT_TYPE_UPSERT_WORKFLOW_SEARCH_ATTRIBUTES",
+      "taskId": "1048599",
+      "upsertWorkflowSearchAttributesEventAttributes": {
+        "searchAttributes": {
+          "indexedFields": {
+            "TemporalChangeVersion": {
+              "data": "WyJncmFmdC10ZW1wb3JhbC1zcGlrZS1jb21wYXQtdjEiXQ==",
+              "metadata": {
+                "encoding": "anNvbi9wbGFpbg==",
+                "type": "SU5ERVhFRF9WQUxVRV9UWVBFX0tFWVdPUkRfTElTVA=="
+              }
+            }
+          }
+        },
+        "workflowTaskCompletedEventId": "4"
+      }
+    },
+    {
+      "eventId": "7",
+      "eventTime": "2026-09-19T19:50:09.924811236Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED",
+      "taskId": "1048600",
+      "workflowExecutionCompletedEventAttributes": {
+        "result": {
+          "payloads": [
+            {
+              "data": "Im5ldy1jb21wYXRpYmxlLXBhdGgi",
+              "metadata": {
+                "encoding": "anNvbi9wbGFpbg=="
+              }
+            }
+          ]
+        },
+        "workflowTaskCompletedEventId": "4"
+      }
+    }
+  ]
+}
