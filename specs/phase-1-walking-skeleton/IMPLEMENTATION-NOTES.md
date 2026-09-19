@@ -366,3 +366,20 @@ value is not a mutable Git SHA or image tag. ADR-0077 remains proposed pending
 formal owner acceptance and operational drain evidence; Gate 0.3 remains
 subject to the parent orchestrator's decision and other outstanding safety
 evidence.
+
+## ADR-0077 formal acceptance
+
+> **Date:** 2026-09-19
+
+The project owner formally accepted [ADR-0077](../../docs/adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md),
+which supersedes ADR-0046 and requires an explicit released application
+compatibility revision for every mutually versioned release plus an
+all-prior-cohort drain. This records acceptance of the decision only. The
+operational drain evidence remains outstanding, and Gate 0.3 remains
+unresolved while Gate 1 remains blocked by the outstanding recovery and effect
+evidence; no gate or implementation completion is claimed.
+
+The earlier sentence stating that ADR-0077 remained proposed is superseded by
+this dated acceptance entry. It is retained above as historical evidence of
+the pre-acceptance state; no operational drain or Gate 0.3 completion is
+claimed.

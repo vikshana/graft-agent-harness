@@ -1,12 +1,13 @@
 # Delivery roadmap
 
-> **Status: 🟡 Proposed.** Rewritten 2026-09-13 and updated 2026-09-17 against
-> ADR-0001–ADR-0075.
+> **Status: 🟡 Proposed.** Rewritten 2026-09-13 and updated 2026-09-19 against
+> ADR-0001–ADR-0077.
 > Supersedes the pre-decision phase plan (in git history only).
 >
 > Phases 1–4 together deliver **v1**. Phase 5 is post-v1.
-> The original Phase 1 decision gates are closed — see section 6. The proposed
-> Gate 0.3 safety follow-ups remain prerequisites for Gate 1.
+> The original Phase 1 decision gates are closed — see section 6. Gate 0.3
+> safety follow-ups remain prerequisites for Gate 1; ADR-0077 is accepted, but
+> the required recovery, effect, and operational evidence remains outstanding.
 
 ---
 
@@ -18,7 +19,7 @@ to mean *explicitly deferred*. Mapping v1 → Phase 1 directly does not work:
 > v1 includes two regional deployments (ADR-0049), PCI-DSS compliance
 > (ADR-0025), a hash-chained audit DAG anchored to WORM storage (ADR-0015),
 > blue/green deploys with a version-aware reaper and release drain policy
-> (ADR-0038, ADR-0046, proposed ADR-0077), five
+> (ADR-0038, ADR-0046, ADR-0077), five
 > durable-timer use cases (ADR-0047), governed Schedules (ADR-0058), Tenant
 > lifecycle with SA provisioning and drift reconciliation (ADR-0053), three
 > surfaces, and the full approval and control-liveness model
@@ -81,20 +82,19 @@ ADR-0010 · ADR-0013 · ADR-0004 · ADR-0063 (L1/L2/L4) · ADR-0050 · ADR-0051 
 ADR-0071 · ADR-0015 (chain, not yet WORM-anchored) · ADR-0054 (private runs only) · ADR-0062 · ADR-0067 (read class)
 ADR-0074 (eval sink) · ADR-0075 (organisation-policy model selection; routing deferred to Phase 2)
 
-**Proposed Gate 0.3 safety follow-ups (not accepted):** [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md)
-and [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) record the
-recovery-semantics and release-version safety follow-ups from Gate 0.3. The
-owner selected the at-least-once recovery model recorded in ADR-0076, but that
-ADR remains proposed pending the required recovery matrix and Phase 1
-external-effect inventory tests. ADR-0077 proposes superseding ADR-0046 with an
-explicit released application compatibility revision for every mutually
-versioned release and draining every prior release cohort; owner acceptance is
-still required. These follow-ups do not change the accepted Phase 1 scope.
-Until the required evidence and decisions are complete, Gate 0.3 remains
-unresolved and Gate 1 remains blocked.
+**Gate 0.3 safety follow-ups:** [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md)
+records the owner-selected at-least-once recovery model but remains proposed
+pending the required recovery matrix and Phase 1 external-effect inventory
+tests. [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md)
+is accepted and supersedes ADR-0046: it requires an explicit released
+application compatibility revision for every mutually versioned release and
+draining every prior release cohort. ADR-0077 acceptance does not claim the
+required operational drain evidence. These follow-ups do not change the
+accepted Phase 1 scope. Gate 0.3 remains unresolved and Gate 1 remains blocked
+by outstanding recovery and effect evidence.
 
 **Explicitly deferred:** every write path, approval, Slack, run sharing and the driver model, Schedules, second region,
-blue/green and its proposed all-release drain policy, quota ceilings, PAN scrubbing.
+blue/green and its all-release drain policy, quota ceilings, PAN scrubbing.
 
 **Exit criteria**
 
@@ -154,10 +154,10 @@ authority with no expiry.
 ### Phase 4 — Production hardening *(v1 GA)*
 
 **In scope:** ADR-0025 (PAN scrubbing) · ADR-0015 (WORM anchoring, 12-month retention) · ADR-0038 (reaper) · ADR-0046
-(blue/green) · proposed ADR-0077 (explicit release compatibility revision and all prior-cohort drain) · ADR-0047 (timers) · ADR-0058 (Schedules) · ADR-0035 (notification) · ADR-0049 (second region, Tenant
+(blue/green) · ADR-0077 (accepted decision: explicit release compatibility revision and all prior-cohort drain) · ADR-0047 (timers) · ADR-0058 (Schedules) · ADR-0035 (notification) · ADR-0049 (second region, Tenant
 Directory) · ADR-0057 (quota request flow)
 
-**Exit criteria:** colour retirement gated on a machine check, not a human eyeball (ADR-0046); once ADR-0077 is accepted,
+**Exit criteria:** colour retirement gated on a machine check, not a human eyeball (ADR-0046); under accepted ADR-0077,
 every mutually versioned release has an explicit released compatibility revision, all prior release cohorts remain
 available until `PENDING`, `ENQUEUED`, and `DELAYED` work drains, orphaned cohorts alert, and rollback is a reverse
 drain; PANs demonstrably stripped before reaching either sink; cross-region read proxy returns without persisting outside
@@ -198,7 +198,7 @@ ADR-0074, and S4 by ADR-0075. The remaining items are later-phase sessions with 
 | **S7** | HITL & write-action model; two-person rule                              | **Phase 3**     | Re-openable now that ADR-0055 is superseded                                                                                                                                                             |        |
 | **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                        |        |
 | **S9** | Tenant Directory substrate                                              | **Phase 4**     | Single region until then                                                                                                                                                                                |        |
-| **Gate 0.3 safety follow-ups** | [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) and [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) — **proposed, not accepted** | **Gate 1** | The owner selected ADR-0076's at-least-once recovery model. Acceptance still requires the recovery barrier/partition matrix, concurrent-resume and crash cases, and the Phase 1 external-effect inventory with receiving-boundary idempotency or operator-escalation classifications. ADR-0077 now records the owner-selected proposal to supersede ADR-0046 with an explicit released compatibility revision and an all-prior-cohort drain, but formal owner acceptance and operational drain evidence remain required. Gate 0.3 remains unresolved and Gate 1 remains blocked; this does not alter other phase commitments. | evidence and owner decision |
+| **Gate 0.3 safety follow-ups** | [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) — **proposed**; [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) — **accepted** | **Gate 1** | The owner selected ADR-0076's at-least-once recovery model. Acceptance still requires the recovery barrier/partition matrix, concurrent-resume and crash cases, and the Phase 1 external-effect inventory with receiving-boundary idempotency or operator-escalation classifications. The owner accepted ADR-0077 on 2026-09-19; its operational drain evidence remains outstanding. Gate 0.3 remains unresolved and Gate 1 remains blocked by outstanding recovery and effect evidence; this does not claim completion or alter other phase commitments. | evidence and owner decision |
 
 **S2 is closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).** Its findings
 determine the Phase 1 topology, RLS boundary and PCI treatment. **S3 is closed

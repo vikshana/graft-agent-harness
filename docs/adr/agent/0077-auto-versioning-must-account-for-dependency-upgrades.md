@@ -1,7 +1,7 @@
 ---
 id: ADR-0077
 title: Auto-versioning must account for dependency upgrades
-status: proposed
+status: accepted
 date: 2026-09-19
 deciders: [project owner]
 category: agent
@@ -45,7 +45,7 @@ These comparison artefacts were verified on 2026-09-19.
 
 ## 2. Decision
 
-Propose **superseding ADR-0046**, rather than amending it, with an
+**Supersede ADR-0046**, rather than amend it, with an
 all-release-drain policy:
 
 1. Every mutually versioned release receives an explicit application
@@ -62,8 +62,10 @@ all-release-drain policy:
    executor. A rollback from B to A is a reverse drain: it restores A capacity,
    routes new work to A, and applies the same checks before retiring B.
 
-The owner selected this proposed direction, but formal owner acceptance is
-still required. Until acceptance, ADR-0046 remains the accepted decision.
+The owner selected this direction and formally accepted ADR-0077 on
+2026-09-19. ADR-0046 is superseded by this decision. The operational evidence
+listed in Verification remains outstanding; acceptance records the decision
+and does not claim implementation or gate completion.
 
 ## 3. Considered options
 
@@ -108,6 +110,13 @@ LangGraph upgrade test was claimed.
 
 The retained comparison did not exercise operational draining, orphan alerts,
 matching-version recovery, or reverse-drain rollback. It therefore supports the
-owner-selected proposal but does not prove those controls or accept this ADR.
-The ADR remains **proposed** pending formal owner acceptance and the required
-operational evidence.
+owner-selected decision but does not prove those controls. The required
+operational evidence remains outstanding and does not change the formal
+acceptance recorded below.
+
+### Owner acceptance — 2026-09-19
+
+The project owner formally accepted ADR-0077 on 2026-09-19. This acceptance
+records the all-release-drain decision and supersedes ADR-0046; it does not
+claim completion of the outstanding operational evidence for drain checks,
+orphan alerts, matching-version recovery, or reverse-drain rollback.
