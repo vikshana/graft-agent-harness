@@ -5,7 +5,7 @@
 > Conventions: [`README.md`](./README.md). Vocabulary: [`../GLOSSARY.md`](../GLOSSARY.md), which wins on conflict.
 
 
-**78 decisions · 75 accepted · 3 superseded/other**
+**78 decisions · 76 accepted · 2 superseded/other**
 
 
 ---
@@ -78,7 +78,7 @@ Mechanism: [`../design/durable-execution.md`](../design/durable-execution.md)
 | [ADR-0062](agent/0062-custom-instructions-exist-at-tenant-and-principal-level.md) | Custom instructions exist at Tenant and Principal level | 🟢 accepted | 2026-09-13 | supersedes ; **superseded by** ; amends [ADR-0016](tenancy/0016-configuration-is-tenant-scoped-and-shared.md); amended by  |
 | [ADR-0076](agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) | Recovery is at least once with durable effect idempotency | 🟡 proposed | 2026-09-19 | amends [ADR-0038](agent/0038-work-rediscovery-is-ours-to-build.md) |
 | [ADR-0077](agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) | Auto-versioning must account for dependency upgrades | 🟢 accepted | 2026-09-19 | supersedes [ADR-0046](agent/0046-deploy-strategy-is-blue-green-on-dbos-application-version.md) |
-| [ADR-0078](agent/0078-phase-1-disables-automatic-cross-executor-recovery.md) | Phase 1 disables automatic cross-executor recovery | 🟡 proposed | 2026-09-19 | amends [ADR-0076](agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) |
+| [ADR-0078](agent/0078-phase-1-disables-automatic-cross-executor-recovery.md) | Phase 1 disables automatic cross-executor recovery | 🟢 accepted | 2026-09-19 | amends [ADR-0076](agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) |
 
 ---
 

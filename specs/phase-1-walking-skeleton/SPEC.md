@@ -4,13 +4,12 @@
 > **Created:** 2026-09-17
 > **Folder:** `specs/phase-1-walking-skeleton`
 >
-> **Recovery scope proposal (2026-09-19):** Proposed ADR-0078 narrows Phase 1
-> automatic recovery to a returning matching executor identity and explicit
-> released compatibility revision. Cross-executor automatic recovery is not
-> claimed. Ambiguous or stuck Runs require operator escalation. This scope
-> change is pending owner acceptance; retained Gate 0.3 and Temporal evidence
-> remains historical evidence and does not mark this specification or Phase 1
-> complete.
+> **Accepted recovery boundary (2026-09-19):** ADR-0078 is formally accepted.
+> Phase 1 automatic recovery is limited to a returning matching executor
+> identity and explicit released compatibility revision. Cross-executor
+> automatic recovery is not claimed. Ambiguous or stuck Runs require operator
+> escalation. Retained Gate 0.3, Conductor, and Temporal evidence remains
+> historical research and does not mark this specification or Phase 1 complete.
 
 ---
 
@@ -216,8 +215,8 @@ formats consistent with the accepted ADRs.
 5. **AC 5 — Token streaming and replay:** Narrative output is observable as token
    events before Run completion; reconnecting from a recorded
    `graft_event_id` replays every later event exactly once and in order.
-6. **AC 6 — Scoped durable recovery (proposed, pending ADR-0078 owner
-   acceptance):** Killing the owning worker during an LLM call, during a Tool
+6. **AC 6 — Scoped durable recovery (ADR-0078 accepted 2026-09-19):** Killing
+   the owning worker during an LLM call, during a Tool
    call, and between steps permits the Run to resume and complete only when the
    same executor identity returns and the explicit released application
    compatibility revision matches the Run. Phase 1 must not automatically
@@ -226,9 +225,9 @@ formats consistent with the accepted ADRs.
    permitted matching-identity restart boundary, an at-least-once retry may
    repeat an in-flight step; receiving-boundary idempotency is required where
    automatic retry is allowed, and completed Tool-side effects or events must
-   not be duplicated by the implementation. This criterion is not complete
-   until ADR-0078 is accepted and its negative cross-executor and escalation
-   evidence is retained.
+   not be duplicated by the implementation. Acceptance of ADR-0078 fixes this
+   scope boundary; implementation evidence for the permitted restart path,
+   rejection and escalation behaviour remains required.
 7. **AC 7 — Step granularity and pointers:** `list_workflow_steps()` shows each
    LLM call and Tool Gateway call as a distinct DBOS step, and automated checks
    reject DBOS steps that return a large or sensitive payload instead of an
@@ -267,6 +266,9 @@ formats consistent with the accepted ADRs.
     architectural assumption is raised for decision review rather than bypassed.
     No cross-executor automatic recovery is an accepted Phase 1 expectation
     unless a later accepted ADR changes this boundary.
+     The unresolved custom DBOS Test 2 is not required to establish the accepted
+     Gate 0.3 boundary; it remains reduced-fidelity research and is not a
+     foundation for future cross-executor recovery.
 16. **AC 16 — Correlated observability:** A completed Run can be followed from
     inbound API request through workflow, LLM steps, Tool Gateway policy checks,
     MCP calls, event publication, and terminal result using
@@ -312,10 +314,10 @@ Phase 1 is done only when all of the following are true:
 - The four outstanding DBOS verification results are recorded. A failed locked
   assumption has either been resolved by a reviewed fix consistent with the
   ADRs or escalated through a new ADR; it is not waived silently.
-- The proposed ADR-0078 recovery scope change is formally accepted before Phase
-  1 completion. Until then, no cross-executor recovery evidence or completion
-  claim is permitted; ambiguous and stuck Runs remain an operator-escalation
-  case.
+- Accepted ADR-0078 fixes the Phase 1 recovery boundary: no automatic
+  cross-executor recovery evidence or completion claim is permitted; ambiguous
+  and stuck Runs remain an operator-escalation case. The acceptance does not
+  claim implementation, Gate 0.3 completion, or Phase 1 completion.
 - The API, security, data/RLS, durability, and observability reviews are approved
   with no unresolved critical or high-severity finding.
 - Operational documentation covers local setup, contract generation/checking,
@@ -379,7 +381,7 @@ Phase 1 is done only when all of the following are true:
 |----------|-----------|
 | Define shared harness contract semantics in Phase 1 but defer the Slack adapter | Preserves the API boundary now without pulling a Phase 3 surface into Phase 1. |
 | Treat outstanding DBOS verification as normal Phase 1 tasks | Requested hand-off scope; failures still require decision review rather than silent workarounds. |
-| Scope automatic recovery to matching executor identity and released application revision, with operator escalation for ambiguous or stuck Runs | Proposed ADR-0078 records the Gate 0.3 scope change; owner acceptance and its negative evidence remain pending, and no cross-executor recovery completion claim is made. |
+| Scope automatic recovery to matching executor identity and released application revision, with operator escalation for ambiguous or stuck Runs | Accepted ADR-0078 records the 2026-09-19 owner decision. Implementation evidence remains required; no automatic cross-executor recovery completion claim is made. |
 | Use contract tests as the primary API integration gate | The harness is API-first and has independently implemented consumers/providers. |
 | Rely on LangGraph's model integration boundary | Avoids a redundant harness-specific provider matrix while organisation policy remains authoritative for permitted models. |
 | Verify the organisation-approved model plus a model test double | Demonstrates the harness seam without claiming exhaustive compatibility with every changing upstream integration. |

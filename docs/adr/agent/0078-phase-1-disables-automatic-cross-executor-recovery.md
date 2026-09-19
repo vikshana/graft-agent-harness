@@ -1,7 +1,7 @@
 ---
 id: ADR-0078
 title: Phase 1 disables automatic cross-executor recovery
-status: proposed
+status: accepted
 date: 2026-09-19
 deciders: [project owner]
 category: agent
@@ -47,8 +47,8 @@ is comparison evidence, not an engine-selection decision.
 
 ## 2. Decision
 
-**Pending formal owner acceptance, Phase 1 shall not perform or claim automatic
-cross-executor recovery.** Automatic restart recovery is limited to a matching
+**Phase 1 shall not perform or claim automatic cross-executor recovery.**
+Automatic restart recovery is limited to a matching
 executor identity and the explicit released application compatibility revision
 recorded for the Run. When the identity or revision cannot be established, an
 executor is alive-but-silent, or a Run is ambiguous or stuck, the system must
@@ -83,7 +83,8 @@ ADR-0076 and does not amend the accepted executor-pinned boundary in ADR-0038.
 - **Follow-on work —** implement explicit executor-identity and released
   compatibility-revision checks, typed ambiguous/stuck recovery states, and an
   operator runbook. Retain the raw Gate 0.3 and Temporal evidence unchanged;
-  this proposal does not claim Gate 0.3 or Phase 1 completion.
+  acceptance of this boundary does not claim implementation, Gate 0.3, or
+  Phase 1 completion.
 - **Exact revisit trigger —** reopen this boundary only through a new ADR when
   a repeatable supported-API test on the pinned Phase 1 dependencies proves an
   enforceable executor-identity and released-revision fence across alive-but-
@@ -95,22 +96,29 @@ ADR-0076 and does not amend the accepted executor-pinned boundary in ADR-0038.
 
 ## 5. Verification
 
-On 2026-09-19, the retained Gate 0.3 evidence showed that the supported DBOS
-API could not safely condition resume on an expected executor and application
-revision; the historical private-recovery result was classified
-`REDUCED_FIDELITY`/`INCOMPLETE`. The retained Temporal spike on the same date
-showed duplicate raw activity delivery after worker loss, with the synthetic
-receiver—not Temporal—collapsing the logical effect. These sources support
-the proposed scope boundary and the accepted availability trade, but do not
-verify implementation or formal owner acceptance.
+### Owner acceptance — 2026-09-19
 
-Before this ADR can be accepted, the verification record must include:
+The project owner formally accepted ADR-0078 on 2026-09-19. Acceptance fixes
+the Phase 1 scope boundary: automatic restart recovery is restricted to a
+returning matching executor identity and explicit released compatibility
+revision, and ambiguous or stuck Runs require operator escalation. It does not
+claim implementation, Gate 0.3 completion, or Phase 1 completion.
 
-1. a same-executor identity and explicit released-revision restart test;
-2. negative tests showing that a different executor or revision cannot resume
-   automatically; and
-3. an ambiguous/alive-but-silent/stuck Run test showing durable state,
-   operator escalation, and no automatic cross-executor takeover.
+The retained research and its limitations are indexed in the [Phase 1
+evidence README](../../../specs/phase-1-walking-skeleton/evidence/README.md):
 
-The result must retain the exact dependency versions, commands, expected and
-actual outcomes, and redacted artefacts under the Phase 1 evidence directory.
+- the DBOS Gate 0.3 barrier/partition matrix and partial application-owned
+  reaper discovery are bounded observations, not proof of a DBOS executor
+  fence;
+- the Conductor commercial and capability record preserves the vendor quote
+  and capability questions as outstanding, and makes no product selection; and
+- the Temporal comparison is `PASS_WITH_LIMITATIONS`: it observed at-least-once
+  activity execution and synthetic receiver-side effect deduplication, not an
+  engine-level external-effect fence.
+
+The matching-identity/revision restart tests, rejection tests, ambiguous or
+alive-but-silent/stuck escalation tests, and receiving-boundary effect
+classification remain implementation evidence. The unresolved custom DBOS
+Test 2 is not required to establish this accepted Phase 1 boundary. It remains
+retained as reduced-fidelity research and is not a foundation for future
+cross-executor recovery.

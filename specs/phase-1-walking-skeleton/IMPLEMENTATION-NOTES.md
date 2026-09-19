@@ -8,17 +8,18 @@
 
 Added a runnable, dependency-light API contract/provider core for the Phase 1 walking skeleton. It models private read-only Runs, ordered replayable events, idempotent webhook creation, cancellation boundaries, capability-token validation, curated Tool Gateway calls, and a WSGI HTTP adapter while leaving production DBOS, PostgreSQL, MCP, telemetry, and surface transport integrations behind explicit seams.
 
-## Proposed Gate 0.3 Recovery Scope Change
+## Accepted Gate 0.3 Recovery Scope Boundary
 
 > **Date:** 2026-09-19
 
-Proposed [ADR-0078](../../docs/adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md)
-records the owner-selected scope change after Gate 0.3: Phase 1 does not
+Accepted [ADR-0078](../../docs/adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md)
+records the owner-selected scope change after Gate 0.3. The owner formally
+accepted it on 2026-09-19. Phase 1 does not
 automatically recover a Run across executor identities. Automatic restart
 recovery is limited to a returning matching executor identity and the explicit
 released application compatibility revision recorded for the Run. Ambiguous,
 alive-but-silent, or stuck Runs are durably recorded and escalated to an
-operator. This is a proposed, pending-owner-acceptance change, not a Phase 1
+operator. This acceptance fixes the Phase 1 scope boundary; it is not a Phase 1
 completion claim.
 
 The accepted trade is explicit: Phase 1 no longer claims recovery after a
@@ -28,6 +29,12 @@ spike remain raw historical evidence; neither is rewritten or treated as proof
 of a cross-executor recovery fence. Proposed ADR-0076's at-least-once and
 receiving-boundary idempotency requirements remain applicable inside the
 narrower matching-identity boundary.
+
+The unresolved custom DBOS Test 2 is not required to establish this accepted
+Phase 1 boundary. It remains reduced-fidelity research and is not a foundation
+for future cross-executor recovery. The retained matrix, partial application-
+owned reaper discovery, Conductor commercial/capability record, and Temporal
+comparison are indexed in [`evidence/README.md`](evidence/README.md).
 
 ## Deviations from the Plan
 
@@ -322,18 +329,24 @@ escalation. Confirmed termination and leases remain availability and duplicate-
 exposure controls, not the semantic proof of effect safety.
 
 ADR-0076 remains **proposed**. The supported-API zombie-race observation is not
-Gate 0.3 closure evidence. The following required tests remain outstanding:
+an engine-level external-effect fence. The later bounded matrix and effect
+inventory completed the following evidence lanes without changing the ADR-0076
+or Gate 0.3 status:
 
-| Required evidence | Current status |
+| Evidence lane | Current status |
 |---|---|
-| Recovery barrier/partition matrix: before effect, after effect before checkpoint, and after the final step before outcome write, including the system-database network cut | Outstanding |
-| Both-handle outcomes plus concurrent resume and crash cases | Outstanding |
-| Phase 1 external-effect inventory, with receiving-boundary idempotency tests and an explicit operator-escalation classification for every non-idempotent effect | Outstanding |
+| Recovery barrier/partition matrix: before effect, after effect before checkpoint, and after the final step before outcome write, including the system-database network cut | Bounded matrix retained; not a DBOS executor fence |
+| Both-handle outcomes plus concurrent resume and crash cases | Bounded public-API and application-reaper observations retained |
+| Phase 1 external-effect inventory, with receiving-boundary idempotency tests and an explicit operator-escalation classification for every non-idempotent effect | Inventory retained; currently unimplemented or unverified effects remain `B`/operator escalation |
+| Custom DBOS Test 2: expected-executor and released-revision conditional takeover | `REDUCED_FIDELITY`/`INCOMPLETE`; not required to establish accepted ADR-0078 and not a foundation for future cross-executor recovery |
 
-Gate 0.3 remains unresolved and Gate 1 remains blocked. ADR-0077 remains
-proposed pending formal owner acceptance and operational evidence for the
-all-release drain, including `PENDING`, `ENQUEUED`, and `DELAYED` drain checks,
-orphan alerts, matching-version recovery, and reverse-drain rollback.
+Gate 0.3 remains unresolved as an implementation/evidence gate, and Gate 1
+remains blocked by its remaining checks. This is separate from the accepted
+ADR-0078 scope boundary and does not make custom Test 2 a required condition for
+that boundary. ADR-0077 is accepted; its operational evidence remains
+outstanding for the all-release drain, including `PENDING`, `ENQUEUED`, and
+`DELAYED` drain checks, orphan alerts, matching-version recovery, and
+reverse-drain rollback.
 
 ## Gate 0.3 DBOS version-comparison lane
 
