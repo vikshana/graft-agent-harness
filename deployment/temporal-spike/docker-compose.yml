@@ -1,0 +1,38 @@
+# Disposable comparison spike only. The service shape follows Temporal's
+# maintained docker-compose sample; resolved image digests are pinned.
+services:
+  postgres:
+    image: postgres@sha256:3b057e1c2c6dfee60a30950096f3fab33be141dbb0fdd7af3d477083de94166c # 16.8-alpine
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal_local_only
+      POSTGRES_DB: temporal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal -d temporal"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    networks:
+      - temporal-spike
+
+  temporal:
+    image: temporalio/auto-setup@sha256:5b3502a3b685f9eff1b925af90c57c9e3dbeccbef367cc28a2a9712c63379312 # 1.29.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal_local_only
+      POSTGRES_SEEDS: postgres
+      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/docker.yaml
+      TEMPORAL_ADDRESS: temporal:7233
+    ports:
+      - "127.0.0.1:17233:7233"
+    networks:
+      - temporal-spike
+
+networks:
+  temporal-spike:
+    name: graft-temporal-spike

@@ -485,3 +485,58 @@ API revision-selection blocker remains recorded. Test 3 remains
 helper result. Test 3 is `PASS_WITH_ADR_0077_MITIGATION` for policy purposes;
 the reduced-fidelity observations remain retained and are not automatic-hash
 proof.
+
+## Conductor commercial and capability evidence
+
+> **Date:** 2026-09-19
+
+Added the dated, documentation-only Conductor commercial and capability record
+at [`evidence/conductor-evaluation/2026-09-19-conductor-commercial-capability-evidence.md`](evidence/conductor-evaluation/2026-09-19-conductor-commercial-capability-evidence.md).
+It records the official public DBOS Pro and Teams prices, Enterprise and
+self-hosted pricing unknowns, key and configuration requirements, documented
+recovery scope, and the explicit non-claim that Conductor fences external
+effects. It also retains a complete vendor quote/question checklist and the
+criteria required before comparing Conductor with owned recovery controls or a
+fallback engine.
+
+The record preserves unknowns and does not claim a quote, purchase, trial,
+trial key, vendor response, production entitlement, or Conductor deployment.
+Official source URLs in the record were checked on 2026-09-19. No ADR, design,
+roadmap, PLAN, SPEC, code, or workflow file was changed for this evidence lane.
+
+## Bounded Temporal comparison spike
+
+> **Date:** 2026-09-19
+
+Added a disposable comparison lane under `deployment/temporal-spike/`, with
+static checks under `tests/temporal_spike/` and redacted runtime evidence under
+`evidence/temporal-spike/`. It is deliberately not a product implementation,
+does not change the selected DBOS engine, has no customer-system client, and
+does not deploy to production. The `temporal_spike` pytest marker keeps it out
+of the default `unit or contract` expression.
+
+The lane pins `temporalio/auto-setup:1.29.1` and `postgres:16.8-alpine` by
+resolved digest, uses synthetic local-only database credentials, and uses the
+Python SDK `temporalio==1.20.0` in the gated `temporal-spike` dependency group.
+The exact compose, SDK, runner, and cleanup commands are retained in
+`evidence/temporal-spike/commands.json`.
+
+The local run classified the lane `PASS_WITH_LIMITATIONS`: a hard worker death
+was followed by retry with heartbeat/timeout evidence; a post-effect death
+produced two raw receiver deliveries but one keyed logical effect; and the
+current SDK/server combination recorded a `workflow.patched` marker that passed
+the SDK replay check. These observations do **not** mean Temporal fences
+external effects. The synthetic receiver's durable key is what collapsed the
+duplicate logical effect; Temporal still permits at-least-once activity
+execution when a worker is dead or merely silent.
+
+The selected SDK/server also emitted a warning that runtime worker heartbeating
+is unsupported, while activity heartbeats and the server-side heartbeat timeout
+were observed and classified separately in `result.json`; this is not treated
+as runtime-heartbeat support.
+
+The evidence explicitly does not cover DBOS step trajectories,
+`list_workflow_steps`, `fork_workflow` evaluation replay, partition-key queue
+flow control, the DBOS PostgreSQL system-database/pooler topology, or the DBOS
+executor/reaper and released compatibility-revision policy. This is comparison
+evidence only, not a decision to switch engines.

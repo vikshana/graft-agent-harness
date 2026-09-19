@@ -1,0 +1,262 @@
+{
+  "events": [
+    {
+      "eventId": "1",
+      "eventTime": "2026-09-19T19:49:41.215468459Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_EXECUTION_STARTED",
+      "taskId": "1048576",
+      "workflowExecutionStartedEventAttributes": {
+        "attempt": 1,
+        "firstExecutionRunId": "01a0bb37-a4df-7716-aa3a-f936fe88a414",
+        "firstWorkflowTaskBackoff": "0s",
+        "identity": "65315@[redacted-host]",
+        "input": {
+          "payloads": [
+            {
+              "data": "ImhlYXJ0YmVhdF9kZWF0aCI=",
+              "metadata": {
+                "encoding": "anNvbi9wbGFpbg=="
+              }
+            }
+          ]
+        },
+        "originalExecutionRunId": "01a0bb37-a4df-7716-aa3a-f936fe88a414",
+        "priority": {},
+        "taskQueue": {
+          "kind": "TASK_QUEUE_KIND_NORMAL",
+          "name": "graft-temporal-spike"
+        },
+        "workflowId": "graft-temporal-spike-heartbeat_death-44c2a406",
+        "workflowTaskTimeout": "10s",
+        "workflowType": {
+          "name": "graft-temporal-spike-recovery"
+        }
+      }
+    },
+    {
+      "eventId": "2",
+      "eventTime": "2026-09-19T19:49:41.220919062Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+      "taskId": "1048577",
+      "workflowTaskScheduledEventAttributes": {
+        "attempt": 1,
+        "startToCloseTimeout": "10s",
+        "taskQueue": {
+          "kind": "TASK_QUEUE_KIND_NORMAL",
+          "name": "graft-temporal-spike"
+        }
+      }
+    },
+    {
+      "eventId": "3",
+      "eventTime": "2026-09-19T19:49:41.730087291Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
+      "taskId": "1048582",
+      "workflowTaskStartedEventAttributes": {
+        "historySizeBytes": "350",
+        "identity": "graft-temporal-heartbeat_death-first",
+        "requestId": "aca829ab-ab72-4ade-9b03-50a7821c0e30",
+        "scheduledEventId": "2",
+        "workerVersion": {
+          "buildId": "d7108bb4ebea5137ade665893b529539"
+        }
+      }
+    },
+    {
+      "eventId": "4",
+      "eventTime": "2026-09-19T19:49:41.856002800Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
+      "taskId": "1048586",
+      "workflowTaskCompletedEventAttributes": {
+        "identity": "graft-temporal-heartbeat_death-first",
+        "meteringMetadata": {},
+        "scheduledEventId": "2",
+        "sdkMetadata": {
+          "coreUsedFlags": [
+            1,
+            2,
+            3
+          ],
+          "sdkName": "temporal-python",
+          "sdkVersion": "1.20.0"
+        },
+        "startedEventId": "3",
+        "workerVersion": {
+          "buildId": "d7108bb4ebea5137ade665893b529539"
+        }
+      }
+    },
+    {
+      "activityTaskScheduledEventAttributes": {
+        "activityId": "1",
+        "activityType": {
+          "name": "graft-temporal-spike-activity"
+        },
+        "header": {},
+        "heartbeatTimeout": "0.750s",
+        "input": {
+          "payloads": [
+            {
+              "data": "ImhlYXJ0YmVhdF9kZWF0aCI=",
+              "metadata": {
+                "encoding": "anNvbi9wbGFpbg=="
+              }
+            }
+          ]
+        },
+        "priority": {},
+        "retryPolicy": {
+          "backoffCoefficient": 1.0,
+          "initialInterval": "0.200s",
+          "maximumAttempts": 3,
+          "maximumInterval": "20s"
+        },
+        "scheduleToCloseTimeout": "0s",
+        "scheduleToStartTimeout": "0s",
+        "startToCloseTimeout": "3s",
+        "taskQueue": {
+          "kind": "TASK_QUEUE_KIND_NORMAL",
+          "name": "graft-temporal-spike"
+        },
+        "useWorkflowBuildId": true,
+        "workflowTaskCompletedEventId": "4"
+      },
+      "eventId": "5",
+      "eventTime": "2026-09-19T19:49:41.861023622Z",
+      "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
+      "taskId": "1048587"
+    },
+    {
+      "activityTaskStartedEventAttributes": {
+        "attempt": 2,
+        "identity": "graft-temporal-heartbeat_death-replacement",
+        "lastFailure": {
+          "message": "activity Heartbeat timeout",
+          "source": "Server",
+          "timeoutFailureInfo": {
+            "timeoutType": "TIMEOUT_TYPE_HEARTBEAT"
+          }
+        },
+        "requestId": "fbe36646-6e00-4a7c-aa30-e5a450819607",
+        "scheduledEventId": "5",
+        "workerVersion": {
+          "buildId": "d7108bb4ebea5137ade665893b529539"
+        }
+      },
+      "eventId": "6",
+      "eventTime": "2026-09-19T19:49:44.010847473Z",
+      "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
+      "taskId": "1048596"
+    },
+    {
+      "activityTaskCompletedEventAttributes": {
+        "identity": "graft-temporal-heartbeat_death-replacement",
+        "result": {
+          "payloads": [
+            {
+              "data": "eyJhdHRlbXB0IjoyLCJoZWFydGJlYXRfZGV0YWlsc19zZWVuX29uX3JldHJ5IjpbeyJhdHRlbXB0IjoxLCJoZWFydGJlYXRfaW5kZXgiOjEsInN5bnRoZXRpYyI6dHJ1ZX1dLCJzY2VuYXJpbyI6ImhlYXJ0YmVhdF9kZWF0aCJ9",
+              "metadata": {
+                "encoding": "anNvbi9wbGFpbg=="
+              }
+            }
+          ]
+        },
+        "scheduledEventId": "5",
+        "startedEventId": "6"
+      },
+      "eventId": "7",
+      "eventTime": "2026-09-19T19:49:44.313002131Z",
+      "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
+      "taskId": "1048597"
+    },
+    {
+      "eventId": "8",
+      "eventTime": "2026-09-19T19:49:44.313429537Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+      "taskId": "1048598",
+      "workflowTaskScheduledEventAttributes": {
+        "attempt": 1,
+        "startToCloseTimeout": "10s",
+        "taskQueue": {
+          "kind": "TASK_QUEUE_KIND_STICKY",
+          "name": "graft-temporal-heartbeat_death-first-7c04e173823d45af9b571c9df5852b7b",
+          "normalName": "graft-temporal-spike"
+        }
+      }
+    },
+    {
+      "eventId": "9",
+      "eventTime": "2026-09-19T19:49:54.317500532Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_TIMED_OUT",
+      "taskId": "1048602",
+      "workflowTaskTimedOutEventAttributes": {
+        "scheduledEventId": "8",
+        "timeoutType": "TIMEOUT_TYPE_SCHEDULE_TO_START"
+      }
+    },
+    {
+      "eventId": "10",
+      "eventTime": "2026-09-19T19:49:54.318182918Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+      "taskId": "1048603",
+      "workflowTaskScheduledEventAttributes": {
+        "attempt": 1,
+        "startToCloseTimeout": "10s",
+        "taskQueue": {
+          "kind": "TASK_QUEUE_KIND_NORMAL",
+          "name": "graft-temporal-spike"
+        }
+      }
+    },
+    {
+      "eventId": "11",
+      "eventTime": "2026-09-19T19:49:54.340112114Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
+      "taskId": "1048606",
+      "workflowTaskStartedEventAttributes": {
+        "historySizeBytes": "1466",
+        "identity": "graft-temporal-heartbeat_death-replacement",
+        "requestId": "0524ee41-0cf1-4614-9616-f232be5d2490",
+        "scheduledEventId": "10",
+        "workerVersion": {
+          "buildId": "d7108bb4ebea5137ade665893b529539"
+        }
+      }
+    },
+    {
+      "eventId": "12",
+      "eventTime": "2026-09-19T19:49:54.399896907Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
+      "taskId": "1048610",
+      "workflowTaskCompletedEventAttributes": {
+        "identity": "graft-temporal-heartbeat_death-replacement",
+        "meteringMetadata": {},
+        "scheduledEventId": "10",
+        "sdkMetadata": {},
+        "startedEventId": "11",
+        "workerVersion": {
+          "buildId": "d7108bb4ebea5137ade665893b529539"
+        }
+      }
+    },
+    {
+      "eventId": "13",
+      "eventTime": "2026-09-19T19:49:54.402662829Z",
+      "eventType": "EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED",
+      "taskId": "1048611",
+      "workflowExecutionCompletedEventAttributes": {
+        "result": {
+          "payloads": [
+            {
+              "data": "eyJhdHRlbXB0IjoyLCJoZWFydGJlYXRfZGV0YWlsc19zZWVuX29uX3JldHJ5IjpbeyJhdHRlbXB0IjoxLCJoZWFydGJlYXRfaW5kZXgiOjEsInN5bnRoZXRpYyI6dHJ1ZX1dLCJzY2VuYXJpbyI6ImhlYXJ0YmVhdF9kZWF0aCJ9",
+              "metadata": {
+                "encoding": "anNvbi9wbGFpbg=="
+              }
+            }
+          ]
+        },
+        "workflowTaskCompletedEventId": "12"
+      }
+    }
+  ]
+}

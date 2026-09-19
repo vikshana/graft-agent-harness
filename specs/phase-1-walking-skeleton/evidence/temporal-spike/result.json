@@ -1,0 +1,151 @@
+{
+  "capability_classifications": {
+    "deployment_version_routing": "NOT_TESTED",
+    "sdk_replayer": "SUPPORTED_AND_OBSERVED",
+    "worker_runtime_heartbeat": "SERVER_REPORTED_UNSUPPORTED; activity heartbeat supported",
+    "workflow_patched": "SUPPORTED_AND_OBSERVED"
+  },
+  "classification": "PASS_WITH_LIMITATIONS",
+  "customer_access": false,
+  "dbos_specific_capabilities_not_covered": [
+    "DBOS step trajectory and list_workflow_steps",
+    "DBOS workflow fork_workflow evaluation replay semantics",
+    "DBOS partition-key queue flow control and ceiling enforcement",
+    "DBOS PostgreSQL system-database and transaction-mode pooler topology",
+    "DBOS executor ownership, application compatibility revision and reaper policy"
+  ],
+  "external_effect_fencing": false,
+  "limitations": [
+    "Temporal server does not fence an external effect when a worker is dead or merely silent.",
+    "The receiver-side key made one logical effect from two raw deliveries; this is not exactly-once execution.",
+    "This is a local single-server observation, not production availability, scaling, or security evidence."
+  ],
+  "postgres": "postgres:16.8-alpine@sha256:3b057e1c2c6dfee60a30950096f3fab33be141dbb0fdd7af3d477083de94166c",
+  "production_deployment": false,
+  "python_sdk": "temporalio==1.20.0",
+  "scenarios": {
+    "hard_worker_death_retry_timeout_heartbeat": {
+      "first_worker_returncode": 137,
+      "history_observations": {
+        "activity_heartbeat_timeout_observed": true,
+        "activity_retry_failure_timeout_types": [
+          "TIMEOUT_TYPE_HEARTBEAT"
+        ],
+        "activity_task_timed_out_observed": true,
+        "activity_timeout_types": [],
+        "event_types": [
+          "EVENT_TYPE_WORKFLOW_EXECUTION_STARTED",
+          "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+          "EVENT_TYPE_WORKFLOW_TASK_STARTED",
+          "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
+          "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
+          "EVENT_TYPE_ACTIVITY_TASK_STARTED",
+          "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
+          "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+          "EVENT_TYPE_WORKFLOW_TASK_TIMED_OUT",
+          "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+          "EVENT_TYPE_WORKFLOW_TASK_STARTED",
+          "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
+          "EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED"
+        ],
+        "marker_names": []
+      },
+      "receiver": null,
+      "replacement_worker_returncode": -15,
+      "result": {
+        "attempt": 2,
+        "heartbeat_details_seen_on_retry": [
+          {
+            "attempt": 1,
+            "heartbeat_index": 1,
+            "synthetic": true
+          }
+        ],
+        "scenario": "heartbeat_death"
+      },
+      "workflow_id": "graft-temporal-spike-heartbeat_death-44c2a406"
+    },
+    "post_effect_death_raw_duplicate_keyed_logical_effect": {
+      "first_worker_returncode": 137,
+      "history_observations": {
+        "activity_heartbeat_timeout_observed": false,
+        "activity_retry_failure_timeout_types": [
+          "TIMEOUT_TYPE_START_TO_CLOSE"
+        ],
+        "activity_task_timed_out_observed": true,
+        "activity_timeout_types": [],
+        "event_types": [
+          "EVENT_TYPE_WORKFLOW_EXECUTION_STARTED",
+          "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+          "EVENT_TYPE_WORKFLOW_TASK_STARTED",
+          "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
+          "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
+          "EVENT_TYPE_ACTIVITY_TASK_STARTED",
+          "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
+          "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+          "EVENT_TYPE_WORKFLOW_TASK_TIMED_OUT",
+          "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+          "EVENT_TYPE_WORKFLOW_TASK_STARTED",
+          "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
+          "EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED"
+        ],
+        "marker_names": []
+      },
+      "receiver": {
+        "keyed_logical_effect_count": 1,
+        "raw_call_count": 2,
+        "raw_calls": [
+          {
+            "effect_key": "graft-temporal-spike-run-effect-001",
+            "run_id": "graft-temporal-spike-run-001"
+          },
+          {
+            "effect_key": "graft-temporal-spike-run-effect-001",
+            "run_id": "graft-temporal-spike-run-001"
+          }
+        ]
+      },
+      "replacement_worker_returncode": -15,
+      "result": {
+        "attempt": 2,
+        "receiver": {
+          "applied": "false",
+          "effect_key": "graft-temporal-spike-run-effect-001",
+          "raw_call_number": "2"
+        },
+        "scenario": "keyed_effect"
+      },
+      "workflow_id": "graft-temporal-spike-keyed_effect-f132b726"
+    },
+    "workflow_compatibility_patch_and_replay": {
+      "capability": "workflow.patched plus SDK Replayer",
+      "classification": "PASS",
+      "history_observations": {
+        "activity_heartbeat_timeout_observed": false,
+        "activity_retry_failure_timeout_types": [],
+        "activity_task_timed_out_observed": false,
+        "activity_timeout_types": [],
+        "event_types": [
+          "EVENT_TYPE_WORKFLOW_EXECUTION_STARTED",
+          "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
+          "EVENT_TYPE_WORKFLOW_TASK_STARTED",
+          "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
+          "EVENT_TYPE_MARKER_RECORDED",
+          "EVENT_TYPE_UPSERT_WORKFLOW_SEARCH_ATTRIBUTES",
+          "EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED"
+        ],
+        "marker_names": [
+          "core_patch"
+        ]
+      },
+      "replay_failure": null,
+      "replay_succeeded": true,
+      "result": "new-compatible-path",
+      "workflow_id": "graft-temporal-spike-compatibility-323b42a0"
+    }
+  },
+  "spike": "bounded-disposable-temporal-comparison",
+  "synthetic_only": true,
+  "temporal_address": "127.0.0.1:17233",
+  "temporal_server": "temporalio/auto-setup:1.29.1@sha256:5b3502a3b685f9eff1b925af90c57c9e3dbeccbef367cc28a2a9712c63379312"
+}

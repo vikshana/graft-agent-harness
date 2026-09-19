@@ -1,0 +1,12 @@
+{
+  "command": [
+    "uv run --group temporal-spike python deployment/temporal-spike/run_spike.py --evidence-dir specs/phase-1-walking-skeleton/evidence/temporal-spike"
+  ],
+  "docker_commands": [
+    "docker compose -f deployment/temporal-spike/docker-compose.yml up -d --wait",
+    "docker compose -f deployment/temporal-spike/docker-compose.yml logs --no-color",
+    "docker compose -f deployment/temporal-spike/docker-compose.yml down -v --remove-orphans"
+  ],
+  "server_endpoint": "127.0.0.1:17233",
+  "synthetic_credentials": "compose-only placeholders; not recorded"
+}
