@@ -1,0 +1,40 @@
+{
+  "docker_down": [
+    "docker",
+    "compose",
+    "--env-file",
+    "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/.env",
+    "-f",
+    "deployment/gate-0.3/docker-compose.yml",
+    "down",
+    "-v"
+  ],
+  "docker_down_result": {
+    "returncode": 0,
+    "stderr": " Container gate-03-pgbouncer-1  Stopping\n Container gate-03-pgbouncer-1  Stopped\n Container gate-03-pgbouncer-1  Removing\n Container gate-03-pgbouncer-1  Removed\n Container gate-03-system-postgres-1  Stopping\n Container gate-03-app-postgres-1  Stopping\n Container gate-03-app-postgres-1  Stopped\n Container gate-03-app-postgres-1  Removing\n Container gate-03-system-postgres-1  Stopped\n Container gate-03-system-postgres-1  Removing\n Container gate-03-app-postgres-1  Removed\n Container gate-03-system-postgres-1  Removed\n Volume gate-03_gate03_app_data  Removing\n Volume gate-03_gate03_system_data  Removing\n Network gate-03_default  Removing\n Volume gate-03_gate03_app_data  Removed\n Network gate-03_default  Removed\n Volume gate-03_gate03_system_data  Removed\n",
+    "stdout": ""
+  },
+  "docker_up": [
+    "docker",
+    "compose",
+    "--env-file",
+    "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/.env",
+    "-f",
+    "deployment/gate-0.3/docker-compose.yml",
+    "up",
+    "-d",
+    "--wait"
+  ],
+  "private_dbos_api_or_system_table_mutation": false,
+  "public_apis": [
+    "DBOSClient.list_workflows",
+    "DBOSClient.resume_workflow"
+  ],
+  "runner": [
+    "uv",
+    "run",
+    "python",
+    "deployment/gate-0.3/recovery_race.py",
+    "run"
+  ]
+}

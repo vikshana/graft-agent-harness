@@ -8,6 +8,9 @@ pytestmark = pytest.mark.gate_0_3
 ROOT = Path(__file__).parents[2]
 COMPOSE = ROOT / "deployment/gate-0.3/docker-compose.yml"
 RUNNER = ROOT / "deployment/gate-0.3/run_experiment.py"
+MATRIX_RUNNER = ROOT / "deployment/gate-0.3/matrix_runner.py"
+MATRIX_WORKER = ROOT / "deployment/gate-0.3/matrix_worker.py"
+VERSION_PROBE = ROOT / "deployment/gate-0.3/version-probe.py"
 
 
 def test_gate_0_3_files_are_local_only_and_reproducible() -> None:
@@ -37,3 +40,17 @@ def test_no_runtime_secret_or_evidence_files_are_checked_in() -> None:
         for path in evidence.iterdir():
             assert path.name == "README.md" or path.suffix in {".json", ".txt", ".log"}
             assert "gate03_local_only" not in path.read_text()
+
+
+def test_tests_2_and_3_matrix_is_public_api_only_and_redaction_is_preserved() -> None:
+    assert MATRIX_RUNNER.exists()
+    assert MATRIX_WORKER.exists()
+    assert VERSION_PROBE.exists()
+    worker = MATRIX_WORKER.read_text()
+    runner = MATRIX_RUNNER.read_text()
+    assert "DBOSClient.list_workflows" in worker
+    assert "DBOSClient.resume_workflows" in worker
+    assert "_recover_pending_workflows" not in worker
+    assert "REDUCED_FIDELITY" in runner
+    assert "helper_only_change_is_false_compatible" in runner
+    assert "gate03_local_only" not in MATRIX_RUNNER.read_text()

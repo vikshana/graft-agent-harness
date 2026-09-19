@@ -225,68 +225,85 @@ Gate 0.3 remains unchecked. Parent validation owns the container run and the
 interpretation of all experiment evidence.
 
 
-## Gate 0.3 experiment evidence
+## Gate 0.3 evidence correction and supported-API probe
 
-> **Date:** 2026-09-18
+> **Date:** 2026-09-19
 
-Added the bounded throwaway harness under `deployment/gate-0.3/`, with pinned
-local PostgreSQL 16 and PgBouncer image digests, separate application/system
-databases, transaction pooling, ignored synthetic runtime environment
-creation, and redacted evidence output. The `gate_0_3` pytest marker is
-registered separately; fast CI continues to select only `unit or contract`.
+The retained Gate 0.3 artefacts are evidence inputs, not closure evidence.
+Their interpretation is corrected here once, without changing the plan,
+specification, ADRs, design documents, production harness, or workflows.
 
-The Docker experiment ran successfully on Docker 29.5.2 / Compose
-v2.40.3-desktop.1 using DBOS 3.0.0, Python 3.12.6, and the locked dependency
-graph. Application and transaction-mode pooler database probes connected. The
-redacted evidence files are `result.json` and `commands.json` under
-`specs/phase-1-walking-skeleton/evidence/gate-0.3/`.
+| Area | Correct interpretation |
+|------|------------------------|
+| G03-A, G03-C and G03-D | The earlier bounded observations remain limited to the behaviours recorded in `result.json`; they do not establish recovery ownership. |
+| Tests 1, 4 and 5 | `recovery-race.json` is not a DBOS recovery Test 1, 4 or 5 result. The former `recovery_race.py` run was a synthetic application-ledger race whose workflow IDs were absent from DBOS `workflow_status`; its keyed-effect and terminal-CAS counts therefore cannot prove DBOS checkpoint or terminal conflict handling. |
+| Test 2 | `test-2-result.json` is `REDUCED_FIDELITY`/`INCOMPLETE`. The historical run invoked private DBOS recovery and used a synthetic orphan detector. The current worker does not invoke private recovery. Public `DBOSClient.list_workflows` and `DBOSClient.resume_workflows` cannot express an expected-executor/version conditional takeover, so no cross-executor recovery conclusion is claimed. |
+| Test 3 | `test-3-result.json` remains `REDUCED_FIDELITY`. The helper-only unchanged hash is explicitly a false-compatible result, not compatible behaviour. Dependency-upgrade probes were blocked, so no cross-DBOS-version result is claimed. |
 
-| Question | Actual result |
-|----------|---------------|
-| G03-A | Compatibility was corrected to `langchain-mcp-adapters==0.3.2` with `mcp==1.28.1`. The real synthetic streamable-HTTP MCP server/client invocation passed inside the DBOS workflow; the no-checkpointer LangGraph graph, decorated graph/MCP/failure-injection steps, and MCP failure capture also passed. |
-| G03-B | Alive-but-silent recovery remains unresolved through public APIs. Timeout is not treated as proof. The isolated synthetic idempotency exercise repeated one workflow ID/input and is not recovery proof. |
-| G03-C | Conductor-free `list_workflows(executor_id=...)` filtering passed: one matching workflow for `gate03-executor-a`, zero for the synthetic non-matching executor. |
-| G03-D | Identical-source application-version recomputation was stable; an in-process source-change registration produced a different recomputed hash. A second-process/reloaded-source deployment check remains required before claiming full source-change runtime behaviour. |
+The decisive follow-up is the narrow `recovery_race.py` supported-API probe. It
+uses a real DBOS workflow and decorated step, a keyed HTTP effect stub, real
+DBOS migrations and status rows, `SIGSTOP` after the effect and before the
+step returns, a same-version worker, a wrong-version worker, and only public
+`DBOSClient.list_workflows`/`DBOSClient.resume_workflow` calls. It records the
+exact result in [`recovery-race.json`](evidence/gate-0.3/recovery-race.json)
+and commands in
+[`recovery-race-commands.json`](evidence/gate-0.3/recovery-race-commands.json).
 
-Gate 0.3 remains unchecked. The raw local `.env` and containers were removed
-after the run; no credentials were written to evidence. Parent validation owns
-interpretation of this partial evidence and the remaining blockers.
+The probe is not allowed to claim a safe reaper, expected-owner fencing, or a
+general DBOS recovery guarantee. If the public API cannot safely drive the
+scenario, its verdict is `REDUCED_FIDELITY` and the failure is recorded. No
+private DBOS API and no DBOS system-table mutation is permitted. Parent
+validation owns the Docker run, final interpretation, and gate status.
 
-## Proposed ADR dispositions from Gate 0.3
+## Supported-API zombie-race result
 
-> **Date:** 2026-09-18
+> **Date:** 2026-09-19
 
-Drafted proposed [ADR-0076](../../docs/adr/agent/0076-recovery-requires-confirmed-termination-or-an-independent-fence.md)
-to amend ADR-0038. The Gate 0.3 G03-B evidence does not prove safe ownership
-fencing for an alive-but-silent executor, so stale heartbeat or timeout alone is
-not a safe recovery trigger. The proposal requires confirmed termination or an
-independently proven fence/lease compare-and-set before re-enqueueing, while
-leaving the production mechanism undecided pending crash, partition and
-concurrent-reaper tests.
+The real DBOS 3.0.0 post-effect/pre-checkpoint race used public
+`DBOSClient.list_workflows` and `DBOSClient.resume_workflow`, with a synthetic
+keyed HTTP receiver. The original executor was stopped after its first raw
+effect; the same-version replacement completed the Run; when the original
+executor resumed, DBOS reported duplicate execution and converged on the
+recorded result. The receiver saw two raw calls for one Run/step-derived key
+and applied one keyed effect. This establishes **at-least-once external
+execution plus receiver-side idempotency and DBOS checkpoint/outcome
+convergence**. It does not establish exactly-once execution or an executor
+fence.
 
-Drafted proposed [ADR-0077](../../docs/adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md)
-to amend ADR-0046. Gate 0.3 records DBOS 3 auto-version stability for identical
-source/runtime and a changed source hash; DBOS 3 also includes its package
-version in the computed hash. The proposal accepts dependency-upgrade drains as
-the conservative disposition, preserves version-compatible recovery, and keeps
-Git/image version pinning rejected. A controlled alternative requires an
-independent compatibility and rollback proof.
+The remaining evidence is deliberately limited. The wrong-version worker was
+not given the public resume operation while it was the only possible recovery
+worker, so no version-scoped recovery inference is claimed. The complete
+barrier/partition matrix, both-handle outcomes, concurrent resume/crash cases,
+and the Phase 1 effect inventory remain required. Proposed ADR-0076 therefore
+needs reframing around durable idempotent effects and operator escalation for
+effects that cannot be made idempotent; confirmed termination and leases reduce
+duplicate exposure but are not the semantic safety guarantee. Proposed ADR-0077
+remains undecided because the Gate 0.3 version matrix found a false-compatible
+helper-only change and could not run meaningful dependency-upgrade variants.
 
-Both ADRs are proposed only; no accepted ADR was edited and no plan checkbox
-was changed. Parent validation and project-owner approval remain required.
+## Gate 0.3 recovery decision revision
 
-## Documentation reconciliation: proposed Gate 0.3 safety follow-ups
+> **Date:** 2026-09-19
 
-> **Date:** 2026-09-18
+The project owner selected the at-least-once recovery model for proposed
+ADR-0076. DBOS may execute a step more than once; it converges the checkpoint
+and Run outcome after duplicate execution, but it does not fence the external
+execution. Every automatically recoverable external effect must therefore be
+durably idempotent at the receiving boundary, with a stable idempotency key
+derived from `graft_run_id` and the durable step identity. An effect without
+that property is not automatically recoverable and requires operator
+escalation. Confirmed termination and leases remain availability and duplicate-
+exposure controls, not the semantic proof of effect safety.
 
-The roadmap now places proposed ADR-0076 and ADR-0077 in the Phase 1
-decision-gate text as Gate 0.3 safety follow-ups. ADR-0076 covers the unresolved
-recovery-fencing boundary; ADR-0077 covers dependency-version effects on
-application-version drains. Both remain proposed and require the project
-owner's decision; no accepted or proposed ADR, plan/spec, index, code, workflow,
-or phase commitment was changed.
+ADR-0076 remains **proposed**. The supported-API zombie-race observation is not
+Gate 0.3 closure evidence. The following required tests remain outstanding:
 
-Gate 0.3 remains unresolved, and Gate 1 remains blocked until those owner
-decisions and the associated safety follow-up are complete. This note records a
-documentation reconciliation only and does not claim either proposal is
-accepted or close any gate.
+| Required evidence | Current status |
+|---|---|
+| Recovery barrier/partition matrix: before effect, after effect before checkpoint, and after the final step before outcome write, including the system-database network cut | Outstanding |
+| Both-handle outcomes plus concurrent resume and crash cases | Outstanding |
+| Phase 1 external-effect inventory, with receiving-boundary idempotency tests and an explicit operator-escalation classification for every non-idempotent effect | Outstanding |
+
+Gate 0.3 remains unresolved and Gate 1 remains blocked. ADR-0077 also remains
+undecided; its dependency-upgrade variants are not closed by the retained
+version-probe evidence.

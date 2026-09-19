@@ -1,0 +1,458 @@
+{
+  "application_name_change": {
+    "application_name": "gate-0-3-recovery-matrix-renamed",
+    "application_version": "0665ade49988f35c64e0d84c63561ad0",
+    "dbos_hash_provenance": {
+      "first_line": 303,
+      "function": "DBOSRegistry.compute_app_version",
+      "module_file": "dbos/_dbos.py",
+      "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+      "source_line_count": 26
+    },
+    "dbos_version": "3.0.0",
+    "python": "3.13.0",
+    "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+    "status": "passed",
+    "workflow_names": [
+      "<temp>.first_step",
+      "<temp>.second_step",
+      "matrix_workflow"
+    ],
+    "workflow_source_sha256": {
+      "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+      "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+      "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+    }
+  },
+  "baseline": {
+    "application_name": "gate-0-3-recovery-matrix",
+    "application_version": "cfb94070b5cd90043a15d8b38c02ff79",
+    "dbos_hash_provenance": {
+      "first_line": 303,
+      "function": "DBOSRegistry.compute_app_version",
+      "module_file": "dbos/_dbos.py",
+      "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+      "source_line_count": 26
+    },
+    "dbos_version": "3.0.0",
+    "python": "3.13.0",
+    "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+    "status": "passed",
+    "workflow_names": [
+      "<temp>.first_step",
+      "<temp>.second_step",
+      "matrix_workflow"
+    ],
+    "workflow_source_sha256": {
+      "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+      "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+      "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+    }
+  },
+  "criteria": {
+    "app_name_change_recorded": true,
+    "app_name_changes_version": true,
+    "comment_and_format_results_recorded": true,
+    "container_deterministic": true,
+    "helper_only_change_is_false_compatible": true,
+    "locked_runtime_stable": true,
+    "path_deterministic": true,
+    "python_variant_results_recorded": true,
+    "step_and_helper_changes_bump": true
+  },
+  "dependency_variant_blockers": {
+    "dbos_upgrade": "probe emitted no JSON result",
+    "non_dbos_upgrade": "probe emitted no JSON result"
+  },
+  "dependency_variants": {
+    "dbos_upgrade": {
+      "error": "probe emitted no JSON result",
+      "status": "blocked"
+    },
+    "non_dbos_upgrade": {
+      "error": "probe emitted no JSON result",
+      "status": "blocked"
+    }
+  },
+  "environment": {
+    "clean_builds": "two independent temporary source trees plus two Docker build commands are recorded separately by the parent lane",
+    "locked_dbos": "3.0.0",
+    "locked_python": "3.13.0",
+    "source_file": "deployment/gate-0.3/version-variants/baseline.py"
+  },
+  "finished_at": "2026-09-19T15:07:07.831133+00:00",
+  "hash_provenance": {
+    "first_line": 303,
+    "function": "DBOSRegistry.compute_app_version",
+    "module_file": "dbos/_dbos.py",
+    "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+    "source_line_count": 26
+  },
+  "limitations": [
+    "The dependency-upgrade probes were blocked by the resolver, so no cross-DBOS-version observation is claimed.",
+    "The helper-only unchanged version is a false-compatible result, not a compatibility result: the version did not change despite helper code changing."
+  ],
+  "python_variants": {
+    "3.11": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "cfb94070b5cd90043a15d8b38c02ff79",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.11.11",
+      "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+      }
+    },
+    "3.12": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "cfb94070b5cd90043a15d8b38c02ff79",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.12.6",
+      "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+      }
+    },
+    "3.13": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "cfb94070b5cd90043a15d8b38c02ff79",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+      }
+    }
+  },
+  "same_source_different_paths": [
+    {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "cfb94070b5cd90043a15d8b38c02ff79",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+      }
+    },
+    {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "cfb94070b5cd90043a15d8b38c02ff79",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+      }
+    }
+  ],
+  "separate_container_builds": [
+    {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "cfb94070b5cd90043a15d8b38c02ff79",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.12.13",
+      "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+      }
+    },
+    {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "cfb94070b5cd90043a15d8b38c02ff79",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.12.13",
+      "source_file_sha256": "210f18c3ab19f3e90ae69f2d84a14191735a309515c541b0cfaf70a478180542",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "9079184fcba0c230fe70da61084e8deed66da9fd07096d9830d967b892482f20"
+      }
+    }
+  ],
+  "started_at": "2026-09-19T15:06:09.211458+00:00",
+  "test": "Test 3 - Version hash provenance",
+  "variants": {
+    "comment_only": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "cbffc4f4715e3b67645323de2f19c60e",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "29325d40115a855fd19454873bb6671888e9d355176591add363ccbb6f3ee156",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "7d2d4208cb4195ac51eaba5d7ce8d10d8f2ae06f46978b89f7e01c8de73bbb6c"
+      }
+    },
+    "format_only": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "2b72e6564a5f5610cd15111aa8593516",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "e0dadb66cae2a3a8f452f48ced9823fdbea870d60d753fb34a223002bdae3e36",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "28c22241bf469a568e8451e9316d3954c542c48eebcc5edbf70e3ead7909c0a3"
+      }
+    },
+    "helper_baseline": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "ab19430f36dbd5d537f086ed7c5e456a",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "d7c9ed0295494f2476b6e72b622295571675cdb9fa758bad1ff513ab1db2d225",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "2ebc78a327ebb50b9d43c888d6a4225975732efe0158f3b736a38ce668136564"
+      }
+    },
+    "helper_changed": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "ab19430f36dbd5d537f086ed7c5e456a",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "6849058c3609dcd4fc65aa4c10bcdeecb6d028a3495ebf507cdde7a960e01e8d",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "2ebc78a327ebb50b9d43c888d6a4225975732efe0158f3b736a38ce668136564"
+      }
+    },
+    "step_added": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "e26f294719af9dae5ff65989458fe276",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "b1182c032458b2faa64cf548fd7f180992053657cbdc0c8d65e2c006f40c8618",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "<temp>.third_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.third_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "87181e273a807afa9182321f850fa3755748960c4b852ac13711de94f54d6ec9"
+      }
+    },
+    "step_removed": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "78de2700b7085160af4c39d8ef78403a",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "2522a8ee32a9662537ba45a496ea577911f058f7caa704da8e3d36fdf68c9a1c",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "a600612bb324b587b9294952cc7cb454913c91672fe439f455b8aa2796983e4b"
+      }
+    },
+    "step_reordered": {
+      "application_name": "gate-0-3-recovery-matrix",
+      "application_version": "64900837d03cd84174ff00db8ef90d0c",
+      "dbos_hash_provenance": {
+        "first_line": 303,
+        "function": "DBOSRegistry.compute_app_version",
+        "module_file": "dbos/_dbos.py",
+        "module_file_sha256": "425b1573051f3896f11266a02e819c80be7558a6f482f0d411a0dfd989f869bc",
+        "source_line_count": 26
+      },
+      "dbos_version": "3.0.0",
+      "python": "3.13.0",
+      "source_file_sha256": "7415bfced8205924cabc0bab84a72b69bdb0c05d237d027d491f1bd9352f522f",
+      "status": "passed",
+      "workflow_names": [
+        "<temp>.first_step",
+        "<temp>.second_step",
+        "matrix_workflow"
+      ],
+      "workflow_source_sha256": {
+        "<temp>.first_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "<temp>.second_step": "da8ba016b47143f1a7dca9e77c415e571104a1c49ef96f7fa4aede5e0d7fd1d1",
+        "matrix_workflow": "ef347478c8cc4278e1b816189f42f2464edcba40776bf1784d3fb1c8fb9055f6"
+      }
+    }
+  },
+  "verdict": "REDUCED_FIDELITY"
+}

@@ -1,0 +1,243 @@
+{
+  "application_name": "gate-0-3-zombie-race",
+  "application_version": "gate03-race-v1",
+  "effect_stub": {
+    "calls": [
+      {
+        "effect_key": "g03-real-post-effect-pre-checkpoint:effect-step",
+        "executor_id": "gate03-race-a",
+        "first_for_key": true,
+        "raw_call_number": 1
+      },
+      {
+        "effect_key": "g03-real-post-effect-pre-checkpoint:effect-step",
+        "executor_id": "gate03-race-a",
+        "first_for_key": false,
+        "raw_call_number": 2
+      }
+    ],
+    "keyed_effect_count": 1,
+    "raw_call_count": 2
+  },
+  "final_public_status": {
+    "app_version": "gate03-race-v1",
+    "application_name": "gate-0-3-zombie-race",
+    "application_version": null,
+    "executor_id": "gate03-race-b",
+    "name": "zombie_workflow",
+    "status": "SUCCESS",
+    "workflow_id": "g03-real-post-effect-pre-checkpoint",
+    "workflow_uuid": null
+  },
+  "keyed_effect_protected": true,
+  "limitations": [
+    "This run proves only the observed DBOS 3.0.0 public-API race outcome in this topology.",
+    "DBOSClient.resume_workflow is not an expected-executor conditional recovery API.",
+    "The probe does not prove safe reaper ownership or general zombie fencing.",
+    "The HTTP stub's keyed response models an idempotency boundary; it is not a customer system."
+  ],
+  "observations": {
+    "a_ready": {
+      "application_name": "gate-0-3-zombie-race",
+      "application_version": "gate03-race-v1",
+      "event": "ready",
+      "executor_id": "gate03-race-a",
+      "migrations": true
+    },
+    "a_resume_observation": {
+      "event": {
+        "event": "workflow_result",
+        "result": "{\"keyed\": false, \"effect_key\": \"g03-real-post-effect-pre-checkpoint:effect-step\"}"
+      },
+      "worker_output": [
+        "18:03:11 [ WARNING] (dbos:_core.py:790) Aborting duplicate execution of workflow g03-real-post-effect-pre-checkpoint.\n",
+        "{\"event\": \"workflow_result\", \"result\": \"{\\\"keyed\\\": false, \\\"effect_key\\\": \\\"g03-real-post-effect-pre-checkpoint:effect-step\\\"}\"}\n"
+      ]
+    },
+    "a_started": {
+      "event": "started",
+      "workflow_id": "g03-real-post-effect-pre-checkpoint"
+    },
+    "a_stop": {
+      "keyed_effects_at_stop": 1,
+      "point": "after_effect_before_http_response_and_step_return",
+      "raw_calls_at_stop": 1,
+      "signal": "SIGSTOP",
+      "worker_output_before_stop": [
+        "18:03:07 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n",
+        "18:03:07 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-race-a\n",
+        "18:03:07 [    INFO] (dbos:_dbos.py:550) Application version: gate03-race-v1\n",
+        "18:03:07 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-zombie-race\n",
+        "18:03:07 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n",
+        "18:03:07 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 1\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 2\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 3\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 4\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 5\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 6\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 7\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 8\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 9\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 10\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:258) Migration 10 skipped, primary key already exists\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 11\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 12\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 13\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 14\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 15\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 16\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 17\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 18\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 19\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 20\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 21\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 22\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 23\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 24\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 25\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 26\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 27\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 28\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 29\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 30\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 31\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 32\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 33\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 34\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 35\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 36\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 37\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 38\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 39\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 40\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 41\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 42\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 43\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 44\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 45\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 46\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 47\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 100\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 101\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 102\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 103\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 104\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 105\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 106\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 107\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 108\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 109\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 110\n",
+        "18:03:07 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 111\n",
+        "18:03:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 112\n",
+        "18:03:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 113\n",
+        "18:03:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 114\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-race-v1\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-zombie-race\n",
+        "{\"application_name\": \"gate-0-3-zombie-race\", \"application_version\": \"gate03-race-v1\", \"event\": \"ready\", \"executor_id\": \"gate03-race-a\", \"migrations\": true}\n",
+        "18:03:08 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n",
+        "{\"event\": \"started\", \"workflow_id\": \"g03-real-post-effect-pre-checkpoint\"}\n"
+      ]
+    },
+    "public_resume": {
+      "api": "DBOSClient.resume_workflow",
+      "handle_type": "WorkflowHandleClientPolling",
+      "workflow_id": "g03-real-post-effect-pre-checkpoint"
+    },
+    "same_version_b_observation": {
+      "status_after_public_resume": {
+        "app_version": "gate03-race-v1",
+        "application_name": "gate-0-3-zombie-race",
+        "application_version": null,
+        "executor_id": "gate03-race-a",
+        "name": "zombie_workflow",
+        "status": "ENQUEUED",
+        "workflow_id": "g03-real-post-effect-pre-checkpoint",
+        "workflow_uuid": null
+      },
+      "terminal_status": {
+        "app_version": "gate03-race-v1",
+        "application_name": "gate-0-3-zombie-race",
+        "application_version": null,
+        "executor_id": "gate03-race-b",
+        "name": "zombie_workflow",
+        "status": "SUCCESS",
+        "workflow_id": "g03-real-post-effect-pre-checkpoint",
+        "workflow_uuid": null
+      },
+      "worker_output": [
+        "18:03:09 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n",
+        "18:03:09 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-race-b\n",
+        "18:03:09 [    INFO] (dbos:_dbos.py:550) Application version: gate03-race-v1\n",
+        "18:03:09 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-zombie-race\n",
+        "18:03:09 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n",
+        "18:03:09 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n",
+        "18:03:09 [ WARNING] (dbos:_dbos.py:611) Current version 'gate03-race-v1' is not the latest version. Latest version is 'gate03-race-wrong-v1'.\n",
+        "18:03:10 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-race-v1\n",
+        "18:03:10 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n",
+        "18:03:10 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-zombie-race\n",
+        "{\"application_name\": \"gate-0-3-zombie-race\", \"application_version\": \"gate03-race-v1\", \"event\": \"ready\", \"executor_id\": \"gate03-race-b\", \"migrations\": false}\n"
+      ]
+    },
+    "same_version_b_ready": {
+      "application_name": "gate-0-3-zombie-race",
+      "application_version": "gate03-race-v1",
+      "event": "ready",
+      "executor_id": "gate03-race-b",
+      "migrations": false
+    },
+    "wrong_ready": {
+      "application_name": "gate-0-3-zombie-race",
+      "application_version": "gate03-race-wrong-v1",
+      "event": "ready",
+      "executor_id": "gate03-race-wrong",
+      "migrations": false
+    },
+    "wrong_version_observation": {
+      "recovered_by_wrong_version": false,
+      "status_after_wrong_worker_start": {
+        "app_version": "gate03-race-v1",
+        "application_name": "gate-0-3-zombie-race",
+        "application_version": null,
+        "executor_id": "gate03-race-a",
+        "name": "zombie_workflow",
+        "status": "PENDING",
+        "workflow_id": "g03-real-post-effect-pre-checkpoint",
+        "workflow_uuid": null
+      },
+      "status_before_wrong_worker": {
+        "app_version": "gate03-race-v1",
+        "application_name": "gate-0-3-zombie-race",
+        "application_version": null,
+        "executor_id": "gate03-race-a",
+        "name": "zombie_workflow",
+        "status": "PENDING",
+        "workflow_id": "g03-real-post-effect-pre-checkpoint",
+        "workflow_uuid": null
+      },
+      "worker_output": [
+        "18:03:08 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-race-wrong\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:550) Application version: gate03-race-wrong-v1\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-zombie-race\n",
+        "18:03:08 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n",
+        "18:03:08 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-race-wrong-v1\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n",
+        "18:03:08 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-zombie-race\n",
+        "{\"application_name\": \"gate-0-3-zombie-race\", \"application_version\": \"gate03-race-wrong-v1\", \"event\": \"ready\", \"executor_id\": \"gate03-race-wrong\", \"migrations\": false}\n"
+      ]
+    }
+  },
+  "probe": "real_dbos_post_effect_pre_checkpoint_zombie_race",
+  "public_api_only": true,
+  "real_dbos_migrations": true,
+  "same_version_completed": true,
+  "system_table_reads_or_writes": false,
+  "verdict": "OBSERVED_LIMITED_RESULT",
+  "workflow_id": "g03-real-post-effect-pre-checkpoint",
+  "wrong_application_version": "gate03-race-wrong-v1",
+  "wrong_version_did_not_recover": true
+}

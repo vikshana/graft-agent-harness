@@ -80,11 +80,15 @@ ADR-0010 · ADR-0013 · ADR-0004 · ADR-0063 (L1/L2/L4) · ADR-0050 · ADR-0051 
 ADR-0071 · ADR-0015 (chain, not yet WORM-anchored) · ADR-0054 (private runs only) · ADR-0062 · ADR-0067 (read class)
 ADR-0074 (eval sink) · ADR-0075 (organisation-policy model selection; routing deferred to Phase 2)
 
-**Proposed Gate 0.3 safety follow-ups (not accepted):** [ADR-0076](../adr/agent/0076-recovery-requires-confirmed-termination-or-an-independent-fence.md)
+**Proposed Gate 0.3 safety follow-ups (not accepted):** [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md)
 and [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) record the
-recovery-fencing and dependency-version safety follow-ups from Gate 0.3. They do
-not change the accepted Phase 1 scope. Owner decision on both is required before
-Gate 1; until then, Gate 0.3 remains unresolved and Gate 1 remains blocked.
+recovery-semantics and dependency-version safety follow-ups from Gate 0.3. The
+owner selected the at-least-once recovery model recorded in ADR-0076, but that
+ADR remains proposed pending the required recovery matrix and Phase 1
+external-effect inventory tests. These follow-ups do not change the accepted
+Phase 1 scope. ADR-0077 still requires owner decision before Gate 1; until the
+required evidence and decisions are complete, Gate 0.3 remains unresolved and
+Gate 1 remains blocked.
 
 **Explicitly deferred:** every write path, approval, Slack, run sharing and the driver model, Schedules, second region,
 blue/green, quota ceilings, PAN scrubbing.
@@ -188,7 +192,7 @@ ADR-0074, and S4 by ADR-0075. The remaining items are later-phase sessions with 
 | **S7** | HITL & write-action model; two-person rule                              | **Phase 3**     | Re-openable now that ADR-0055 is superseded                                                                                                                                                             |        |
 | **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                        |        |
 | **S9** | Tenant Directory substrate                                              | **Phase 4**     | Single region until then                                                                                                                                                                                |        |
-| **Gate 0.3 safety follow-ups** | [ADR-0076](../adr/agent/0076-recovery-requires-confirmed-termination-or-an-independent-fence.md) and [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) — **proposed, not accepted** | **Gate 1** | The Gate 0.3 recovery-fencing and dependency-version safety decisions require project-owner decision before Gate 1. Gate 0.3 remains unresolved and Gate 1 remains blocked; this does not alter other phase commitments. | owner decision |
+| **Gate 0.3 safety follow-ups** | [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) and [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) — **proposed, not accepted** | **Gate 1** | The owner selected ADR-0076's at-least-once recovery model. Acceptance still requires the recovery barrier/partition matrix, concurrent-resume and crash cases, and the Phase 1 external-effect inventory with receiving-boundary idempotency or operator-escalation classifications. ADR-0077 remains undecided. Gate 0.3 remains unresolved and Gate 1 remains blocked; this does not alter other phase commitments. | evidence and owner decision |
 
 **S2 is closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).** Its findings
 determine the Phase 1 topology, RLS boundary and PCI treatment. **S3 is closed
