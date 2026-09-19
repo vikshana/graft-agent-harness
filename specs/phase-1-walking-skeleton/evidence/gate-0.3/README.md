@@ -24,6 +24,24 @@ fence. Confirmed termination and leases are availability and duplicate-exposure
 controls, not the semantic proof. Proposed ADR-0076 records the owner-selected
 model and remains proposed.
 
+The ADR-0077 comparison lane directly established that changing DBOS 2.31.1 to
+3.0.0 changes the automatic application version for the same registered
+workflow source and application name. The DBOS 2.31.1 system schema recorded
+migration 108; the DBOS 3.0.0 system schema recorded migration 114. These were
+separate disposable launches, not a cross-version recovery or operational
+drain test. A DBOS 3.0.0 helper-only change also changed runtime output while
+the automatic version remained
+`6291bf83d0ad38ca22f83e659454e749`: an observed false-compatible result.
+
+The owner-selected proposal in ADR-0077 is to supersede ADR-0046: every
+mutually versioned release receives an explicit released application
+compatibility revision, not a mutable Git SHA or image tag, and every prior
+release cohort drains. Old-version capacity must remain until `PENDING`,
+`ENQUEUED`, and `DELAYED` work is empty; orphaned cohorts alert; recovery stays
+within a matching revision; and rollback is a reverse drain. The comparison
+lane did not test those operational controls. ADR-0077 remains proposed and
+still requires formal owner acceptance.
+
 Gate 0.3 is not closed. Required evidence still outstanding:
 
 | Required test | Status |

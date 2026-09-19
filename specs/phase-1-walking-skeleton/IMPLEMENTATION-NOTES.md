@@ -278,8 +278,13 @@ and the Phase 1 effect inventory remain required. Proposed ADR-0076 therefore
 needs reframing around durable idempotent effects and operator escalation for
 effects that cannot be made idempotent; confirmed termination and leases reduce
 duplicate exposure but are not the semantic safety guarantee. Proposed ADR-0077
-remains undecided because the Gate 0.3 version matrix found a false-compatible
-helper-only change and could not run meaningful dependency-upgrade variants.
+now records the owner-selected proposal to supersede ADR-0046: every mutually
+versioned release receives an explicit released application compatibility
+revision, every prior release cohort drains, and the value is not a mutable Git
+SHA or image tag. The Gate 0.3 version matrix found a false-compatible
+helper-only change and a direct DBOS-version change, but did not exercise
+operational draining, orphan alerts, matching-version recovery, or reverse-drain
+rollback. ADR-0077 remains proposed pending formal owner acceptance.
 
 ## Gate 0.3 recovery decision revision
 
@@ -304,6 +309,60 @@ Gate 0.3 closure evidence. The following required tests remain outstanding:
 | Both-handle outcomes plus concurrent resume and crash cases | Outstanding |
 | Phase 1 external-effect inventory, with receiving-boundary idempotency tests and an explicit operator-escalation classification for every non-idempotent effect | Outstanding |
 
-Gate 0.3 remains unresolved and Gate 1 remains blocked. ADR-0077 also remains
-undecided; its dependency-upgrade variants are not closed by the retained
-version-probe evidence.
+Gate 0.3 remains unresolved and Gate 1 remains blocked. ADR-0077 remains
+proposed pending formal owner acceptance and operational evidence for the
+all-release drain, including `PENDING`, `ENQUEUED`, and `DELAYED` drain checks,
+orphan alerts, matching-version recovery, and reverse-drain rollback.
+
+## Gate 0.3 DBOS version-comparison lane
+
+> **Date:** 2026-09-19
+
+The bounded ADR-0077 experiment lane added a real isolated comparison of DBOS
+2.31.1 and 3.0.0. It used `uv run --isolated --no-project` for every worker,
+did not read or modify the project lock, and ran Python 3.11, 3.12 and 3.13
+for each DBOS version. The two cohorts used separate disposable PostgreSQL 16
+containers, databases and DBOS system schemas:
+
+| Cohort | DBOS | PostgreSQL database | DBOS system schema | Python results |
+|--------|------|---------------------|--------------------|----------------|
+| old | 2.31.1 | `gate03_dbos_2311_system` | `dbos_2311` | 3.11.11, 3.12.6, 3.13.0 |
+| locked | 3.0.0 | `gate03_dbos_300_system` | `dbos_300` | 3.11.11, 3.12.6, 3.13.0 |
+
+Both cohorts launched the same minimal registered workflow with application
+name `gate-0-3-db-version-compare`. The actual DBOS launch/runtime fields
+recorded automatic application version `c794758e9a435661e8952586635ba345`
+for 2.31.1 and `469124d570d40494405ef8ad74749acb` for 3.0.0, stable across
+the three Python variants. Each workflow completed `SUCCESS`. This directly
+establishes, rather than infers from source, that changing DBOS from 2.31.1 to
+3.0.0 changes the automatic application version even when workflow source and
+application name are unchanged.
+
+The same runtime lane also launched DBOS 3.0.0 with helper-only variants in
+separate processes and the same application name. The baseline returned
+`helper-v1:gate-0-3-version-fingerprint`; the changed helper returned
+`helper-v2:gate-0-3-version-fingerprint`. Both actual launch/runtime records
+reported `6291bf83d0ad38ca22f83e659454e749`. This is an observed
+false-compatible result: helper code changed and runtime output changed while
+the automatic version did not. It is explicitly distinct from the existing
+source-only probe; no LangGraph upgrade test was claimed or added.
+
+The exact redacted result, resolved distributions, runtime fields, migration
+records, result fingerprints and commands are retained in
+[`evidence/gate-0.3/dbos-version-comparison-result.json`](evidence/gate-0.3/dbos-version-comparison-result.json)
+and
+[`evidence/gate-0.3/dbos-version-comparison-commands.json`](evidence/gate-0.3/dbos-version-comparison-commands.json).
+The DBOS 2.31.1 system database recorded migration 108; the DBOS 3.0.0
+system database recorded migration 114. Each also recorded its own DBOS tables
+in its own schema; the containers and volumes were removed after the run. The
+migration records are observations from separate launches, not an operational
+drain test or cross-version recovery test: no workflow was drained or recovered
+between DBOS versions, and rollback was not exercised. The lane status is
+`passed` for its direct application-version comparison. On the basis of the
+helper false-compatibility result, the owner selected the proposal in ADR-0077
+to supersede ADR-0046 with an explicit released compatibility revision for
+every mutually versioned release and an all-prior-cohort drain. The explicit
+value is not a mutable Git SHA or image tag. ADR-0077 remains proposed pending
+formal owner acceptance and operational drain evidence; Gate 0.3 remains
+subject to the parent orchestrator's decision and other outstanding safety
+evidence.

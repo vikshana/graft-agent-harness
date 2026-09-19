@@ -1,0 +1,1661 @@
+{
+  "adr_0077_disposition": "evidence supports selecting the dependency-upgrade-drain option, but ADR-0077 remains proposed until the parent orchestrator makes the owner decision",
+  "application_name": "gate-0-3-db-version-compare",
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "compose",
+        "--env-file",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/.env",
+        "-f",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-comparison-compose.yml",
+        "up",
+        "-d",
+        "--wait"
+      ],
+      "returncode": 0,
+      "stderr": " Network gate-03_default  Creating\n Network gate-03_default  Created\n Volume gate-03_gate03_dbos_2311_system_data  Creating\n Volume gate-03_gate03_dbos_2311_system_data  Created\n Volume gate-03_gate03_dbos_300_system_data  Creating\n Volume gate-03_gate03_dbos_300_system_data  Created\n Container gate-03-dbos-2311-system-1  Creating\n Container gate-03-dbos-300-system-1  Creating\n Container gate-03-dbos-300-system-1  Created\n Container gate-03-dbos-2311-system-1  Created\n Container gate-03-dbos-2311-system-1  Starting\n Container gate-03-dbos-300-system-1  Starting\n Container gate-03-dbos-2311-system-1  Started\n Container gate-03-dbos-300-system-1  Started\n Container gate-03-dbos-300-system-1  Waiting\n Container gate-03-dbos-2311-system-1  Waiting\n Container gate-03-dbos-2311-system-1  Healthy\n Container gate-03-dbos-300-system-1  Healthy\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.11",
+        "--with",
+        "dbos==2.31.1",
+        "--with",
+        "psycopg[binary]",
+        "python",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+        "--system-database-url",
+        "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED]",
+        "--schema",
+        "dbos_2311",
+        "--executor-id",
+        "gate03-2311-311",
+        "--application-name",
+        "gate-0-3-db-version-compare"
+      ],
+      "returncode": 0,
+      "stderr": "19:01:05 [    INFO] (dbos:_dbos.py:500) Initializing DBOS (v2.31.1)\n19:01:05 [    INFO] (dbos:_dbos.py:569) Executor ID: gate03-2311-311\n19:01:05 [    INFO] (dbos:_dbos.py:570) Application version: c794758e9a435661e8952586635ba345\n19:01:05 [    INFO] (dbos:_dbos.py:571) Application name: gate-0-3-db-version-compare\n19:01:05 [    INFO] (dbos:_sys_db.py:664) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED] (schema: dbos_2311)\n19:01:05 [    INFO] (dbos:_sys_db.py:672) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 1\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 2\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 3\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 4\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 5\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 6\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 7\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 8\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 9\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 10\n19:01:05 [    INFO] (dbos:_migration.py:259) Migration 10 skipped, primary key already exists\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 11\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 12\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 13\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 14\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 15\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 16\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 17\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 18\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 19\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 20\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 21\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 22\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 23\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 24\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 25\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 26\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 27\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 28\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 29\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 30\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 31\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 32\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 33\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 34\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 35\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 36\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 37\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 38\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 39\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 40\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 41\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 42\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 43\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 44\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 45\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 46\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 47\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 100\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 101\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 102\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 103\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 104\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 105\n19:01:06 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 106\n19:01:06 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 107\n19:01:06 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 108\n19:01:06 [    INFO] (dbos:_dbos.py:674) No workflows to recover from application version c794758e9a435661e8952586635ba345\n19:01:06 [    INFO] (dbos:_dbos.py:775) DBOS launched!\n19:01:06 [    INFO] (dbos:_dbos.py:783) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:06 [    INFO] (dbos:_queue.py:1144) Listening to 0 queues:\n19:01:06 [    INFO] (dbos:_queue.py:1080) Stopping queue manager, joining all worker threads...\n19:01:06 [    INFO] (dbos:_dbos.py:407) DBOS successfully shut down\n",
+      "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-311\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"c794758e9a435661e8952586635ba345\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"c794758e9a435661e8952586635ba345\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-311\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833666021, \"version_id\": \"ca703004-2319-424e-bf49-406b2550a5ad\", \"version_name\": \"c794758e9a435661e8952586635ba345\", \"version_timestamp\": 1789833666021}, \"workflow_status\": {\"app_version\": \"c794758e9a435661e8952586635ba345\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-2311-311\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"60584083-1fce-40d8-9ba4-6d6e638be6e5\"}}, \"python\": \"3.11.11\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"2.31.1\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"2b9ca863964804c1dbb1c12d08ef513c91e0d50ac881905d3a34ae86d7be1534\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_2311_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"108\"}], \"requested_schema\": \"dbos_2311\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_2311\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"60584083-1fce-40d8-9ba4-6d6e638be6e5\"}}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.12",
+        "--with",
+        "dbos==2.31.1",
+        "--with",
+        "psycopg[binary]",
+        "python",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+        "--system-database-url",
+        "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED]",
+        "--schema",
+        "dbos_2311",
+        "--executor-id",
+        "gate03-2311-312",
+        "--application-name",
+        "gate-0-3-db-version-compare"
+      ],
+      "returncode": 0,
+      "stderr": "19:01:06 [    INFO] (dbos:_dbos.py:500) Initializing DBOS (v2.31.1)\n19:01:06 [    INFO] (dbos:_dbos.py:569) Executor ID: gate03-2311-312\n19:01:06 [    INFO] (dbos:_dbos.py:570) Application version: c794758e9a435661e8952586635ba345\n19:01:06 [    INFO] (dbos:_dbos.py:571) Application name: gate-0-3-db-version-compare\n19:01:06 [    INFO] (dbos:_sys_db.py:664) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED] (schema: dbos_2311)\n19:01:06 [    INFO] (dbos:_sys_db.py:672) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:06 [    INFO] (dbos:_dbos.py:674) No workflows to recover from application version c794758e9a435661e8952586635ba345\n19:01:06 [    INFO] (dbos:_dbos.py:775) DBOS launched!\n19:01:06 [    INFO] (dbos:_dbos.py:783) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:06 [    INFO] (dbos:_queue.py:1144) Listening to 0 queues:\n19:01:06 [    INFO] (dbos:_queue.py:1080) Stopping queue manager, joining all worker threads...\n19:01:06 [    INFO] (dbos:_dbos.py:407) DBOS successfully shut down\n",
+      "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-312\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"c794758e9a435661e8952586635ba345\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"c794758e9a435661e8952586635ba345\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-312\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833666021, \"version_id\": \"ca703004-2319-424e-bf49-406b2550a5ad\", \"version_name\": \"c794758e9a435661e8952586635ba345\", \"version_timestamp\": 1789833666021}, \"workflow_status\": {\"app_version\": \"c794758e9a435661e8952586635ba345\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-2311-312\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"5bbdd4d1-41d1-4074-856a-fc8f53e1e45c\"}}, \"python\": \"3.12.6\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"2.31.1\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"56fe922f3b991febe16b758edfbb147243c140ecfcffcbba07bd9a61fae9ec4e\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_2311_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"108\"}], \"requested_schema\": \"dbos_2311\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_2311\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"5bbdd4d1-41d1-4074-856a-fc8f53e1e45c\"}}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.13",
+        "--with",
+        "dbos==2.31.1",
+        "--with",
+        "psycopg[binary]",
+        "python",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+        "--system-database-url",
+        "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED]",
+        "--schema",
+        "dbos_2311",
+        "--executor-id",
+        "gate03-2311-313",
+        "--application-name",
+        "gate-0-3-db-version-compare"
+      ],
+      "returncode": 0,
+      "stderr": "19:01:07 [    INFO] (dbos:_dbos.py:500) Initializing DBOS (v2.31.1)\n19:01:07 [    INFO] (dbos:_dbos.py:569) Executor ID: gate03-2311-313\n19:01:07 [    INFO] (dbos:_dbos.py:570) Application version: c794758e9a435661e8952586635ba345\n19:01:07 [    INFO] (dbos:_dbos.py:571) Application name: gate-0-3-db-version-compare\n19:01:07 [    INFO] (dbos:_sys_db.py:664) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED] (schema: dbos_2311)\n19:01:07 [    INFO] (dbos:_sys_db.py:672) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:07 [    INFO] (dbos:_dbos.py:674) No workflows to recover from application version c794758e9a435661e8952586635ba345\n19:01:07 [    INFO] (dbos:_dbos.py:775) DBOS launched!\n19:01:07 [    INFO] (dbos:_dbos.py:783) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:07 [    INFO] (dbos:_queue.py:1144) Listening to 0 queues:\n19:01:07 [    INFO] (dbos:_queue.py:1080) Stopping queue manager, joining all worker threads...\n19:01:07 [    INFO] (dbos:_dbos.py:407) DBOS successfully shut down\n",
+      "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-313\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"c794758e9a435661e8952586635ba345\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"c794758e9a435661e8952586635ba345\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-313\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833666021, \"version_id\": \"ca703004-2319-424e-bf49-406b2550a5ad\", \"version_name\": \"c794758e9a435661e8952586635ba345\", \"version_timestamp\": 1789833666021}, \"workflow_status\": {\"app_version\": \"c794758e9a435661e8952586635ba345\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-2311-313\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"eace658d-dc56-4f8c-aa48-c95e3c1ac78b\"}}, \"python\": \"3.13.0\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"2.31.1\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"b4a220b2b979be633dea109a69268d3239136efc3e56bb602673f0e24d114a52\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_2311_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"108\"}], \"requested_schema\": \"dbos_2311\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_2311\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"eace658d-dc56-4f8c-aa48-c95e3c1ac78b\"}}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.11",
+        "--with",
+        "dbos==3.0.0",
+        "--with",
+        "psycopg[binary]",
+        "python",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+        "--system-database-url",
+        "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+        "--schema",
+        "dbos_300",
+        "--executor-id",
+        "gate03-300-311",
+        "--application-name",
+        "gate-0-3-db-version-compare"
+      ],
+      "returncode": 0,
+      "stderr": "19:01:08 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:08 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-311\n19:01:08 [    INFO] (dbos:_dbos.py:550) Application version: 469124d570d40494405ef8ad74749acb\n19:01:08 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:08 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:08 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 1\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 2\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 3\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 4\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 5\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 6\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 7\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 8\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 9\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 10\n19:01:08 [    INFO] (dbos:_migration.py:258) Migration 10 skipped, primary key already exists\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 11\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 12\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 13\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 14\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 15\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 16\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 17\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 18\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 19\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 20\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 21\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 22\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 23\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 24\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 25\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 26\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 27\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 28\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 29\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 30\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 31\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 32\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 33\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 34\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 35\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 36\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 37\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 38\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 39\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 40\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 41\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 42\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 43\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 44\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 45\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 46\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 47\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 100\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 101\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 102\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 103\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 104\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 105\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 106\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 107\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 108\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 109\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 110\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 111\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 112\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 113\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 114\n19:01:08 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 469124d570d40494405ef8ad74749acb\n19:01:08 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:08 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:08 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:08 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:08 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-311\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"469124d570d40494405ef8ad74749acb\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"469124d570d40494405ef8ad74749acb\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-311\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833668623, \"version_id\": \"83a2d144-7b83-420a-953f-6e7a812bc486\", \"version_name\": \"469124d570d40494405ef8ad74749acb\", \"version_timestamp\": 1789833668623}, \"workflow_status\": {\"app_version\": \"469124d570d40494405ef8ad74749acb\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-311\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"5844a801-4ae9-4c2b-bcb4-f539d6f0d3c1\"}}, \"python\": \"3.11.11\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"cf0bc7524df37cefffe621fdcc724d0ab36085221a2de7510e439cbe01bed830\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"5844a801-4ae9-4c2b-bcb4-f539d6f0d3c1\"}}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.12",
+        "--with",
+        "dbos==3.0.0",
+        "--with",
+        "psycopg[binary]",
+        "python",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+        "--system-database-url",
+        "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+        "--schema",
+        "dbos_300",
+        "--executor-id",
+        "gate03-300-312",
+        "--application-name",
+        "gate-0-3-db-version-compare"
+      ],
+      "returncode": 0,
+      "stderr": "19:01:09 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:09 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-312\n19:01:09 [    INFO] (dbos:_dbos.py:550) Application version: 469124d570d40494405ef8ad74749acb\n19:01:09 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:09 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:09 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:09 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 469124d570d40494405ef8ad74749acb\n19:01:09 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:09 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:09 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:09 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:09 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-312\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"469124d570d40494405ef8ad74749acb\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"469124d570d40494405ef8ad74749acb\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-312\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833668623, \"version_id\": \"83a2d144-7b83-420a-953f-6e7a812bc486\", \"version_name\": \"469124d570d40494405ef8ad74749acb\", \"version_timestamp\": 1789833668623}, \"workflow_status\": {\"app_version\": \"469124d570d40494405ef8ad74749acb\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-312\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"62908233-45ff-4141-b20b-b02676494460\"}}, \"python\": \"3.12.6\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"ac7e7b43876001349ebe815a9b54649d64a0ec9195c13f130ae7571a08e52de4\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"62908233-45ff-4141-b20b-b02676494460\"}}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.13",
+        "--with",
+        "dbos==3.0.0",
+        "--with",
+        "psycopg[binary]",
+        "python",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+        "--system-database-url",
+        "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+        "--schema",
+        "dbos_300",
+        "--executor-id",
+        "gate03-300-313",
+        "--application-name",
+        "gate-0-3-db-version-compare"
+      ],
+      "returncode": 0,
+      "stderr": "19:01:09 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:09 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-313\n19:01:09 [    INFO] (dbos:_dbos.py:550) Application version: 469124d570d40494405ef8ad74749acb\n19:01:09 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:09 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:09 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:09 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 469124d570d40494405ef8ad74749acb\n19:01:09 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:09 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:09 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:09 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:09 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"469124d570d40494405ef8ad74749acb\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"469124d570d40494405ef8ad74749acb\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833668623, \"version_id\": \"83a2d144-7b83-420a-953f-6e7a812bc486\", \"version_name\": \"469124d570d40494405ef8ad74749acb\", \"version_timestamp\": 1789833668623}, \"workflow_status\": {\"app_version\": \"469124d570d40494405ef8ad74749acb\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-313\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"45ec4586-170d-4d88-97b4-78107891c393\"}}, \"python\": \"3.13.0\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"f99445fce29dda4f731f84ed8f7877591b3fd83494251d452104201bb94018c3\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"45ec4586-170d-4d88-97b4-78107891c393\"}}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.13",
+        "--with",
+        "dbos==3.0.0",
+        "--with",
+        "psycopg[binary]",
+        "python",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+        "--system-database-url",
+        "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+        "--schema",
+        "dbos_300",
+        "--executor-id",
+        "gate03-300-313",
+        "--application-name",
+        "gate-0-3-db-version-compare",
+        "--helper-source",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_baseline.py"
+      ],
+      "returncode": 0,
+      "stderr": "19:01:10 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:10 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-313\n19:01:10 [    INFO] (dbos:_dbos.py:550) Application version: 6291bf83d0ad38ca22f83e659454e749\n19:01:10 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:10 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:10 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:10 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 6291bf83d0ad38ca22f83e659454e749\n19:01:10 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:10 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:10 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:10 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:10 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": true, \"note\": \"The helper variant was imported, launched, and executed by DBOS; this is separate from the source-only hash probe.\", \"source_variant\": \"/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_baseline.py\"}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833670432, \"version_id\": \"343fe412-1336-494f-b361-cd7346a208ad\", \"version_name\": \"6291bf83d0ad38ca22f83e659454e749\", \"version_timestamp\": 1789833670432}, \"workflow_status\": {\"app_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-313\", \"name\": \"matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"47540ec5-a91f-469f-8b65-ee1cf5e8bfa0\"}}, \"python\": \"3.13.0\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"262bcfb7e3993dbbb16ae81aa6bff5254bb22941668791a26c0eddbe82eaafc8\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"47bf53ba744f01f8d9c0a6f018f68e12a23b725e0bbffb35b257fb16c02de414\", \"workflow_source_sha256\": \"b202dee559ed5f860373c34ff6eefef8830eec2b4e5610ef2b9dcec6a74abec0\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"helper-v1:gate-0-3-version-fingerprint\", \"workflow_id\": \"47540ec5-a91f-469f-8b65-ee1cf5e8bfa0\"}}\n"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.13",
+        "--with",
+        "dbos==3.0.0",
+        "--with",
+        "psycopg[binary]",
+        "python",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+        "--system-database-url",
+        "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+        "--schema",
+        "dbos_300",
+        "--executor-id",
+        "gate03-300-313",
+        "--application-name",
+        "gate-0-3-db-version-compare",
+        "--helper-source",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_changed.py"
+      ],
+      "returncode": 0,
+      "stderr": "19:01:10 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:10 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-313\n19:01:10 [    INFO] (dbos:_dbos.py:550) Application version: 6291bf83d0ad38ca22f83e659454e749\n19:01:10 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:10 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:10 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:10 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 6291bf83d0ad38ca22f83e659454e749\n19:01:10 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:10 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:10 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:10 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:11 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+      "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": true, \"note\": \"The helper variant was imported, launched, and executed by DBOS; this is separate from the source-only hash probe.\", \"source_variant\": \"/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_changed.py\"}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833670432, \"version_id\": \"343fe412-1336-494f-b361-cd7346a208ad\", \"version_name\": \"6291bf83d0ad38ca22f83e659454e749\", \"version_timestamp\": 1789833670432}, \"workflow_status\": {\"app_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-313\", \"name\": \"matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"e8b3d3ba-6686-441d-b1d1-af9062ee91ad\"}}, \"python\": \"3.13.0\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"d35c890c81341358ea4dac084c37247613913bce6fa6961ac38727b876ab2a42\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"de4bb73be50a2a6eb50c7b689b7a88ecb20b342a4b13e0024893ef5593e8585d\", \"workflow_source_sha256\": \"b202dee559ed5f860373c34ff6eefef8830eec2b4e5610ef2b9dcec6a74abec0\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"helper-v2:gate-0-3-version-fingerprint\", \"workflow_id\": \"e8b3d3ba-6686-441d-b1d1-af9062ee91ad\"}}\n"
+    },
+    {
+      "command": [
+        "docker",
+        "compose",
+        "--env-file",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/.env",
+        "-f",
+        "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-comparison-compose.yml",
+        "down",
+        "-v"
+      ],
+      "returncode": 0,
+      "stderr": " Container gate-03-dbos-300-system-1  Stopping\n Container gate-03-dbos-2311-system-1  Stopping\n Container gate-03-dbos-2311-system-1  Stopped\n Container gate-03-dbos-2311-system-1  Removing\n Container gate-03-dbos-300-system-1  Stopped\n Container gate-03-dbos-300-system-1  Removing\n Container gate-03-dbos-2311-system-1  Removed\n Container gate-03-dbos-300-system-1  Removed\n Volume gate-03_gate03_dbos_300_system_data  Removing\n Volume gate-03_gate03_dbos_2311_system_data  Removing\n Network gate-03_default  Removing\n Volume gate-03_gate03_dbos_2311_system_data  Removed\n Volume gate-03_gate03_dbos_300_system_data  Removed\n Network gate-03_default  Removed\n",
+      "stdout": ""
+    }
+  ],
+  "compose_up": {
+    "command": [
+      "docker",
+      "compose",
+      "--env-file",
+      "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/.env",
+      "-f",
+      "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-comparison-compose.yml",
+      "up",
+      "-d",
+      "--wait"
+    ],
+    "returncode": 0,
+    "stderr": " Network gate-03_default  Creating\n Network gate-03_default  Created\n Volume gate-03_gate03_dbos_2311_system_data  Creating\n Volume gate-03_gate03_dbos_2311_system_data  Created\n Volume gate-03_gate03_dbos_300_system_data  Creating\n Volume gate-03_gate03_dbos_300_system_data  Created\n Container gate-03-dbos-2311-system-1  Creating\n Container gate-03-dbos-300-system-1  Creating\n Container gate-03-dbos-300-system-1  Created\n Container gate-03-dbos-2311-system-1  Created\n Container gate-03-dbos-2311-system-1  Starting\n Container gate-03-dbos-300-system-1  Starting\n Container gate-03-dbos-2311-system-1  Started\n Container gate-03-dbos-300-system-1  Started\n Container gate-03-dbos-300-system-1  Waiting\n Container gate-03-dbos-2311-system-1  Waiting\n Container gate-03-dbos-2311-system-1  Healthy\n Container gate-03-dbos-300-system-1  Healthy\n",
+    "stdout": ""
+  },
+  "criteria": {
+    "all_six_real_launches_passed": true,
+    "dbos_2_31_1_runtime_version_recorded": true,
+    "dbos_3_0_0_runtime_version_recorded": true,
+    "helper_only_runtime_is_false_compatible": true,
+    "helper_only_runtime_result_changed": true,
+    "helper_only_runtime_same_application_version": true,
+    "helper_runtime_launches_passed": true,
+    "python_variant_versions_stable_within_cohort": true,
+    "same_workflow_and_app_name_changes_automatic_version": true
+  },
+  "direct_conclusion": "Established by actual DBOS launch/runtime fields: with the same registered minimal workflow source and application name, DBOS 2.31.1 and DBOS 3.0.0 computed different automatic application versions.",
+  "experiment": "gate-0.3-db-version-comparison",
+  "finished_at": "2026-09-19T16:01:11.528145+00:00",
+  "helper_runtime_comparison": {
+    "baseline": {
+      "command": {
+        "command": [
+          "uv",
+          "run",
+          "--isolated",
+          "--no-project",
+          "--python",
+          "3.13",
+          "--with",
+          "dbos==3.0.0",
+          "--with",
+          "psycopg[binary]",
+          "python",
+          "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+          "--system-database-url",
+          "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+          "--schema",
+          "dbos_300",
+          "--executor-id",
+          "gate03-300-313",
+          "--application-name",
+          "gate-0-3-db-version-compare",
+          "--helper-source",
+          "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_baseline.py"
+        ],
+        "returncode": 0,
+        "stderr": "19:01:10 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:10 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-313\n19:01:10 [    INFO] (dbos:_dbos.py:550) Application version: 6291bf83d0ad38ca22f83e659454e749\n19:01:10 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:10 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:10 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:10 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 6291bf83d0ad38ca22f83e659454e749\n19:01:10 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:10 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:10 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:10 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:10 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+        "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": true, \"note\": \"The helper variant was imported, launched, and executed by DBOS; this is separate from the source-only hash probe.\", \"source_variant\": \"/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_baseline.py\"}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833670432, \"version_id\": \"343fe412-1336-494f-b361-cd7346a208ad\", \"version_name\": \"6291bf83d0ad38ca22f83e659454e749\", \"version_timestamp\": 1789833670432}, \"workflow_status\": {\"app_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-313\", \"name\": \"matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"47540ec5-a91f-469f-8b65-ee1cf5e8bfa0\"}}, \"python\": \"3.13.0\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"262bcfb7e3993dbbb16ae81aa6bff5254bb22941668791a26c0eddbe82eaafc8\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"47bf53ba744f01f8d9c0a6f018f68e12a23b725e0bbffb35b257fb16c02de414\", \"workflow_source_sha256\": \"b202dee559ed5f860373c34ff6eefef8830eec2b4e5610ef2b9dcec6a74abec0\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"helper-v1:gate-0-3-version-fingerprint\", \"workflow_id\": \"47540ec5-a91f-469f-8b65-ee1cf5e8bfa0\"}}\n"
+      },
+      "source_probe": {
+        "note": "This is an actual launch/runtime helper result, not a source probe.",
+        "performed": false
+      },
+      "worker": {
+        "application_name": "gate-0-3-db-version-compare",
+        "dbos_version": "3.0.0",
+        "executor_id": "gate03-300-313",
+        "helper_runtime": {
+          "helper_result_is_runtime_observation": true,
+          "note": "The helper variant was imported, launched, and executed by DBOS; this is separate from the source-only hash probe.",
+          "source_variant": "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_baseline.py"
+        },
+        "launch_runtime_application_version_fields": {
+          "DBOS_application_name": null,
+          "DBOS_application_version": "6291bf83d0ad38ca22f83e659454e749",
+          "GlobalParams": {
+            "app_name": "gate-0-3-db-version-compare",
+            "app_version": "6291bf83d0ad38ca22f83e659454e749",
+            "dbos_version": "3.0.0",
+            "executor_id": "gate03-300-313"
+          },
+          "config_application_version": null,
+          "config_name": "gate-0-3-db-version-compare",
+          "latest_application_version": {
+            "application_name": "gate-0-3-db-version-compare",
+            "created_at": 1789833670432,
+            "version_id": "343fe412-1336-494f-b361-cd7346a208ad",
+            "version_name": "6291bf83d0ad38ca22f83e659454e749",
+            "version_timestamp": 1789833670432
+          },
+          "workflow_status": {
+            "app_version": "6291bf83d0ad38ca22f83e659454e749",
+            "application_name": "gate-0-3-db-version-compare",
+            "application_version": null,
+            "executor_id": "gate03-300-313",
+            "name": "matrix_workflow",
+            "status": "SUCCESS",
+            "workflow_id": "47540ec5-a91f-469f-8b65-ee1cf5e8bfa0"
+          }
+        },
+        "python": "3.13.0",
+        "python_implementation": "CPython",
+        "resolved_distributions": [
+          {
+            "name": "click",
+            "version": "8.5.0"
+          },
+          {
+            "name": "dbos",
+            "version": "3.0.0"
+          },
+          {
+            "name": "greenlet",
+            "version": "3.5.6"
+          },
+          {
+            "name": "psycopg",
+            "version": "3.3.6"
+          },
+          {
+            "name": "psycopg-binary",
+            "version": "3.3.6"
+          },
+          {
+            "name": "python-dateutil",
+            "version": "2.9.0.post0"
+          },
+          {
+            "name": "PyYAML",
+            "version": "6.0.3"
+          },
+          {
+            "name": "six",
+            "version": "1.17.0"
+          },
+          {
+            "name": "SQLAlchemy",
+            "version": "2.0.54"
+          },
+          {
+            "name": "typing_extensions",
+            "version": "4.16.0"
+          },
+          {
+            "name": "websockets",
+            "version": "17.1"
+          }
+        ],
+        "result_fingerprint": "262bcfb7e3993dbbb16ae81aa6bff5254bb22941668791a26c0eddbe82eaafc8",
+        "runner_result_fingerprint": "04765203af5cb02782873fbfdc9ee18d70f994460d884d7607f1c32cc194241d",
+        "source_fingerprint": {
+          "application_name": "gate-0-3-db-version-compare",
+          "source_file_sha256": "47bf53ba744f01f8d9c0a6f018f68e12a23b725e0bbffb35b257fb16c02de414",
+          "workflow_source_sha256": "b202dee559ed5f860373c34ff6eefef8830eec2b4e5610ef2b9dcec6a74abec0"
+        },
+        "status": "passed",
+        "system_database_endpoint": "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system",
+        "system_database_schema_and_migrations": {
+          "current_schema_before_dbos": "public",
+          "database": "gate03_dbos_300_system",
+          "migration_and_schema_columns": [
+            {
+              "column": "version",
+              "table": "dbos_migrations"
+            }
+          ],
+          "migration_records": [
+            {
+              "version": "114"
+            }
+          ],
+          "requested_schema": "dbos_300",
+          "schema_exists": true,
+          "search_path_before_dbos": "\"$user\", public",
+          "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+          "tables_after_launch": [
+            "application_versions",
+            "dbos_migrations",
+            "event_dispatch_kv",
+            "notifications",
+            "operation_outputs",
+            "queues",
+            "streams",
+            "workflow_events",
+            "workflow_events_history",
+            "workflow_input",
+            "workflow_output",
+            "workflow_schedules",
+            "workflow_status"
+          ],
+          "user": "gate03"
+        },
+        "system_schema": "dbos_300",
+        "workflow": {
+          "input": "gate-0-3-version-fingerprint",
+          "result": "helper-v1:gate-0-3-version-fingerprint",
+          "workflow_id": "47540ec5-a91f-469f-8b65-ee1cf5e8bfa0"
+        }
+      }
+    },
+    "changed": {
+      "command": {
+        "command": [
+          "uv",
+          "run",
+          "--isolated",
+          "--no-project",
+          "--python",
+          "3.13",
+          "--with",
+          "dbos==3.0.0",
+          "--with",
+          "psycopg[binary]",
+          "python",
+          "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+          "--system-database-url",
+          "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+          "--schema",
+          "dbos_300",
+          "--executor-id",
+          "gate03-300-313",
+          "--application-name",
+          "gate-0-3-db-version-compare",
+          "--helper-source",
+          "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_changed.py"
+        ],
+        "returncode": 0,
+        "stderr": "19:01:10 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:10 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-313\n19:01:10 [    INFO] (dbos:_dbos.py:550) Application version: 6291bf83d0ad38ca22f83e659454e749\n19:01:10 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:10 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:10 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:10 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 6291bf83d0ad38ca22f83e659454e749\n19:01:10 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:10 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:10 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:10 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:11 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+        "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": true, \"note\": \"The helper variant was imported, launched, and executed by DBOS; this is separate from the source-only hash probe.\", \"source_variant\": \"/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_changed.py\"}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833670432, \"version_id\": \"343fe412-1336-494f-b361-cd7346a208ad\", \"version_name\": \"6291bf83d0ad38ca22f83e659454e749\", \"version_timestamp\": 1789833670432}, \"workflow_status\": {\"app_version\": \"6291bf83d0ad38ca22f83e659454e749\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-313\", \"name\": \"matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"e8b3d3ba-6686-441d-b1d1-af9062ee91ad\"}}, \"python\": \"3.13.0\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"d35c890c81341358ea4dac084c37247613913bce6fa6961ac38727b876ab2a42\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"de4bb73be50a2a6eb50c7b689b7a88ecb20b342a4b13e0024893ef5593e8585d\", \"workflow_source_sha256\": \"b202dee559ed5f860373c34ff6eefef8830eec2b4e5610ef2b9dcec6a74abec0\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"helper-v2:gate-0-3-version-fingerprint\", \"workflow_id\": \"e8b3d3ba-6686-441d-b1d1-af9062ee91ad\"}}\n"
+      },
+      "source_probe": {
+        "note": "This is an actual launch/runtime helper result, not a source probe.",
+        "performed": false
+      },
+      "worker": {
+        "application_name": "gate-0-3-db-version-compare",
+        "dbos_version": "3.0.0",
+        "executor_id": "gate03-300-313",
+        "helper_runtime": {
+          "helper_result_is_runtime_observation": true,
+          "note": "The helper variant was imported, launched, and executed by DBOS; this is separate from the source-only hash probe.",
+          "source_variant": "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/version-variants/runtime_helper_changed.py"
+        },
+        "launch_runtime_application_version_fields": {
+          "DBOS_application_name": null,
+          "DBOS_application_version": "6291bf83d0ad38ca22f83e659454e749",
+          "GlobalParams": {
+            "app_name": "gate-0-3-db-version-compare",
+            "app_version": "6291bf83d0ad38ca22f83e659454e749",
+            "dbos_version": "3.0.0",
+            "executor_id": "gate03-300-313"
+          },
+          "config_application_version": null,
+          "config_name": "gate-0-3-db-version-compare",
+          "latest_application_version": {
+            "application_name": "gate-0-3-db-version-compare",
+            "created_at": 1789833670432,
+            "version_id": "343fe412-1336-494f-b361-cd7346a208ad",
+            "version_name": "6291bf83d0ad38ca22f83e659454e749",
+            "version_timestamp": 1789833670432
+          },
+          "workflow_status": {
+            "app_version": "6291bf83d0ad38ca22f83e659454e749",
+            "application_name": "gate-0-3-db-version-compare",
+            "application_version": null,
+            "executor_id": "gate03-300-313",
+            "name": "matrix_workflow",
+            "status": "SUCCESS",
+            "workflow_id": "e8b3d3ba-6686-441d-b1d1-af9062ee91ad"
+          }
+        },
+        "python": "3.13.0",
+        "python_implementation": "CPython",
+        "resolved_distributions": [
+          {
+            "name": "click",
+            "version": "8.5.0"
+          },
+          {
+            "name": "dbos",
+            "version": "3.0.0"
+          },
+          {
+            "name": "greenlet",
+            "version": "3.5.6"
+          },
+          {
+            "name": "psycopg",
+            "version": "3.3.6"
+          },
+          {
+            "name": "psycopg-binary",
+            "version": "3.3.6"
+          },
+          {
+            "name": "python-dateutil",
+            "version": "2.9.0.post0"
+          },
+          {
+            "name": "PyYAML",
+            "version": "6.0.3"
+          },
+          {
+            "name": "six",
+            "version": "1.17.0"
+          },
+          {
+            "name": "SQLAlchemy",
+            "version": "2.0.54"
+          },
+          {
+            "name": "typing_extensions",
+            "version": "4.16.0"
+          },
+          {
+            "name": "websockets",
+            "version": "17.1"
+          }
+        ],
+        "result_fingerprint": "d35c890c81341358ea4dac084c37247613913bce6fa6961ac38727b876ab2a42",
+        "runner_result_fingerprint": "c7f2b7b8b80d4384ebcc879a6a78094575cb11751229b7b901bc0c70c8851472",
+        "source_fingerprint": {
+          "application_name": "gate-0-3-db-version-compare",
+          "source_file_sha256": "de4bb73be50a2a6eb50c7b689b7a88ecb20b342a4b13e0024893ef5593e8585d",
+          "workflow_source_sha256": "b202dee559ed5f860373c34ff6eefef8830eec2b4e5610ef2b9dcec6a74abec0"
+        },
+        "status": "passed",
+        "system_database_endpoint": "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system",
+        "system_database_schema_and_migrations": {
+          "current_schema_before_dbos": "public",
+          "database": "gate03_dbos_300_system",
+          "migration_and_schema_columns": [
+            {
+              "column": "version",
+              "table": "dbos_migrations"
+            }
+          ],
+          "migration_records": [
+            {
+              "version": "114"
+            }
+          ],
+          "requested_schema": "dbos_300",
+          "schema_exists": true,
+          "search_path_before_dbos": "\"$user\", public",
+          "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+          "tables_after_launch": [
+            "application_versions",
+            "dbos_migrations",
+            "event_dispatch_kv",
+            "notifications",
+            "operation_outputs",
+            "queues",
+            "streams",
+            "workflow_events",
+            "workflow_events_history",
+            "workflow_input",
+            "workflow_output",
+            "workflow_schedules",
+            "workflow_status"
+          ],
+          "user": "gate03"
+        },
+        "system_schema": "dbos_300",
+        "workflow": {
+          "input": "gate-0-3-version-fingerprint",
+          "result": "helper-v2:gate-0-3-version-fingerprint",
+          "workflow_id": "e8b3d3ba-6686-441d-b1d1-af9062ee91ad"
+        }
+      }
+    }
+  },
+  "isolation": {
+    "comparison_uses_locked_project_environment": false,
+    "project_lock_read_or_modified": false,
+    "same_application_name": true,
+    "same_minimal_registered_workflow_source": true,
+    "uv_command_mode": "uv run --isolated --no-project"
+  },
+  "runner_python": "3.13.0",
+  "source_probe_boundary": {
+    "not_run_by_this_comparison": true,
+    "note": "The matrix below is an actual DBOS launch/runtime comparison. Any source-only hash probe is separate evidence and is not used as the runtime result."
+  },
+  "started_at": "2026-09-19T16:01:02.523244+00:00",
+  "status": "passed",
+  "system_database_topology": {
+    "application_name": "gate-0-3-db-version-compare",
+    "cohorts": {
+      "dbos_2_31_1": {
+        "database_url_password_redacted": "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED]",
+        "dbos_system_schema": "dbos_2311",
+        "dbos_version": "2.31.1",
+        "postgres_database": "gate03_dbos_2311_system",
+        "postgres_host_port": "57431"
+      },
+      "dbos_3_0_0": {
+        "database_url_password_redacted": "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+        "dbos_system_schema": "dbos_300",
+        "dbos_version": "3.0.0",
+        "postgres_database": "gate03_dbos_300_system",
+        "postgres_host_port": "57430"
+      }
+    },
+    "separation_assertions": {
+      "application_database_used": false,
+      "customer_system_access": false,
+      "different_dbos_system_schemas": true,
+      "different_postgres_databases": true,
+      "shared_system_database_or_schema": false
+    }
+  },
+  "version_matrix": {
+    "dbos_2_31_1": {
+      "3.11": {
+        "command": {
+          "command": [
+            "uv",
+            "run",
+            "--isolated",
+            "--no-project",
+            "--python",
+            "3.11",
+            "--with",
+            "dbos==2.31.1",
+            "--with",
+            "psycopg[binary]",
+            "python",
+            "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+            "--system-database-url",
+            "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED]",
+            "--schema",
+            "dbos_2311",
+            "--executor-id",
+            "gate03-2311-311",
+            "--application-name",
+            "gate-0-3-db-version-compare"
+          ],
+          "returncode": 0,
+          "stderr": "19:01:05 [    INFO] (dbos:_dbos.py:500) Initializing DBOS (v2.31.1)\n19:01:05 [    INFO] (dbos:_dbos.py:569) Executor ID: gate03-2311-311\n19:01:05 [    INFO] (dbos:_dbos.py:570) Application version: c794758e9a435661e8952586635ba345\n19:01:05 [    INFO] (dbos:_dbos.py:571) Application name: gate-0-3-db-version-compare\n19:01:05 [    INFO] (dbos:_sys_db.py:664) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED] (schema: dbos_2311)\n19:01:05 [    INFO] (dbos:_sys_db.py:672) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 1\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 2\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 3\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 4\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 5\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 6\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 7\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 8\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 9\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 10\n19:01:05 [    INFO] (dbos:_migration.py:259) Migration 10 skipped, primary key already exists\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 11\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 12\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 13\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 14\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 15\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 16\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 17\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 18\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 19\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 20\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 21\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 22\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 23\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 24\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 25\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 26\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 27\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 28\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 29\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 30\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 31\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 32\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 33\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 34\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 35\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 36\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 37\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 38\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 39\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 40\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 41\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 42\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 43\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 44\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 45\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 46\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 47\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 100\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 101\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 102\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 103\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 104\n19:01:05 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 105\n19:01:06 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 106\n19:01:06 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 107\n19:01:06 [    INFO] (dbos:_migration.py:226) Applying DBOS system database schema migration 108\n19:01:06 [    INFO] (dbos:_dbos.py:674) No workflows to recover from application version c794758e9a435661e8952586635ba345\n19:01:06 [    INFO] (dbos:_dbos.py:775) DBOS launched!\n19:01:06 [    INFO] (dbos:_dbos.py:783) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:06 [    INFO] (dbos:_queue.py:1144) Listening to 0 queues:\n19:01:06 [    INFO] (dbos:_queue.py:1080) Stopping queue manager, joining all worker threads...\n19:01:06 [    INFO] (dbos:_dbos.py:407) DBOS successfully shut down\n",
+          "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-311\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"c794758e9a435661e8952586635ba345\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"c794758e9a435661e8952586635ba345\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-311\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833666021, \"version_id\": \"ca703004-2319-424e-bf49-406b2550a5ad\", \"version_name\": \"c794758e9a435661e8952586635ba345\", \"version_timestamp\": 1789833666021}, \"workflow_status\": {\"app_version\": \"c794758e9a435661e8952586635ba345\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-2311-311\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"60584083-1fce-40d8-9ba4-6d6e638be6e5\"}}, \"python\": \"3.11.11\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"2.31.1\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"2b9ca863964804c1dbb1c12d08ef513c91e0d50ac881905d3a34ae86d7be1534\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_2311_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"108\"}], \"requested_schema\": \"dbos_2311\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_2311\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"60584083-1fce-40d8-9ba4-6d6e638be6e5\"}}\n"
+        },
+        "worker": {
+          "application_name": "gate-0-3-db-version-compare",
+          "dbos_version": "2.31.1",
+          "executor_id": "gate03-2311-311",
+          "helper_runtime": {
+            "helper_result_is_runtime_observation": false,
+            "note": "No helper variant was requested.",
+            "source_variant": null
+          },
+          "launch_runtime_application_version_fields": {
+            "DBOS_application_name": null,
+            "DBOS_application_version": "c794758e9a435661e8952586635ba345",
+            "GlobalParams": {
+              "app_name": "gate-0-3-db-version-compare",
+              "app_version": "c794758e9a435661e8952586635ba345",
+              "dbos_version": "2.31.1",
+              "executor_id": "gate03-2311-311"
+            },
+            "config_application_version": null,
+            "config_name": "gate-0-3-db-version-compare",
+            "latest_application_version": {
+              "application_name": "gate-0-3-db-version-compare",
+              "created_at": 1789833666021,
+              "version_id": "ca703004-2319-424e-bf49-406b2550a5ad",
+              "version_name": "c794758e9a435661e8952586635ba345",
+              "version_timestamp": 1789833666021
+            },
+            "workflow_status": {
+              "app_version": "c794758e9a435661e8952586635ba345",
+              "application_name": "gate-0-3-db-version-compare",
+              "application_version": null,
+              "executor_id": "gate03-2311-311",
+              "name": "_run.<locals>.matrix_workflow",
+              "status": "SUCCESS",
+              "workflow_id": "60584083-1fce-40d8-9ba4-6d6e638be6e5"
+            }
+          },
+          "python": "3.11.11",
+          "python_implementation": "CPython",
+          "resolved_distributions": [
+            {
+              "name": "click",
+              "version": "8.5.0"
+            },
+            {
+              "name": "dbos",
+              "version": "2.31.1"
+            },
+            {
+              "name": "greenlet",
+              "version": "3.5.6"
+            },
+            {
+              "name": "psycopg",
+              "version": "3.3.6"
+            },
+            {
+              "name": "psycopg-binary",
+              "version": "3.3.6"
+            },
+            {
+              "name": "python-dateutil",
+              "version": "2.9.0.post0"
+            },
+            {
+              "name": "PyYAML",
+              "version": "6.0.3"
+            },
+            {
+              "name": "six",
+              "version": "1.17.0"
+            },
+            {
+              "name": "SQLAlchemy",
+              "version": "2.0.54"
+            },
+            {
+              "name": "typing_extensions",
+              "version": "4.16.0"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ],
+          "result_fingerprint": "2b9ca863964804c1dbb1c12d08ef513c91e0d50ac881905d3a34ae86d7be1534",
+          "runner_result_fingerprint": "133c6f536e99e3aa2a357e2cb34a0744d40bfb498ab6d351d9f90f8be655681e",
+          "source_fingerprint": {
+            "application_name": "gate-0-3-db-version-compare",
+            "source_file_sha256": "4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618",
+            "workflow_source_sha256": "75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478"
+          },
+          "status": "passed",
+          "system_database_endpoint": "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system",
+          "system_database_schema_and_migrations": {
+            "current_schema_before_dbos": "public",
+            "database": "gate03_dbos_2311_system",
+            "migration_and_schema_columns": [
+              {
+                "column": "version",
+                "table": "dbos_migrations"
+              }
+            ],
+            "migration_records": [
+              {
+                "version": "108"
+              }
+            ],
+            "requested_schema": "dbos_2311",
+            "schema_exists": true,
+            "search_path_before_dbos": "\"$user\", public",
+            "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+            "tables_after_launch": [
+              "application_versions",
+              "dbos_migrations",
+              "event_dispatch_kv",
+              "notifications",
+              "operation_outputs",
+              "queues",
+              "streams",
+              "workflow_events",
+              "workflow_events_history",
+              "workflow_schedules",
+              "workflow_status"
+            ],
+            "user": "gate03"
+          },
+          "system_schema": "dbos_2311",
+          "workflow": {
+            "input": "gate-0-3-version-fingerprint",
+            "result": "minimal:gate-0-3-version-fingerprint",
+            "workflow_id": "60584083-1fce-40d8-9ba4-6d6e638be6e5"
+          }
+        }
+      },
+      "3.12": {
+        "command": {
+          "command": [
+            "uv",
+            "run",
+            "--isolated",
+            "--no-project",
+            "--python",
+            "3.12",
+            "--with",
+            "dbos==2.31.1",
+            "--with",
+            "psycopg[binary]",
+            "python",
+            "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+            "--system-database-url",
+            "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED]",
+            "--schema",
+            "dbos_2311",
+            "--executor-id",
+            "gate03-2311-312",
+            "--application-name",
+            "gate-0-3-db-version-compare"
+          ],
+          "returncode": 0,
+          "stderr": "19:01:06 [    INFO] (dbos:_dbos.py:500) Initializing DBOS (v2.31.1)\n19:01:06 [    INFO] (dbos:_dbos.py:569) Executor ID: gate03-2311-312\n19:01:06 [    INFO] (dbos:_dbos.py:570) Application version: c794758e9a435661e8952586635ba345\n19:01:06 [    INFO] (dbos:_dbos.py:571) Application name: gate-0-3-db-version-compare\n19:01:06 [    INFO] (dbos:_sys_db.py:664) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED] (schema: dbos_2311)\n19:01:06 [    INFO] (dbos:_sys_db.py:672) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:06 [    INFO] (dbos:_dbos.py:674) No workflows to recover from application version c794758e9a435661e8952586635ba345\n19:01:06 [    INFO] (dbos:_dbos.py:775) DBOS launched!\n19:01:06 [    INFO] (dbos:_dbos.py:783) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:06 [    INFO] (dbos:_queue.py:1144) Listening to 0 queues:\n19:01:06 [    INFO] (dbos:_queue.py:1080) Stopping queue manager, joining all worker threads...\n19:01:06 [    INFO] (dbos:_dbos.py:407) DBOS successfully shut down\n",
+          "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-312\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"c794758e9a435661e8952586635ba345\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"c794758e9a435661e8952586635ba345\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-312\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833666021, \"version_id\": \"ca703004-2319-424e-bf49-406b2550a5ad\", \"version_name\": \"c794758e9a435661e8952586635ba345\", \"version_timestamp\": 1789833666021}, \"workflow_status\": {\"app_version\": \"c794758e9a435661e8952586635ba345\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-2311-312\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"5bbdd4d1-41d1-4074-856a-fc8f53e1e45c\"}}, \"python\": \"3.12.6\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"2.31.1\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"56fe922f3b991febe16b758edfbb147243c140ecfcffcbba07bd9a61fae9ec4e\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_2311_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"108\"}], \"requested_schema\": \"dbos_2311\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_2311\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"5bbdd4d1-41d1-4074-856a-fc8f53e1e45c\"}}\n"
+        },
+        "worker": {
+          "application_name": "gate-0-3-db-version-compare",
+          "dbos_version": "2.31.1",
+          "executor_id": "gate03-2311-312",
+          "helper_runtime": {
+            "helper_result_is_runtime_observation": false,
+            "note": "No helper variant was requested.",
+            "source_variant": null
+          },
+          "launch_runtime_application_version_fields": {
+            "DBOS_application_name": null,
+            "DBOS_application_version": "c794758e9a435661e8952586635ba345",
+            "GlobalParams": {
+              "app_name": "gate-0-3-db-version-compare",
+              "app_version": "c794758e9a435661e8952586635ba345",
+              "dbos_version": "2.31.1",
+              "executor_id": "gate03-2311-312"
+            },
+            "config_application_version": null,
+            "config_name": "gate-0-3-db-version-compare",
+            "latest_application_version": {
+              "application_name": "gate-0-3-db-version-compare",
+              "created_at": 1789833666021,
+              "version_id": "ca703004-2319-424e-bf49-406b2550a5ad",
+              "version_name": "c794758e9a435661e8952586635ba345",
+              "version_timestamp": 1789833666021
+            },
+            "workflow_status": {
+              "app_version": "c794758e9a435661e8952586635ba345",
+              "application_name": "gate-0-3-db-version-compare",
+              "application_version": null,
+              "executor_id": "gate03-2311-312",
+              "name": "_run.<locals>.matrix_workflow",
+              "status": "SUCCESS",
+              "workflow_id": "5bbdd4d1-41d1-4074-856a-fc8f53e1e45c"
+            }
+          },
+          "python": "3.12.6",
+          "python_implementation": "CPython",
+          "resolved_distributions": [
+            {
+              "name": "click",
+              "version": "8.5.0"
+            },
+            {
+              "name": "dbos",
+              "version": "2.31.1"
+            },
+            {
+              "name": "greenlet",
+              "version": "3.5.6"
+            },
+            {
+              "name": "psycopg",
+              "version": "3.3.6"
+            },
+            {
+              "name": "psycopg-binary",
+              "version": "3.3.6"
+            },
+            {
+              "name": "python-dateutil",
+              "version": "2.9.0.post0"
+            },
+            {
+              "name": "PyYAML",
+              "version": "6.0.3"
+            },
+            {
+              "name": "six",
+              "version": "1.17.0"
+            },
+            {
+              "name": "SQLAlchemy",
+              "version": "2.0.54"
+            },
+            {
+              "name": "typing_extensions",
+              "version": "4.16.0"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ],
+          "result_fingerprint": "56fe922f3b991febe16b758edfbb147243c140ecfcffcbba07bd9a61fae9ec4e",
+          "runner_result_fingerprint": "eea759012f32f2bd3184c27c4b0230ea9b4497e875e2c02fa707250c85f816ec",
+          "source_fingerprint": {
+            "application_name": "gate-0-3-db-version-compare",
+            "source_file_sha256": "4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618",
+            "workflow_source_sha256": "75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478"
+          },
+          "status": "passed",
+          "system_database_endpoint": "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system",
+          "system_database_schema_and_migrations": {
+            "current_schema_before_dbos": "public",
+            "database": "gate03_dbos_2311_system",
+            "migration_and_schema_columns": [
+              {
+                "column": "version",
+                "table": "dbos_migrations"
+              }
+            ],
+            "migration_records": [
+              {
+                "version": "108"
+              }
+            ],
+            "requested_schema": "dbos_2311",
+            "schema_exists": true,
+            "search_path_before_dbos": "\"$user\", public",
+            "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+            "tables_after_launch": [
+              "application_versions",
+              "dbos_migrations",
+              "event_dispatch_kv",
+              "notifications",
+              "operation_outputs",
+              "queues",
+              "streams",
+              "workflow_events",
+              "workflow_events_history",
+              "workflow_schedules",
+              "workflow_status"
+            ],
+            "user": "gate03"
+          },
+          "system_schema": "dbos_2311",
+          "workflow": {
+            "input": "gate-0-3-version-fingerprint",
+            "result": "minimal:gate-0-3-version-fingerprint",
+            "workflow_id": "5bbdd4d1-41d1-4074-856a-fc8f53e1e45c"
+          }
+        }
+      },
+      "3.13": {
+        "command": {
+          "command": [
+            "uv",
+            "run",
+            "--isolated",
+            "--no-project",
+            "--python",
+            "3.13",
+            "--with",
+            "dbos==2.31.1",
+            "--with",
+            "psycopg[binary]",
+            "python",
+            "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+            "--system-database-url",
+            "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED]",
+            "--schema",
+            "dbos_2311",
+            "--executor-id",
+            "gate03-2311-313",
+            "--application-name",
+            "gate-0-3-db-version-compare"
+          ],
+          "returncode": 0,
+          "stderr": "19:01:07 [    INFO] (dbos:_dbos.py:500) Initializing DBOS (v2.31.1)\n19:01:07 [    INFO] (dbos:_dbos.py:569) Executor ID: gate03-2311-313\n19:01:07 [    INFO] (dbos:_dbos.py:570) Application version: c794758e9a435661e8952586635ba345\n19:01:07 [    INFO] (dbos:_dbos.py:571) Application name: gate-0-3-db-version-compare\n19:01:07 [    INFO] (dbos:_sys_db.py:664) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system?password=[REDACTED] (schema: dbos_2311)\n19:01:07 [    INFO] (dbos:_sys_db.py:672) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:07 [    INFO] (dbos:_dbos.py:674) No workflows to recover from application version c794758e9a435661e8952586635ba345\n19:01:07 [    INFO] (dbos:_dbos.py:775) DBOS launched!\n19:01:07 [    INFO] (dbos:_dbos.py:783) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:07 [    INFO] (dbos:_queue.py:1144) Listening to 0 queues:\n19:01:07 [    INFO] (dbos:_queue.py:1080) Stopping queue manager, joining all worker threads...\n19:01:07 [    INFO] (dbos:_dbos.py:407) DBOS successfully shut down\n",
+          "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-313\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"c794758e9a435661e8952586635ba345\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"c794758e9a435661e8952586635ba345\", \"dbos_version\": \"2.31.1\", \"executor_id\": \"gate03-2311-313\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833666021, \"version_id\": \"ca703004-2319-424e-bf49-406b2550a5ad\", \"version_name\": \"c794758e9a435661e8952586635ba345\", \"version_timestamp\": 1789833666021}, \"workflow_status\": {\"app_version\": \"c794758e9a435661e8952586635ba345\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-2311-313\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"eace658d-dc56-4f8c-aa48-c95e3c1ac78b\"}}, \"python\": \"3.13.0\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"2.31.1\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"b4a220b2b979be633dea109a69268d3239136efc3e56bb602673f0e24d114a52\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_2311_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"108\"}], \"requested_schema\": \"dbos_2311\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_2311\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"eace658d-dc56-4f8c-aa48-c95e3c1ac78b\"}}\n"
+        },
+        "worker": {
+          "application_name": "gate-0-3-db-version-compare",
+          "dbos_version": "2.31.1",
+          "executor_id": "gate03-2311-313",
+          "helper_runtime": {
+            "helper_result_is_runtime_observation": false,
+            "note": "No helper variant was requested.",
+            "source_variant": null
+          },
+          "launch_runtime_application_version_fields": {
+            "DBOS_application_name": null,
+            "DBOS_application_version": "c794758e9a435661e8952586635ba345",
+            "GlobalParams": {
+              "app_name": "gate-0-3-db-version-compare",
+              "app_version": "c794758e9a435661e8952586635ba345",
+              "dbos_version": "2.31.1",
+              "executor_id": "gate03-2311-313"
+            },
+            "config_application_version": null,
+            "config_name": "gate-0-3-db-version-compare",
+            "latest_application_version": {
+              "application_name": "gate-0-3-db-version-compare",
+              "created_at": 1789833666021,
+              "version_id": "ca703004-2319-424e-bf49-406b2550a5ad",
+              "version_name": "c794758e9a435661e8952586635ba345",
+              "version_timestamp": 1789833666021
+            },
+            "workflow_status": {
+              "app_version": "c794758e9a435661e8952586635ba345",
+              "application_name": "gate-0-3-db-version-compare",
+              "application_version": null,
+              "executor_id": "gate03-2311-313",
+              "name": "_run.<locals>.matrix_workflow",
+              "status": "SUCCESS",
+              "workflow_id": "eace658d-dc56-4f8c-aa48-c95e3c1ac78b"
+            }
+          },
+          "python": "3.13.0",
+          "python_implementation": "CPython",
+          "resolved_distributions": [
+            {
+              "name": "click",
+              "version": "8.5.0"
+            },
+            {
+              "name": "dbos",
+              "version": "2.31.1"
+            },
+            {
+              "name": "greenlet",
+              "version": "3.5.6"
+            },
+            {
+              "name": "psycopg",
+              "version": "3.3.6"
+            },
+            {
+              "name": "psycopg-binary",
+              "version": "3.3.6"
+            },
+            {
+              "name": "python-dateutil",
+              "version": "2.9.0.post0"
+            },
+            {
+              "name": "PyYAML",
+              "version": "6.0.3"
+            },
+            {
+              "name": "six",
+              "version": "1.17.0"
+            },
+            {
+              "name": "SQLAlchemy",
+              "version": "2.0.54"
+            },
+            {
+              "name": "typing_extensions",
+              "version": "4.16.0"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ],
+          "result_fingerprint": "b4a220b2b979be633dea109a69268d3239136efc3e56bb602673f0e24d114a52",
+          "runner_result_fingerprint": "63feda8847e50f1213ae29407ea0f8b6f466d5540b282092243f3f84afe5c168",
+          "source_fingerprint": {
+            "application_name": "gate-0-3-db-version-compare",
+            "source_file_sha256": "4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618",
+            "workflow_source_sha256": "75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478"
+          },
+          "status": "passed",
+          "system_database_endpoint": "postgresql://gate03@127.0.0.1:57431/gate03_dbos_2311_system",
+          "system_database_schema_and_migrations": {
+            "current_schema_before_dbos": "public",
+            "database": "gate03_dbos_2311_system",
+            "migration_and_schema_columns": [
+              {
+                "column": "version",
+                "table": "dbos_migrations"
+              }
+            ],
+            "migration_records": [
+              {
+                "version": "108"
+              }
+            ],
+            "requested_schema": "dbos_2311",
+            "schema_exists": true,
+            "search_path_before_dbos": "\"$user\", public",
+            "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+            "tables_after_launch": [
+              "application_versions",
+              "dbos_migrations",
+              "event_dispatch_kv",
+              "notifications",
+              "operation_outputs",
+              "queues",
+              "streams",
+              "workflow_events",
+              "workflow_events_history",
+              "workflow_schedules",
+              "workflow_status"
+            ],
+            "user": "gate03"
+          },
+          "system_schema": "dbos_2311",
+          "workflow": {
+            "input": "gate-0-3-version-fingerprint",
+            "result": "minimal:gate-0-3-version-fingerprint",
+            "workflow_id": "eace658d-dc56-4f8c-aa48-c95e3c1ac78b"
+          }
+        }
+      }
+    },
+    "dbos_3_0_0": {
+      "3.11": {
+        "command": {
+          "command": [
+            "uv",
+            "run",
+            "--isolated",
+            "--no-project",
+            "--python",
+            "3.11",
+            "--with",
+            "dbos==3.0.0",
+            "--with",
+            "psycopg[binary]",
+            "python",
+            "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+            "--system-database-url",
+            "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+            "--schema",
+            "dbos_300",
+            "--executor-id",
+            "gate03-300-311",
+            "--application-name",
+            "gate-0-3-db-version-compare"
+          ],
+          "returncode": 0,
+          "stderr": "19:01:08 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:08 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-311\n19:01:08 [    INFO] (dbos:_dbos.py:550) Application version: 469124d570d40494405ef8ad74749acb\n19:01:08 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:08 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:08 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 1\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 2\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 3\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 4\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 5\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 6\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 7\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 8\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 9\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 10\n19:01:08 [    INFO] (dbos:_migration.py:258) Migration 10 skipped, primary key already exists\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 11\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 12\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 13\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 14\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 15\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 16\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 17\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 18\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 19\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 20\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 21\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 22\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 23\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 24\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 25\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 26\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 27\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 28\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 29\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 30\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 31\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 32\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 33\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 34\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 35\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 36\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 37\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 38\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 39\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 40\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 41\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 42\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 43\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 44\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 45\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 46\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 47\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 100\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 101\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 102\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 103\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 104\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 105\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 106\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 107\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 108\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 109\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 110\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 111\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 112\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 113\n19:01:08 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 114\n19:01:08 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 469124d570d40494405ef8ad74749acb\n19:01:08 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:08 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:08 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:08 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:08 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+          "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-311\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"469124d570d40494405ef8ad74749acb\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"469124d570d40494405ef8ad74749acb\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-311\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833668623, \"version_id\": \"83a2d144-7b83-420a-953f-6e7a812bc486\", \"version_name\": \"469124d570d40494405ef8ad74749acb\", \"version_timestamp\": 1789833668623}, \"workflow_status\": {\"app_version\": \"469124d570d40494405ef8ad74749acb\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-311\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"5844a801-4ae9-4c2b-bcb4-f539d6f0d3c1\"}}, \"python\": \"3.11.11\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"cf0bc7524df37cefffe621fdcc724d0ab36085221a2de7510e439cbe01bed830\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"5844a801-4ae9-4c2b-bcb4-f539d6f0d3c1\"}}\n"
+        },
+        "worker": {
+          "application_name": "gate-0-3-db-version-compare",
+          "dbos_version": "3.0.0",
+          "executor_id": "gate03-300-311",
+          "helper_runtime": {
+            "helper_result_is_runtime_observation": false,
+            "note": "No helper variant was requested.",
+            "source_variant": null
+          },
+          "launch_runtime_application_version_fields": {
+            "DBOS_application_name": null,
+            "DBOS_application_version": "469124d570d40494405ef8ad74749acb",
+            "GlobalParams": {
+              "app_name": "gate-0-3-db-version-compare",
+              "app_version": "469124d570d40494405ef8ad74749acb",
+              "dbos_version": "3.0.0",
+              "executor_id": "gate03-300-311"
+            },
+            "config_application_version": null,
+            "config_name": "gate-0-3-db-version-compare",
+            "latest_application_version": {
+              "application_name": "gate-0-3-db-version-compare",
+              "created_at": 1789833668623,
+              "version_id": "83a2d144-7b83-420a-953f-6e7a812bc486",
+              "version_name": "469124d570d40494405ef8ad74749acb",
+              "version_timestamp": 1789833668623
+            },
+            "workflow_status": {
+              "app_version": "469124d570d40494405ef8ad74749acb",
+              "application_name": "gate-0-3-db-version-compare",
+              "application_version": null,
+              "executor_id": "gate03-300-311",
+              "name": "_run.<locals>.matrix_workflow",
+              "status": "SUCCESS",
+              "workflow_id": "5844a801-4ae9-4c2b-bcb4-f539d6f0d3c1"
+            }
+          },
+          "python": "3.11.11",
+          "python_implementation": "CPython",
+          "resolved_distributions": [
+            {
+              "name": "click",
+              "version": "8.5.0"
+            },
+            {
+              "name": "dbos",
+              "version": "3.0.0"
+            },
+            {
+              "name": "greenlet",
+              "version": "3.5.6"
+            },
+            {
+              "name": "psycopg",
+              "version": "3.3.6"
+            },
+            {
+              "name": "psycopg-binary",
+              "version": "3.3.6"
+            },
+            {
+              "name": "python-dateutil",
+              "version": "2.9.0.post0"
+            },
+            {
+              "name": "PyYAML",
+              "version": "6.0.3"
+            },
+            {
+              "name": "six",
+              "version": "1.17.0"
+            },
+            {
+              "name": "SQLAlchemy",
+              "version": "2.0.54"
+            },
+            {
+              "name": "typing_extensions",
+              "version": "4.16.0"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ],
+          "result_fingerprint": "cf0bc7524df37cefffe621fdcc724d0ab36085221a2de7510e439cbe01bed830",
+          "runner_result_fingerprint": "a3a6ec4e2abe37f3d09584cf1864427be5cc50ce10e02f66df6949dd9a63b5ba",
+          "source_fingerprint": {
+            "application_name": "gate-0-3-db-version-compare",
+            "source_file_sha256": "4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618",
+            "workflow_source_sha256": "75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478"
+          },
+          "status": "passed",
+          "system_database_endpoint": "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system",
+          "system_database_schema_and_migrations": {
+            "current_schema_before_dbos": "public",
+            "database": "gate03_dbos_300_system",
+            "migration_and_schema_columns": [
+              {
+                "column": "version",
+                "table": "dbos_migrations"
+              }
+            ],
+            "migration_records": [
+              {
+                "version": "114"
+              }
+            ],
+            "requested_schema": "dbos_300",
+            "schema_exists": true,
+            "search_path_before_dbos": "\"$user\", public",
+            "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+            "tables_after_launch": [
+              "application_versions",
+              "dbos_migrations",
+              "event_dispatch_kv",
+              "notifications",
+              "operation_outputs",
+              "queues",
+              "streams",
+              "workflow_events",
+              "workflow_events_history",
+              "workflow_input",
+              "workflow_output",
+              "workflow_schedules",
+              "workflow_status"
+            ],
+            "user": "gate03"
+          },
+          "system_schema": "dbos_300",
+          "workflow": {
+            "input": "gate-0-3-version-fingerprint",
+            "result": "minimal:gate-0-3-version-fingerprint",
+            "workflow_id": "5844a801-4ae9-4c2b-bcb4-f539d6f0d3c1"
+          }
+        }
+      },
+      "3.12": {
+        "command": {
+          "command": [
+            "uv",
+            "run",
+            "--isolated",
+            "--no-project",
+            "--python",
+            "3.12",
+            "--with",
+            "dbos==3.0.0",
+            "--with",
+            "psycopg[binary]",
+            "python",
+            "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+            "--system-database-url",
+            "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+            "--schema",
+            "dbos_300",
+            "--executor-id",
+            "gate03-300-312",
+            "--application-name",
+            "gate-0-3-db-version-compare"
+          ],
+          "returncode": 0,
+          "stderr": "19:01:09 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:09 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-312\n19:01:09 [    INFO] (dbos:_dbos.py:550) Application version: 469124d570d40494405ef8ad74749acb\n19:01:09 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:09 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:09 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:09 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 469124d570d40494405ef8ad74749acb\n19:01:09 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:09 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:09 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:09 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:09 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+          "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-312\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"469124d570d40494405ef8ad74749acb\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"469124d570d40494405ef8ad74749acb\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-312\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833668623, \"version_id\": \"83a2d144-7b83-420a-953f-6e7a812bc486\", \"version_name\": \"469124d570d40494405ef8ad74749acb\", \"version_timestamp\": 1789833668623}, \"workflow_status\": {\"app_version\": \"469124d570d40494405ef8ad74749acb\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-312\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"62908233-45ff-4141-b20b-b02676494460\"}}, \"python\": \"3.12.6\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"ac7e7b43876001349ebe815a9b54649d64a0ec9195c13f130ae7571a08e52de4\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"62908233-45ff-4141-b20b-b02676494460\"}}\n"
+        },
+        "worker": {
+          "application_name": "gate-0-3-db-version-compare",
+          "dbos_version": "3.0.0",
+          "executor_id": "gate03-300-312",
+          "helper_runtime": {
+            "helper_result_is_runtime_observation": false,
+            "note": "No helper variant was requested.",
+            "source_variant": null
+          },
+          "launch_runtime_application_version_fields": {
+            "DBOS_application_name": null,
+            "DBOS_application_version": "469124d570d40494405ef8ad74749acb",
+            "GlobalParams": {
+              "app_name": "gate-0-3-db-version-compare",
+              "app_version": "469124d570d40494405ef8ad74749acb",
+              "dbos_version": "3.0.0",
+              "executor_id": "gate03-300-312"
+            },
+            "config_application_version": null,
+            "config_name": "gate-0-3-db-version-compare",
+            "latest_application_version": {
+              "application_name": "gate-0-3-db-version-compare",
+              "created_at": 1789833668623,
+              "version_id": "83a2d144-7b83-420a-953f-6e7a812bc486",
+              "version_name": "469124d570d40494405ef8ad74749acb",
+              "version_timestamp": 1789833668623
+            },
+            "workflow_status": {
+              "app_version": "469124d570d40494405ef8ad74749acb",
+              "application_name": "gate-0-3-db-version-compare",
+              "application_version": null,
+              "executor_id": "gate03-300-312",
+              "name": "_run.<locals>.matrix_workflow",
+              "status": "SUCCESS",
+              "workflow_id": "62908233-45ff-4141-b20b-b02676494460"
+            }
+          },
+          "python": "3.12.6",
+          "python_implementation": "CPython",
+          "resolved_distributions": [
+            {
+              "name": "click",
+              "version": "8.5.0"
+            },
+            {
+              "name": "dbos",
+              "version": "3.0.0"
+            },
+            {
+              "name": "greenlet",
+              "version": "3.5.6"
+            },
+            {
+              "name": "psycopg",
+              "version": "3.3.6"
+            },
+            {
+              "name": "psycopg-binary",
+              "version": "3.3.6"
+            },
+            {
+              "name": "python-dateutil",
+              "version": "2.9.0.post0"
+            },
+            {
+              "name": "PyYAML",
+              "version": "6.0.3"
+            },
+            {
+              "name": "six",
+              "version": "1.17.0"
+            },
+            {
+              "name": "SQLAlchemy",
+              "version": "2.0.54"
+            },
+            {
+              "name": "typing_extensions",
+              "version": "4.16.0"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ],
+          "result_fingerprint": "ac7e7b43876001349ebe815a9b54649d64a0ec9195c13f130ae7571a08e52de4",
+          "runner_result_fingerprint": "c2c23ef8a5656f77defcf8964e8980ae98f1a754da78e03d0afd4aa1a0f73582",
+          "source_fingerprint": {
+            "application_name": "gate-0-3-db-version-compare",
+            "source_file_sha256": "4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618",
+            "workflow_source_sha256": "75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478"
+          },
+          "status": "passed",
+          "system_database_endpoint": "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system",
+          "system_database_schema_and_migrations": {
+            "current_schema_before_dbos": "public",
+            "database": "gate03_dbos_300_system",
+            "migration_and_schema_columns": [
+              {
+                "column": "version",
+                "table": "dbos_migrations"
+              }
+            ],
+            "migration_records": [
+              {
+                "version": "114"
+              }
+            ],
+            "requested_schema": "dbos_300",
+            "schema_exists": true,
+            "search_path_before_dbos": "\"$user\", public",
+            "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+            "tables_after_launch": [
+              "application_versions",
+              "dbos_migrations",
+              "event_dispatch_kv",
+              "notifications",
+              "operation_outputs",
+              "queues",
+              "streams",
+              "workflow_events",
+              "workflow_events_history",
+              "workflow_input",
+              "workflow_output",
+              "workflow_schedules",
+              "workflow_status"
+            ],
+            "user": "gate03"
+          },
+          "system_schema": "dbos_300",
+          "workflow": {
+            "input": "gate-0-3-version-fingerprint",
+            "result": "minimal:gate-0-3-version-fingerprint",
+            "workflow_id": "62908233-45ff-4141-b20b-b02676494460"
+          }
+        }
+      },
+      "3.13": {
+        "command": {
+          "command": [
+            "uv",
+            "run",
+            "--isolated",
+            "--no-project",
+            "--python",
+            "3.13",
+            "--with",
+            "dbos==3.0.0",
+            "--with",
+            "psycopg[binary]",
+            "python",
+            "/Users/av/Repositories/vikshana/graft-agent-harness/deployment/gate-0.3/runtime-version-worker.py",
+            "--system-database-url",
+            "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED]",
+            "--schema",
+            "dbos_300",
+            "--executor-id",
+            "gate03-300-313",
+            "--application-name",
+            "gate-0-3-db-version-compare"
+          ],
+          "returncode": 0,
+          "stderr": "19:01:09 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n19:01:09 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-300-313\n19:01:09 [    INFO] (dbos:_dbos.py:550) Application version: 469124d570d40494405ef8ad74749acb\n19:01:09 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-db-version-compare\n19:01:09 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system?password=[REDACTED] (schema: dbos_300)\n19:01:09 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n19:01:09 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 469124d570d40494405ef8ad74749acb\n19:01:09 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n19:01:09 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-db-version-compare\n19:01:09 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n19:01:09 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n19:01:09 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+          "stdout": "{\"application_name\": \"gate-0-3-db-version-compare\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\", \"helper_runtime\": {\"helper_result_is_runtime_observation\": false, \"note\": \"No helper variant was requested.\", \"source_variant\": null}, \"launch_runtime_application_version_fields\": {\"DBOS_application_name\": null, \"DBOS_application_version\": \"469124d570d40494405ef8ad74749acb\", \"GlobalParams\": {\"app_name\": \"gate-0-3-db-version-compare\", \"app_version\": \"469124d570d40494405ef8ad74749acb\", \"dbos_version\": \"3.0.0\", \"executor_id\": \"gate03-300-313\"}, \"config_application_version\": null, \"config_name\": \"gate-0-3-db-version-compare\", \"latest_application_version\": {\"application_name\": \"gate-0-3-db-version-compare\", \"created_at\": 1789833668623, \"version_id\": \"83a2d144-7b83-420a-953f-6e7a812bc486\", \"version_name\": \"469124d570d40494405ef8ad74749acb\", \"version_timestamp\": 1789833668623}, \"workflow_status\": {\"app_version\": \"469124d570d40494405ef8ad74749acb\", \"application_name\": \"gate-0-3-db-version-compare\", \"application_version\": null, \"executor_id\": \"gate03-300-313\", \"name\": \"_run.<locals>.matrix_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"45ec4586-170d-4d88-97b4-78107891c393\"}}, \"python\": \"3.13.0\", \"python_implementation\": \"CPython\", \"resolved_distributions\": [{\"name\": \"click\", \"version\": \"8.5.0\"}, {\"name\": \"dbos\", \"version\": \"3.0.0\"}, {\"name\": \"greenlet\", \"version\": \"3.5.6\"}, {\"name\": \"psycopg\", \"version\": \"3.3.6\"}, {\"name\": \"psycopg-binary\", \"version\": \"3.3.6\"}, {\"name\": \"python-dateutil\", \"version\": \"2.9.0.post0\"}, {\"name\": \"PyYAML\", \"version\": \"6.0.3\"}, {\"name\": \"six\", \"version\": \"1.17.0\"}, {\"name\": \"SQLAlchemy\", \"version\": \"2.0.54\"}, {\"name\": \"typing_extensions\", \"version\": \"4.16.0\"}, {\"name\": \"websockets\", \"version\": \"17.1\"}], \"result_fingerprint\": \"f99445fce29dda4f731f84ed8f7877591b3fd83494251d452104201bb94018c3\", \"source_fingerprint\": {\"application_name\": \"gate-0-3-db-version-compare\", \"source_file_sha256\": \"4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618\", \"workflow_source_sha256\": \"75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478\"}, \"status\": \"passed\", \"system_database_endpoint\": \"postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system\", \"system_database_schema_and_migrations\": {\"current_schema_before_dbos\": \"public\", \"database\": \"gate03_dbos_300_system\", \"migration_and_schema_columns\": [{\"column\": \"version\", \"table\": \"dbos_migrations\"}], \"migration_records\": [{\"version\": \"114\"}], \"requested_schema\": \"dbos_300\", \"schema_exists\": true, \"search_path_before_dbos\": \"\\\"$user\\\", public\", \"server_version\": \"PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\", \"tables_after_launch\": [\"application_versions\", \"dbos_migrations\", \"event_dispatch_kv\", \"notifications\", \"operation_outputs\", \"queues\", \"streams\", \"workflow_events\", \"workflow_events_history\", \"workflow_input\", \"workflow_output\", \"workflow_schedules\", \"workflow_status\"], \"user\": \"gate03\"}, \"system_schema\": \"dbos_300\", \"workflow\": {\"input\": \"gate-0-3-version-fingerprint\", \"result\": \"minimal:gate-0-3-version-fingerprint\", \"workflow_id\": \"45ec4586-170d-4d88-97b4-78107891c393\"}}\n"
+        },
+        "worker": {
+          "application_name": "gate-0-3-db-version-compare",
+          "dbos_version": "3.0.0",
+          "executor_id": "gate03-300-313",
+          "helper_runtime": {
+            "helper_result_is_runtime_observation": false,
+            "note": "No helper variant was requested.",
+            "source_variant": null
+          },
+          "launch_runtime_application_version_fields": {
+            "DBOS_application_name": null,
+            "DBOS_application_version": "469124d570d40494405ef8ad74749acb",
+            "GlobalParams": {
+              "app_name": "gate-0-3-db-version-compare",
+              "app_version": "469124d570d40494405ef8ad74749acb",
+              "dbos_version": "3.0.0",
+              "executor_id": "gate03-300-313"
+            },
+            "config_application_version": null,
+            "config_name": "gate-0-3-db-version-compare",
+            "latest_application_version": {
+              "application_name": "gate-0-3-db-version-compare",
+              "created_at": 1789833668623,
+              "version_id": "83a2d144-7b83-420a-953f-6e7a812bc486",
+              "version_name": "469124d570d40494405ef8ad74749acb",
+              "version_timestamp": 1789833668623
+            },
+            "workflow_status": {
+              "app_version": "469124d570d40494405ef8ad74749acb",
+              "application_name": "gate-0-3-db-version-compare",
+              "application_version": null,
+              "executor_id": "gate03-300-313",
+              "name": "_run.<locals>.matrix_workflow",
+              "status": "SUCCESS",
+              "workflow_id": "45ec4586-170d-4d88-97b4-78107891c393"
+            }
+          },
+          "python": "3.13.0",
+          "python_implementation": "CPython",
+          "resolved_distributions": [
+            {
+              "name": "click",
+              "version": "8.5.0"
+            },
+            {
+              "name": "dbos",
+              "version": "3.0.0"
+            },
+            {
+              "name": "greenlet",
+              "version": "3.5.6"
+            },
+            {
+              "name": "psycopg",
+              "version": "3.3.6"
+            },
+            {
+              "name": "psycopg-binary",
+              "version": "3.3.6"
+            },
+            {
+              "name": "python-dateutil",
+              "version": "2.9.0.post0"
+            },
+            {
+              "name": "PyYAML",
+              "version": "6.0.3"
+            },
+            {
+              "name": "six",
+              "version": "1.17.0"
+            },
+            {
+              "name": "SQLAlchemy",
+              "version": "2.0.54"
+            },
+            {
+              "name": "typing_extensions",
+              "version": "4.16.0"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ],
+          "result_fingerprint": "f99445fce29dda4f731f84ed8f7877591b3fd83494251d452104201bb94018c3",
+          "runner_result_fingerprint": "496bb2bfeec77a688b191c98a368762b2f2837d985480a2978b788511bcb1dfc",
+          "source_fingerprint": {
+            "application_name": "gate-0-3-db-version-compare",
+            "source_file_sha256": "4e04576f70f45efd8d1e0007ae74d310ade757d020e2aa80e982e496cee7f618",
+            "workflow_source_sha256": "75a4622f4301c3bcff49891a4678a592bb37cc25f46dbfd7c394044ac8882478"
+          },
+          "status": "passed",
+          "system_database_endpoint": "postgresql://gate03@127.0.0.1:57430/gate03_dbos_300_system",
+          "system_database_schema_and_migrations": {
+            "current_schema_before_dbos": "public",
+            "database": "gate03_dbos_300_system",
+            "migration_and_schema_columns": [
+              {
+                "column": "version",
+                "table": "dbos_migrations"
+              }
+            ],
+            "migration_records": [
+              {
+                "version": "114"
+              }
+            ],
+            "requested_schema": "dbos_300",
+            "schema_exists": true,
+            "search_path_before_dbos": "\"$user\", public",
+            "server_version": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+            "tables_after_launch": [
+              "application_versions",
+              "dbos_migrations",
+              "event_dispatch_kv",
+              "notifications",
+              "operation_outputs",
+              "queues",
+              "streams",
+              "workflow_events",
+              "workflow_events_history",
+              "workflow_input",
+              "workflow_output",
+              "workflow_schedules",
+              "workflow_status"
+            ],
+            "user": "gate03"
+          },
+          "system_schema": "dbos_300",
+          "workflow": {
+            "input": "gate-0-3-version-fingerprint",
+            "result": "minimal:gate-0-3-version-fingerprint",
+            "workflow_id": "45ec4586-170d-4d88-97b4-78107891c393"
+          }
+        }
+      }
+    }
+  }
+}

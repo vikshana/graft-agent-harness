@@ -1,0 +1,36 @@
+services:
+  dbos-2311-system:
+    image: postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94
+    environment:
+      POSTGRES_DB: ${G03_DBOS_2311_SYSTEM_DB:?run the runner prepare command first}
+      POSTGRES_USER: ${G03_DB_USER:?run the runner prepare command first}
+      POSTGRES_PASSWORD: ${G03_DB_PASSWORD:?run the runner prepare command first}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gate03 -d ${G03_DBOS_2311_SYSTEM_DB}"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    ports:
+      - "57431:5432"
+    volumes:
+      - gate03_dbos_2311_system_data:/var/lib/postgresql/data
+
+  dbos-300-system:
+    image: postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94
+    environment:
+      POSTGRES_DB: ${G03_DBOS_300_SYSTEM_DB:?run the runner prepare command first}
+      POSTGRES_USER: ${G03_DB_USER:?run the runner prepare command first}
+      POSTGRES_PASSWORD: ${G03_DB_PASSWORD:?run the runner prepare command first}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gate03 -d ${G03_DBOS_300_SYSTEM_DB}"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    ports:
+      - "57430:5432"
+    volumes:
+      - gate03_dbos_300_system_data:/var/lib/postgresql/data
+
+volumes:
+  gate03_dbos_2311_system_data:
+  gate03_dbos_300_system_data:
