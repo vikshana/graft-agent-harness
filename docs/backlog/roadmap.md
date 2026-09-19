@@ -1,13 +1,14 @@
 # Delivery roadmap
 
 > **Status: 🟡 Proposed.** Rewritten 2026-09-13 and updated 2026-09-19 against
-> ADR-0001–ADR-0077.
+> ADR-0001–ADR-0078.
 > Supersedes the pre-decision phase plan (in git history only).
 >
 > Phases 1–4 together deliver **v1**. Phase 5 is post-v1.
 > The original Phase 1 decision gates are closed — see section 6. Gate 0.3
-> safety follow-ups remain prerequisites for Gate 1; ADR-0077 is accepted, but
-> the required recovery, effect, and operational evidence remains outstanding.
+> safety follow-ups remain prerequisites for Gate 1; ADR-0077 is accepted and
+> ADR-0078 is proposed pending owner acceptance. The required recovery, effect,
+> and operational evidence remains outstanding.
 
 ---
 
@@ -85,21 +86,29 @@ ADR-0074 (eval sink) · ADR-0075 (organisation-policy model selection; routing d
 **Gate 0.3 safety follow-ups:** [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md)
 records the owner-selected at-least-once recovery model but remains proposed
 pending the required recovery matrix and Phase 1 external-effect inventory
-tests. [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md)
+tests. Proposed [ADR-0078](../adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md)
+records the selected Phase 1 scope change: no automatic cross-executor recovery;
+only a returning matching executor identity and explicit released compatibility
+revision may restart a Run automatically, while ambiguous or stuck Runs are
+operator-escalated. This proposal is pending formal owner acceptance and does
+not claim Gate 0.3 or Phase 1 completion. [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md)
 is accepted and supersedes ADR-0046: it requires an explicit released
 application compatibility revision for every mutually versioned release and
 draining every prior release cohort. ADR-0077 acceptance does not claim the
 required operational drain evidence. These follow-ups do not change the
-accepted Phase 1 scope. Gate 0.3 remains unresolved and Gate 1 remains blocked
-by outstanding recovery and effect evidence.
+accepted Phase 1 scope until ADR-0078 is accepted. Gate 0.3 remains unresolved
+and Gate 1 remains blocked by outstanding recovery and effect evidence.
 
 **Explicitly deferred:** every write path, approval, Slack, run sharing and the driver model, Schedules, second region,
 blue/green and its all-release drain policy, quota ceilings, PAN scrubbing.
 
 **Exit criteria**
 
-- A webhook-triggered run produces a narrated finding in the Grafana plugin with token-level streaming, and survives a
-  worker kill mid-run (resumes, no duplicate tool calls).
+- A webhook-triggered Run produces a narrated finding in the Grafana plugin with
+  token-level streaming. A worker kill resumes automatically only when the same
+  executor identity returns with the matching released compatibility revision;
+  an ambiguous or stuck Run is operator-escalated, and no cross-executor
+  automatic recovery is claimed pending ADR-0078 acceptance.
 - Every tool call is a DBOS step; `list_workflow_steps()` returns a readable trajectory.
 - RLS proven: a query under Tenant A's GUC cannot see Tenant B's rows, including through a transaction-mode pooler.
 - Zero direct clients to customer systems (assert in CI by dependency rule).
@@ -198,7 +207,7 @@ ADR-0074, and S4 by ADR-0075. The remaining items are later-phase sessions with 
 | **S7** | HITL & write-action model; two-person rule                              | **Phase 3**     | Re-openable now that ADR-0055 is superseded                                                                                                                                                             |        |
 | **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                        |        |
 | **S9** | Tenant Directory substrate                                              | **Phase 4**     | Single region until then                                                                                                                                                                                |        |
-| **Gate 0.3 safety follow-ups** | [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) — **proposed**; [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) — **accepted** | **Gate 1** | The owner selected ADR-0076's at-least-once recovery model. Acceptance still requires the recovery barrier/partition matrix, concurrent-resume and crash cases, and the Phase 1 external-effect inventory with receiving-boundary idempotency or operator-escalation classifications. The owner accepted ADR-0077 on 2026-09-19; its operational drain evidence remains outstanding. Gate 0.3 remains unresolved and Gate 1 remains blocked by outstanding recovery and effect evidence; this does not claim completion or alter other phase commitments. | evidence and owner decision |
+| **Gate 0.3 safety follow-ups** | [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) — **proposed**; [ADR-0078](../adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md) — **proposed, pending owner acceptance**; [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) — **accepted** | **Gate 1** | The owner selected ADR-0076's at-least-once model and the no-cross-executor Phase 1 scope recorded by proposed ADR-0078. Phase 1 automatic recovery is limited to a returning matching executor identity and explicit released compatibility revision; ambiguous or stuck Runs require operator escalation. Acceptance still requires ADR-0078 owner acceptance, matching-identity negative tests, operator-escalation evidence, the recovery barrier/partition matrix, concurrent-resume and crash cases, and the Phase 1 external-effect inventory with receiving-boundary idempotency or operator-escalation classifications. The owner accepted ADR-0077 on 2026-09-19; its operational drain evidence remains outstanding. Gate 0.3 remains unresolved and Gate 1 remains blocked by outstanding recovery and effect evidence; this does not claim completion or alter other phase commitments. | evidence and owner decision |
 
 **S2 is closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).** Its findings
 determine the Phase 1 topology, RLS boundary and PCI treatment. **S3 is closed

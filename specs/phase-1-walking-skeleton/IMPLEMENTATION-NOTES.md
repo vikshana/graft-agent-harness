@@ -8,6 +8,27 @@
 
 Added a runnable, dependency-light API contract/provider core for the Phase 1 walking skeleton. It models private read-only Runs, ordered replayable events, idempotent webhook creation, cancellation boundaries, capability-token validation, curated Tool Gateway calls, and a WSGI HTTP adapter while leaving production DBOS, PostgreSQL, MCP, telemetry, and surface transport integrations behind explicit seams.
 
+## Proposed Gate 0.3 Recovery Scope Change
+
+> **Date:** 2026-09-19
+
+Proposed [ADR-0078](../../docs/adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md)
+records the owner-selected scope change after Gate 0.3: Phase 1 does not
+automatically recover a Run across executor identities. Automatic restart
+recovery is limited to a returning matching executor identity and the explicit
+released application compatibility revision recorded for the Run. Ambiguous,
+alive-but-silent, or stuck Runs are durably recorded and escalated to an
+operator. This is a proposed, pending-owner-acceptance change, not a Phase 1
+completion claim.
+
+The accepted trade is explicit: Phase 1 no longer claims recovery after a
+worker loss unless the same executor identity returns. Conductor and Temporal
+are not selected. The retained Gate 0.3 evidence and the Temporal comparison
+spike remain raw historical evidence; neither is rewritten or treated as proof
+of a cross-executor recovery fence. Proposed ADR-0076's at-least-once and
+receiving-boundary idempotency requirements remain applicable inside the
+narrower matching-identity boundary.
+
 ## Deviations from the Plan
 
 The plan was auto-generated because no `PLAN.md` existed and was not reviewed by a human. The first implementation deliberately uses an in-memory repository and deterministic model double because the repository has no application package or dependency configuration yet.
