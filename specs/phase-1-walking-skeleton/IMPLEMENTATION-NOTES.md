@@ -864,3 +864,8 @@ already SHA-pinned `actions/checkout`, `actions/setup-python`, and
 repository policy to permit GitHub-created actions while retaining full-commit
 SHA pinning. The failed run cannot be retried, so Task 1 remains unchecked until
 a fresh Python-quality run provides retained evidence.
+
+The subsequent Python 3.11–3.13 matrix passed for the initial contract commit.
+Final compatibility and pointer-policy repairs followed that commit, so the
+Task 1 checkbox remains unchecked until a fresh matrix validates the final
+contract state.
