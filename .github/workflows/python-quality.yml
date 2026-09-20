@@ -10,6 +10,10 @@ on:
       - "AGENTS.md"
       - "scripts/**"
       - "contracts/**"
+      - "authority/**"
+      - "harness/authority_client.py"
+      - "harness/run_initiation.py"
+      - "scripts/check_authority_contracts.py"
       - "harness/contracts.py"
       - "harness/http_api.py"
       - "harness/service.py"
@@ -29,6 +33,10 @@ on:
       - "AGENTS.md"
       - "scripts/**"
       - "contracts/**"
+      - "authority/**"
+      - "harness/authority_client.py"
+      - "harness/run_initiation.py"
+      - "scripts/check_authority_contracts.py"
       - "harness/contracts.py"
       - "harness/http_api.py"
       - "harness/service.py"
@@ -79,6 +87,9 @@ jobs:
 
       - name: Contract artefact check
         run: uv run python scripts/check_contracts.py
+
+      - name: Authority contract check
+        run: uv run python scripts/check_authority_contracts.py
 
       - name: Step-pointer architecture check
         run: uv run python scripts/check_step_pointer_rule.py harness

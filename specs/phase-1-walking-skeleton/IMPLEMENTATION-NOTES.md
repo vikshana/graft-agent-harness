@@ -1004,3 +1004,15 @@ architectural decision, but every required guarantee and test remains
 outstanding until the implementation and release work produces the specified
 evidence. Task 2 implementation/evidence remains pending and parent
 validation owns the Gate 1 decision.
+
+## Gate 1 Task 2 — bounded pre-PostgreSQL authority protocol slice
+
+> **Date:** 2026-09-20
+
+Implemented the bounded follow-on slice under accepted [ADR-0079](../../docs/adr/identity/0079-internal-surface-credential-resolution-uses-mtls-and-typed-decisions.md), without changing the existing HTTP API, service, store or security reference modules, ADRs, design/specification/plan files, or migrations. The new `authority/` package contains the strict closed v1 protocol model, canonical normalised webhook fingerprint, configurable deterministic `SurfaceVerifier`, test-only Token Service, redacted test-only audit intent recorder, and standard-library loopback mTLS integration server. `harness/authority_client.py` and `harness/run_initiation.py` implement the first raw-credential allow/deny call, Harness-owned immutable `new`/`existing`/`conflict` replay binding, TTL, fresh second verification comparison, and exact `graft_run_id` capability mint exchange.
+
+The capability issuer is explicitly labelled **test-only opaque token service**. It has no signing key, JWKS, or signing isolation reachable from Harness code and does not claim Task 5. The repository is an in-memory test double only; PostgreSQL durable replay/RLS/audit Tasks 3/4 remain pending. The audit recorder stores redacted intent only and is not durable audit evidence. No Tool Gateway or Tool Registry was added.
+
+Added `contracts/authority-internal-v1.openapi.json` and `scripts/check_authority_contracts.py` for the closed two-call mTLS contract. The tests generate ephemeral certificates in temporary directories and cover valid peer, missing/untrusted/expired TLS failure without an application response, valid TLS wrong-peer typed denial, bearer/plain HTTP rejection, exact whitespace/Unicode credential repeat, no credential leakage in responses or test audit intent, order-independent and semantic webhook fingerprints, replay taxonomy, changed valid identity conflict, TTL expiry, and mint retry without a second Run.
+
+Local bounded validation passed for the new authority/harness tests (11 selected tests), authority contract check, Ruff formatting/linting and lock consistency. The parent validation owner must run the full repository quality suite and must not check Gate 1 Task 2: PostgreSQL durable replay/RLS/audit Tasks 3/4 and production signing/JWKS isolation remain outstanding.

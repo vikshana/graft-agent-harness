@@ -1,0 +1,86 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Graft internal Authority Service protocol",
+    "version": "v1",
+    "description": "Closed two-call mTLS protocol. This artefact covers the test-only Gate 1 Task 2 slice; it is not Task 5 JWKS/signing evidence."
+  },
+  "x-graft-test-only-boundary": "No PostgreSQL replay/RLS/audit and no production signing/JWKS isolation claim.",
+  "servers": [{"url": "https://authority.internal"}],
+  "security": [{"mutualTLS": []}],
+  "paths": {
+    "/internal/authority/v1/surface-resolution": {
+      "post": {
+        "operationId": "resolveSurfaceCredential",
+        "security": [{"mutualTLS": []}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SurfaceResolutionRequest"}}}},
+        "responses": {
+          "200": {"description": "Typed allow or deny", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SurfaceResolutionResponse"}}}},
+          "400": {"description": "Closed contract violation", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProtocolError"}}}}
+        }
+      }
+    },
+    "/internal/authority/v1/run-capability-mint": {
+      "post": {
+        "operationId": "mintRunCapability",
+        "security": [{"mutualTLS": []}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RunCapabilityMintRequest"}}}},
+        "responses": {
+          "200": {"description": "Typed allow or deny", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RunCapabilityMintResponse"}}}},
+          "400": {"description": "Closed contract violation", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProtocolError"}}}}
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {"mutualTLS": {"type": "mutualTLS", "description": "TLS client certificate; no bearer or plain HTTP fallback."}},
+    "schemas": {
+      "WebhookEnvelope": {
+        "type": "object", "additionalProperties": false,
+        "required": ["graft_envelope_version", "graft_source", "graft_event", "graft_delivery", "graft_alert"],
+        "properties": {
+          "graft_envelope_version": {"const": "v1"},
+          "graft_source": {"$ref": "#/components/schemas/Source"},
+          "graft_event": {"$ref": "#/components/schemas/Event"},
+          "graft_delivery": {"$ref": "#/components/schemas/Delivery"},
+          "graft_alert": {"$ref": "#/components/schemas/Alert"}
+        }
+      },
+      "Source": {"type": "object", "additionalProperties": false, "required": ["graft_source_ref", "graft_source_type"], "properties": {"graft_source_ref": {"type": "string", "minLength": 1}, "graft_source_type": {"type": "string", "minLength": 1}}},
+      "Event": {"type": "object", "additionalProperties": false, "required": ["graft_event_ref", "graft_event_type"], "properties": {"graft_event_ref": {"type": "string", "minLength": 1}, "graft_event_type": {"type": "string", "minLength": 1}}},
+      "Delivery": {"type": "object", "additionalProperties": false, "required": ["graft_delivery_ref", "graft_delivery_sequence"], "properties": {"graft_delivery_ref": {"type": "string", "minLength": 1}, "graft_delivery_sequence": {"type": ["string", "null"]}}},
+      "Alert": {"type": "object", "additionalProperties": false, "required": ["graft_alert_name", "graft_alert_status", "graft_alert_labels", "graft_alert_annotations"], "properties": {"graft_alert_name": {"type": "string", "minLength": 1}, "graft_alert_status": {"type": "string", "minLength": 1}, "graft_alert_labels": {"type": "object", "additionalProperties": true}, "graft_alert_annotations": {"type": "object", "additionalProperties": true}}},
+      "VerifiedIdentity": {
+        "type": "object", "additionalProperties": false,
+        "required": ["graft_principal_id", "graft_tenant_id", "graft_role_ids", "graft_initiation_mode", "graft_service_identity", "graft_audit_actor"],
+        "properties": {
+          "graft_principal_id": {"type": ["string", "null"]}, "graft_tenant_id": {"type": "string", "minLength": 1}, "graft_role_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1}, "graft_initiation_mode": {"enum": ["user_initiated", "system_initiated"]}, "graft_service_identity": {"type": "string", "minLength": 1}, "graft_audit_actor": {"$ref": "#/components/schemas/AuditActor"}
+        }
+      },
+      "AuditActor": {
+        "type": "object", "additionalProperties": false,
+        "required": ["graft_principal_id", "graft_tenant_id", "graft_role_ids", "graft_surface", "graft_initiation_mode", "graft_trust_mode"],
+        "properties": {"graft_principal_id": {"type": ["string", "null"]}, "graft_tenant_id": {"type": "string", "minLength": 1}, "graft_role_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1}, "graft_surface": {"type": "string", "minLength": 1}, "graft_initiation_mode": {"enum": ["user_initiated", "system_initiated"]}, "graft_trust_mode": {"type": "string", "minLength": 1}}
+      },
+      "RequestBase": {
+        "type": "object", "additionalProperties": false,
+        "required": ["graft_authority_schema_version", "graft_surface", "graft_surface_credential", "graft_request_correlation_id"],
+        "properties": {"graft_authority_schema_version": {"const": "v1"}, "graft_surface": {"enum": ["grafana", "slack", "webhook", "schedule", "api"]}, "graft_surface_credential": {"type": "string", "minLength": 1}, "graft_webhook_envelope": {"oneOf": [{"$ref": "#/components/schemas/WebhookEnvelope"}, {"type": "null"}]}, "graft_request_correlation_id": {"type": "string", "minLength": 1}}
+      },
+      "SurfaceResolutionRequest": {"allOf": [{"$ref": "#/components/schemas/RequestBase"}], "description": "The webhook envelope is required exactly when graft_surface is webhook and caller identity fields are forbidden."},
+      "RunCapabilityMintRequest": {
+        "type": "object", "additionalProperties": false,
+        "required": ["graft_authority_schema_version", "graft_surface", "graft_surface_credential", "graft_run_id", "graft_first_resolution", "graft_request_correlation_id"],
+        "properties": {"graft_authority_schema_version": {"const": "v1"}, "graft_surface": {"enum": ["grafana", "slack", "webhook", "schedule", "api"]}, "graft_surface_credential": {"type": "string", "minLength": 1}, "graft_webhook_envelope": {"oneOf": [{"$ref": "#/components/schemas/WebhookEnvelope"}, {"type": "null"}]}, "graft_run_id": {"type": "string", "pattern": "^graft_run_[A-Za-z0-9_-]+$"}, "graft_first_resolution": {"$ref": "#/components/schemas/FirstResolution"}, "graft_request_correlation_id": {"type": "string", "minLength": 1}}
+      },
+      "FirstResolution": {"type": "object", "additionalProperties": false, "required": ["graft_resolution_expires_at", "graft_verifier_revision", "graft_event_fingerprint"], "properties": {"graft_resolution_expires_at": {"type": "string", "format": "date-time"}, "graft_verifier_revision": {"type": "string", "minLength": 1}, "graft_event_fingerprint": {"type": ["string", "null"], "pattern": "^sha256:"}}},
+      "ResolutionAllow": {"type": "object", "additionalProperties": false, "required": ["graft_authority_schema_version", "graft_decision", "graft_verified_identity", "graft_event_fingerprint", "graft_resolution_expires_at", "graft_verifier_revision", "graft_request_correlation_id"], "properties": {"graft_authority_schema_version": {"const": "v1"}, "graft_decision": {"const": "allow"}, "graft_verified_identity": {"$ref": "#/components/schemas/VerifiedIdentity"}, "graft_event_fingerprint": {"type": ["string", "null"]}, "graft_resolution_expires_at": {"type": "string", "format": "date-time"}, "graft_verifier_revision": {"type": "string"}, "graft_request_correlation_id": {"type": "string"}}},
+      "ResolutionDeny": {"type": "object", "additionalProperties": false, "required": ["graft_authority_schema_version", "graft_decision", "graft_deny_code", "graft_request_correlation_id"], "properties": {"graft_authority_schema_version": {"const": "v1"}, "graft_decision": {"const": "deny"}, "graft_deny_code": {"type": "string"}, "graft_request_correlation_id": {"type": "string"}}},
+      "SurfaceResolutionResponse": {"oneOf": [{"$ref": "#/components/schemas/ResolutionAllow"}, {"$ref": "#/components/schemas/ResolutionDeny"}]},
+      "MintAllow": {"type": "object", "additionalProperties": false, "required": ["graft_authority_schema_version", "graft_mint_decision", "graft_verified_identity", "graft_event_fingerprint", "graft_run_id", "graft_capability_token", "graft_request_correlation_id"], "properties": {"graft_authority_schema_version": {"const": "v1"}, "graft_mint_decision": {"const": "allow"}, "graft_verified_identity": {"$ref": "#/components/schemas/VerifiedIdentity"}, "graft_event_fingerprint": {"type": ["string", "null"]}, "graft_run_id": {"type": "string"}, "graft_capability_token": {"type": "string", "minLength": 1}, "graft_request_correlation_id": {"type": "string"}}},
+      "MintDeny": {"type": "object", "additionalProperties": false, "required": ["graft_authority_schema_version", "graft_mint_decision", "graft_deny_code", "graft_request_correlation_id"], "properties": {"graft_authority_schema_version": {"const": "v1"}, "graft_mint_decision": {"const": "deny"}, "graft_deny_code": {"type": "string"}, "graft_request_correlation_id": {"type": "string"}}},
+      "RunCapabilityMintResponse": {"oneOf": [{"$ref": "#/components/schemas/MintAllow"}, {"$ref": "#/components/schemas/MintDeny"}]},
+      "ProtocolError": {"type": "object", "additionalProperties": false, "required": ["graft_error"], "properties": {"graft_error": {"const": "contract_violation"}}}
+    }
+  }
+}

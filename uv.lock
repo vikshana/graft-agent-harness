@@ -379,6 +379,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "cryptography" },
     { name = "mypy" },
     { name = "pip-audit" },
     { name = "pip-licenses" },
@@ -400,6 +401,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "cryptography", specifier = ">=50,<51" },
     { name = "mypy", specifier = ">=2.3,<3" },
     { name = "pip-audit", specifier = ">=2,<3" },
     { name = "pip-licenses", specifier = ">=5,<6" },
