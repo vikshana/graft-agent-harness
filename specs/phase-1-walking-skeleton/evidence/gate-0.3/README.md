@@ -84,17 +84,20 @@ recorded, but the public DBOS resume API cannot safely enforce expected
 executor/application-revision selection. It therefore remains reduced fidelity
 and does not claim accepted ADR-0077 operational evidence.
 
-The CI job intentionally fails on this `REDUCED_FIDELITY` Test 2 result. The
-local evidence therefore records the exact remaining blocker rather than
-claiming a Gate 0.3 pass.
+The accepted-scope CI job does not execute the reduced-fidelity Test 2 or Test
+3 lanes. It runs the four accepted reports under `evidence/dbos/`, retains
+both evidence directories, and keeps this historical reduced-fidelity output
+as metadata rather than treating it as accepted recovery evidence.
 
-Test 3 is `PASS_WITH_ADR_0077_MITIGATION` for version-policy purposes: its
-reduced-fidelity helper/dependency observations are retained, but accepted
-ADR-0077 supplies the explicit released compatibility-revision and drain
-mitigation. The report is not treated as proof of the automatic hash policy.
+Test 3 is diagnostic-only for version-policy purposes:
+its reduced-fidelity helper/dependency observations are retained, but accepted
+ADR-0077 supplies the explicit released compatibility revision, all-prior
+cohort drain, orphan alert, and reverse-drain policy. The report is not
+treated as proof of an automatic hash compatibility boundary.
 
-Gate 0.3 remains not closed; the bounded lane does not change Gate 0.3 or
-ADR-0076 status. The current evidence is:
+The accepted Gate 0.3 reports are closed for their bounded synthetic scope.
+They do not claim production completion or real customer-system support. The
+current evidence is:
 
 | Required test | Status |
 |---|---|

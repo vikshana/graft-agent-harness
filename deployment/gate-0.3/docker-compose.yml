@@ -3,10 +3,10 @@ services:
     image: postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94
     environment:
       POSTGRES_DB: ${G03_APP_DB:?run the runner prepare command first}
-      POSTGRES_USER: ${G03_DB_USER:?run the runner prepare command first}
+      POSTGRES_USER: gate03_bootstrap
       POSTGRES_PASSWORD: ${G03_DB_PASSWORD:?run the runner prepare command first}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gate03 -d gate03_app"]
+      test: ["CMD-SHELL", "pg_isready -U gate03_bootstrap -d gate03_app"]
       interval: 1s
       timeout: 3s
       retries: 30
@@ -14,6 +14,7 @@ services:
       - "55432:5432"
     volumes:
       - gate03_app_data:/var/lib/postgresql/data
+      - ./app-postgres-init.sql:/docker-entrypoint-initdb.d/10-gate03-app-role.sql:ro
     networks:
       - gate03-app
 

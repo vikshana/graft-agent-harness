@@ -1,0 +1,454 @@
+{
+  "accepted_decision": "ADR-0078",
+  "actual": {
+    "application_name": "gate-0-3-accepted-recovery",
+    "assertions": {
+      "graft_explicit_compatibility_revision": true,
+      "graft_immutable_revision_conflict_rejected": true,
+      "graft_matching_executor_revision_restart_succeeded": true,
+      "graft_wrong_revision_rejected_before_resume": true,
+      "typed_durable_escalation_recorded": true,
+      "wrong_executor_rejected_before_resume": true
+    },
+    "commands": {
+      "immutable_metadata_conflict": {
+        "command": [
+          "uv",
+          "run",
+          "--locked",
+          "--python",
+          "3.13.0",
+          "python",
+          "deployment/gate-0.3/accepted_recovery.py",
+          "worker",
+          "--mode",
+          "metadata-conflict",
+          "--workflow-id",
+          "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+          "--graft-tenant-id",
+          "graft-tenant-a",
+          "--executor-id",
+          "gate03-accepted-executor-a",
+          "--application-revision",
+          "gate03-accepted-revision-wrong"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"error\": \"immutable application revision conflict: stored='gate03-accepted-revision-2026-09-20' requested='gate03-accepted-revision-wrong'\", \"graft_event\": \"immutable_metadata_conflict\", \"graft_rejected_application_revision\": \"gate03-accepted-revision-wrong\", \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\", \"rejected\": true}\n"
+      },
+      "matching_executor_revision_restart": {
+        "command": [
+          "uv",
+          "run",
+          "--locked",
+          "--python",
+          "3.13.0",
+          "python",
+          "deployment/gate-0.3/accepted_recovery.py",
+          "worker",
+          "--mode",
+          "recover",
+          "--workflow-id",
+          "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+          "--graft-tenant-id",
+          "graft-tenant-a",
+          "--executor-id",
+          "gate03-accepted-executor-a",
+          "--application-revision",
+          "gate03-accepted-revision-2026-09-20"
+        ],
+        "returncode": 0,
+        "stderr": "10:30:20 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n10:30:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n10:30:20 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-accepted-executor-a\n10:30:20 [    INFO] (dbos:_dbos.py:550) Application version: gate03-accepted-revision-2026-09-20\n10:30:20 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-accepted-recovery\n10:30:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n10:30:20 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-accepted-revision-2026-09-20\n10:30:20 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n10:30:20 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-accepted-recovery\n10:30:20 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n10:30:22 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n10:30:23 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+        "stdout": "{\"graft_automatic_resume_via_accepted_runtime\": true, \"graft_event\": \"matching_executor_restart\", \"graft_recovery_entry_point\": \"accepted_runtime_recovery\", \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_requested_executor_id\": \"gate03-accepted-executor-a\", \"graft_resume_invoked\": true, \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\", \"status\": {\"app_version\": \"gate03-accepted-revision-2026-09-20\", \"application_name\": \"gate-0-3-accepted-recovery\", \"application_version\": null, \"executor_id\": \"gate03-accepted-executor-a\", \"name\": \"accepted_workflow\", \"status\": \"SUCCESS\", \"workflow_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"}}\n"
+      },
+      "operator_escalations": {
+        "alive-but-silent": {
+          "command": [
+            "uv",
+            "run",
+            "--locked",
+            "--python",
+            "3.13.0",
+            "python",
+            "deployment/gate-0.3/accepted_recovery.py",
+            "worker",
+            "--mode",
+            "escalate",
+            "--workflow-id",
+            "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+            "--graft-tenant-id",
+            "graft-tenant-a",
+            "--executor-id",
+            "gate03-accepted-executor-a",
+            "--application-revision",
+            "gate03-accepted-revision-2026-09-20",
+            "--escalation-state",
+            "alive-but-silent"
+          ],
+          "returncode": 0,
+          "stderr": "10:30:19 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n10:30:19 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:19 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n",
+          "stdout": "{\"graft_durable_escalation\": {\"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:ALIVE_BUT_SILENT:0c6269caa0d593f8\", \"graft_executor_id\": \"gate03-accepted-executor-a\", \"graft_reason\": \"accepted runtime observed alive-but-silent\", \"graft_recorded_at\": \"2026-09-20 07:30:19.855871+00\", \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\", \"graft_state\": \"ALIVE_BUT_SILENT\", \"graft_tenant_id\": \"graft-tenant-a\"}, \"graft_event\": \"recovery_decision\", \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_expected_executor_id\": \"gate03-accepted-executor-a\", \"graft_recovery_accepted\": false, \"graft_recovery_decision\": \"OPERATOR_ESCALATION\", \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_requested_executor_id\": \"gate03-accepted-executor-a\", \"graft_resume_invoked\": false, \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"}\n"
+        },
+        "ambiguous": {
+          "command": [
+            "uv",
+            "run",
+            "--locked",
+            "--python",
+            "3.13.0",
+            "python",
+            "deployment/gate-0.3/accepted_recovery.py",
+            "worker",
+            "--mode",
+            "escalate",
+            "--workflow-id",
+            "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+            "--graft-tenant-id",
+            "graft-tenant-a",
+            "--executor-id",
+            "gate03-accepted-executor-a",
+            "--application-revision",
+            "gate03-accepted-revision-2026-09-20",
+            "--escalation-state",
+            "ambiguous"
+          ],
+          "returncode": 0,
+          "stderr": "10:30:20 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n10:30:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n",
+          "stdout": "{\"graft_durable_escalation\": {\"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:7e137aa2950df4ea\", \"graft_executor_id\": \"gate03-accepted-executor-a\", \"graft_reason\": \"accepted runtime observed ambiguous\", \"graft_recorded_at\": \"2026-09-20 07:30:20.22578+00\", \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\", \"graft_state\": \"AMBIGUOUS\", \"graft_tenant_id\": \"graft-tenant-a\"}, \"graft_event\": \"recovery_decision\", \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_expected_executor_id\": \"gate03-accepted-executor-a\", \"graft_recovery_accepted\": false, \"graft_recovery_decision\": \"OPERATOR_ESCALATION\", \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_requested_executor_id\": \"gate03-accepted-executor-a\", \"graft_resume_invoked\": false, \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"}\n"
+        },
+        "stuck": {
+          "command": [
+            "uv",
+            "run",
+            "--locked",
+            "--python",
+            "3.13.0",
+            "python",
+            "deployment/gate-0.3/accepted_recovery.py",
+            "worker",
+            "--mode",
+            "escalate",
+            "--workflow-id",
+            "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+            "--graft-tenant-id",
+            "graft-tenant-a",
+            "--executor-id",
+            "gate03-accepted-executor-a",
+            "--application-revision",
+            "gate03-accepted-revision-2026-09-20",
+            "--escalation-state",
+            "stuck"
+          ],
+          "returncode": 0,
+          "stderr": "10:30:20 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n10:30:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n",
+          "stdout": "{\"graft_durable_escalation\": {\"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:STUCK:d3135c98b1b075e6\", \"graft_executor_id\": \"gate03-accepted-executor-a\", \"graft_reason\": \"accepted runtime observed stuck\", \"graft_recorded_at\": \"2026-09-20 07:30:20.598433+00\", \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\", \"graft_state\": \"STUCK\", \"graft_tenant_id\": \"graft-tenant-a\"}, \"graft_event\": \"recovery_decision\", \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_expected_executor_id\": \"gate03-accepted-executor-a\", \"graft_recovery_accepted\": false, \"graft_recovery_decision\": \"OPERATOR_ESCALATION\", \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_requested_executor_id\": \"gate03-accepted-executor-a\", \"graft_resume_invoked\": false, \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"}\n"
+        }
+      },
+      "start_and_kill": [
+        "uv",
+        "run",
+        "--locked",
+        "--python",
+        "3.13.0",
+        "python",
+        "deployment/gate-0.3/accepted_recovery.py",
+        "worker",
+        "--mode",
+        "start",
+        "--workflow-id",
+        "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+        "--graft-tenant-id",
+        "graft-tenant-a",
+        "--executor-id",
+        "gate03-accepted-executor-a",
+        "--application-revision",
+        "gate03-accepted-revision-2026-09-20"
+      ],
+      "wrong_executor": {
+        "command": [
+          "uv",
+          "run",
+          "--locked",
+          "--python",
+          "3.13.0",
+          "python",
+          "deployment/gate-0.3/accepted_recovery.py",
+          "worker",
+          "--mode",
+          "reject",
+          "--workflow-id",
+          "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+          "--graft-tenant-id",
+          "graft-tenant-a",
+          "--executor-id",
+          "gate03-accepted-executor-b",
+          "--application-revision",
+          "gate03-accepted-revision-2026-09-20"
+        ],
+        "returncode": 0,
+        "stderr": "10:30:18 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n10:30:18 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:18 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n",
+        "stdout": "{\"graft_durable_escalation\": {\"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:2f1278c3743b02e1\", \"graft_executor_id\": \"gate03-accepted-executor-a\", \"graft_reason\": \"executor_identity_mismatch\", \"graft_recorded_at\": \"2026-09-20 07:30:18.704163+00\", \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\", \"graft_state\": \"AMBIGUOUS\", \"graft_tenant_id\": \"graft-tenant-a\"}, \"graft_event\": \"recovery_decision\", \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_expected_executor_id\": \"gate03-accepted-executor-a\", \"graft_recovery_accepted\": false, \"graft_recovery_decision\": \"REJECT_OPERATOR_ESCALATION\", \"graft_rejection_reasons\": [\"executor_identity_mismatch\"], \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_requested_executor_id\": \"gate03-accepted-executor-b\", \"graft_resume_invoked\": false, \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"}\n"
+      },
+      "wrong_revision": {
+        "command": [
+          "uv",
+          "run",
+          "--locked",
+          "--python",
+          "3.13.0",
+          "python",
+          "deployment/gate-0.3/accepted_recovery.py",
+          "worker",
+          "--mode",
+          "reject",
+          "--workflow-id",
+          "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+          "--graft-tenant-id",
+          "graft-tenant-a",
+          "--executor-id",
+          "gate03-accepted-executor-a",
+          "--application-revision",
+          "gate03-accepted-revision-wrong"
+        ],
+        "returncode": 0,
+        "stderr": "10:30:19 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n10:30:19 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:19 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\n",
+        "stdout": "{\"graft_durable_escalation\": {\"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:f4e2f6ea00543722\", \"graft_executor_id\": \"gate03-accepted-executor-a\", \"graft_reason\": \"application_revision_mismatch\", \"graft_recorded_at\": \"2026-09-20 07:30:19.487378+00\", \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\", \"graft_state\": \"AMBIGUOUS\", \"graft_tenant_id\": \"graft-tenant-a\"}, \"graft_event\": \"recovery_decision\", \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_expected_executor_id\": \"gate03-accepted-executor-a\", \"graft_recovery_accepted\": false, \"graft_recovery_decision\": \"REJECT_OPERATOR_ESCALATION\", \"graft_rejection_reasons\": [\"application_revision_mismatch\"], \"graft_requested_application_revision\": \"gate03-accepted-revision-wrong\", \"graft_requested_executor_id\": \"gate03-accepted-executor-a\", \"graft_resume_invoked\": false, \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"}\n"
+      }
+    },
+    "durable_escalation_record": {
+      "not_stdout_only": true,
+      "table": "gate03_operator_escalations",
+      "typed_states": [
+        "ALIVE_BUT_SILENT",
+        "AMBIGUOUS",
+        "STUCK"
+      ],
+      "workflow_record_count": 5
+    },
+    "environment": {
+      "connection_topology": {
+        "application_metadata_and_escalations": "transaction_mode_pgbouncer",
+        "dbos_system_database": "direct_postgresql"
+      },
+      "dbos": "3.0.0",
+      "evidence_lanes": {
+        "private_or_diagnostic": true,
+        "private_or_diagnostic_kinds": [
+          "application-owned metadata and escalation SQL diagnostics"
+        ],
+        "public_api_behaviour": true
+      },
+      "metadata_database": "PostgreSQL application database via transaction-mode PgBouncer",
+      "private_dbos_api_or_system_table_mutation": false,
+      "public_api_only": false,
+      "python": "3.13.0 (main, Oct  7 2024, 05:02:14) [Clang 16.0.0 (clang-1600.0.26.4)]",
+      "system_database": "PostgreSQL 16 pinned Gate 0.3 image via direct endpoint"
+    },
+    "graft_compatibility_revision": "gate03-accepted-revision-2026-09-20",
+    "graft_different_executor_id": "gate03-accepted-executor-b",
+    "graft_matching_executor_id": "gate03-accepted-executor-a",
+    "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+    "graft_tenant_id": "graft-tenant-a",
+    "graft_tenant_scope_probe": {
+      "graft_other_tenant_row_hidden_from_graft_tenant_a": true,
+      "graft_other_tenant_row_visible_to_graft_tenant_b": true,
+      "graft_tenant_a": "graft-tenant-a",
+      "graft_tenant_b": "graft-tenant-b"
+    },
+    "graft_wrong_application_revision": "gate03-accepted-revision-wrong",
+    "immutable_metadata_conflict": [
+      {
+        "error": "immutable application revision conflict: stored='gate03-accepted-revision-2026-09-20' requested='gate03-accepted-revision-wrong'",
+        "graft_event": "immutable_metadata_conflict",
+        "graft_rejected_application_revision": "gate03-accepted-revision-wrong",
+        "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+        "rejected": true
+      }
+    ],
+    "matching_executor_revision_restart": {
+      "graft_automatic_resume_via_accepted_runtime": true,
+      "graft_event": "matching_executor_restart",
+      "graft_recovery_entry_point": "accepted_runtime_recovery",
+      "graft_requested_application_revision": "gate03-accepted-revision-2026-09-20",
+      "graft_requested_executor_id": "gate03-accepted-executor-a",
+      "graft_resume_invoked": true,
+      "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+      "status": {
+        "app_version": "gate03-accepted-revision-2026-09-20",
+        "application_name": "gate-0-3-accepted-recovery",
+        "application_version": null,
+        "executor_id": "gate03-accepted-executor-a",
+        "name": "accepted_workflow",
+        "status": "SUCCESS",
+        "workflow_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e"
+      }
+    },
+    "operator_escalations": {
+      "alive-but-silent": {
+        "graft_durable_escalation": {
+          "graft_application_revision": "gate03-accepted-revision-2026-09-20",
+          "graft_escalation_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:ALIVE_BUT_SILENT:0c6269caa0d593f8",
+          "graft_executor_id": "gate03-accepted-executor-a",
+          "graft_reason": "accepted runtime observed alive-but-silent",
+          "graft_recorded_at": "2026-09-20 07:30:19.855871+00",
+          "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+          "graft_state": "ALIVE_BUT_SILENT",
+          "graft_tenant_id": "graft-tenant-a"
+        },
+        "graft_event": "recovery_decision",
+        "graft_expected_application_revision": "gate03-accepted-revision-2026-09-20",
+        "graft_expected_executor_id": "gate03-accepted-executor-a",
+        "graft_recovery_accepted": false,
+        "graft_recovery_decision": "OPERATOR_ESCALATION",
+        "graft_requested_application_revision": "gate03-accepted-revision-2026-09-20",
+        "graft_requested_executor_id": "gate03-accepted-executor-a",
+        "graft_resume_invoked": false,
+        "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e"
+      },
+      "ambiguous": {
+        "graft_durable_escalation": {
+          "graft_application_revision": "gate03-accepted-revision-2026-09-20",
+          "graft_escalation_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:7e137aa2950df4ea",
+          "graft_executor_id": "gate03-accepted-executor-a",
+          "graft_reason": "accepted runtime observed ambiguous",
+          "graft_recorded_at": "2026-09-20 07:30:20.22578+00",
+          "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+          "graft_state": "AMBIGUOUS",
+          "graft_tenant_id": "graft-tenant-a"
+        },
+        "graft_event": "recovery_decision",
+        "graft_expected_application_revision": "gate03-accepted-revision-2026-09-20",
+        "graft_expected_executor_id": "gate03-accepted-executor-a",
+        "graft_recovery_accepted": false,
+        "graft_recovery_decision": "OPERATOR_ESCALATION",
+        "graft_requested_application_revision": "gate03-accepted-revision-2026-09-20",
+        "graft_requested_executor_id": "gate03-accepted-executor-a",
+        "graft_resume_invoked": false,
+        "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e"
+      },
+      "stuck": {
+        "graft_durable_escalation": {
+          "graft_application_revision": "gate03-accepted-revision-2026-09-20",
+          "graft_escalation_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:STUCK:d3135c98b1b075e6",
+          "graft_executor_id": "gate03-accepted-executor-a",
+          "graft_reason": "accepted runtime observed stuck",
+          "graft_recorded_at": "2026-09-20 07:30:20.598433+00",
+          "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+          "graft_state": "STUCK",
+          "graft_tenant_id": "graft-tenant-a"
+        },
+        "graft_event": "recovery_decision",
+        "graft_expected_application_revision": "gate03-accepted-revision-2026-09-20",
+        "graft_expected_executor_id": "gate03-accepted-executor-a",
+        "graft_recovery_accepted": false,
+        "graft_recovery_decision": "OPERATOR_ESCALATION",
+        "graft_requested_application_revision": "gate03-accepted-revision-2026-09-20",
+        "graft_requested_executor_id": "gate03-accepted-executor-a",
+        "graft_resume_invoked": false,
+        "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e"
+      }
+    },
+    "report": "accepted-matching-executor-recovery",
+    "run_metadata": {
+      "graft_conflicting_revision_rejected": true,
+      "graft_immutable_compatibility_revision": "gate03-accepted-revision-2026-09-20",
+      "insert_once": true,
+      "table": "gate03_accepted_run_metadata"
+    },
+    "scope_note": "Accepted ADR-0078 permits restart only through the matching executor and released application compatibility revision. Wrong identity or revision is rejected before DBOS resume; alive-but-silent, ambiguous and stuck observations are durable operator escalations.",
+    "start_after_kill_output": "10:30:17 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n10:30:17 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-accepted-executor-a\n10:30:17 [    INFO] (dbos:_dbos.py:550) Application version: gate03-accepted-revision-2026-09-20\n10:30:17 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-accepted-recovery\n10:30:17 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:17 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n10:30:18 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-accepted-revision-2026-09-20\n10:30:18 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n10:30:18 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-accepted-recovery\n10:30:18 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n{\"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\", \"graft_event\": \"started\", \"graft_executor_id\": \"gate03-accepted-executor-a\", \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\", \"metadata_insert_once\": true}\n",
+    "verdict": "PASS",
+    "wrong_executor_recovery": {
+      "graft_durable_escalation": {
+        "graft_application_revision": "gate03-accepted-revision-2026-09-20",
+        "graft_escalation_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:2f1278c3743b02e1",
+        "graft_executor_id": "gate03-accepted-executor-a",
+        "graft_reason": "executor_identity_mismatch",
+        "graft_recorded_at": "2026-09-20 07:30:18.704163+00",
+        "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+        "graft_state": "AMBIGUOUS",
+        "graft_tenant_id": "graft-tenant-a"
+      },
+      "graft_event": "recovery_decision",
+      "graft_expected_application_revision": "gate03-accepted-revision-2026-09-20",
+      "graft_expected_executor_id": "gate03-accepted-executor-a",
+      "graft_recovery_accepted": false,
+      "graft_recovery_decision": "REJECT_OPERATOR_ESCALATION",
+      "graft_rejection_reasons": [
+        "executor_identity_mismatch"
+      ],
+      "graft_requested_application_revision": "gate03-accepted-revision-2026-09-20",
+      "graft_requested_executor_id": "gate03-accepted-executor-b",
+      "graft_resume_invoked": false,
+      "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e"
+    },
+    "wrong_revision_recovery": {
+      "graft_durable_escalation": {
+        "graft_application_revision": "gate03-accepted-revision-2026-09-20",
+        "graft_escalation_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:f4e2f6ea00543722",
+        "graft_executor_id": "gate03-accepted-executor-a",
+        "graft_reason": "application_revision_mismatch",
+        "graft_recorded_at": "2026-09-20 07:30:19.487378+00",
+        "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e",
+        "graft_state": "AMBIGUOUS",
+        "graft_tenant_id": "graft-tenant-a"
+      },
+      "graft_event": "recovery_decision",
+      "graft_expected_application_revision": "gate03-accepted-revision-2026-09-20",
+      "graft_expected_executor_id": "gate03-accepted-executor-a",
+      "graft_recovery_accepted": false,
+      "graft_recovery_decision": "REJECT_OPERATOR_ESCALATION",
+      "graft_rejection_reasons": [
+        "application_revision_mismatch"
+      ],
+      "graft_requested_application_revision": "gate03-accepted-revision-wrong",
+      "graft_requested_executor_id": "gate03-accepted-executor-a",
+      "graft_resume_invoked": false,
+      "graft_run_id": "gate03-accepted-517f34e5cdd5483ea45c9886faeb311e"
+    }
+  },
+  "artefacts": [
+    "deployment/gate-0.3/accepted_recovery.py"
+  ],
+  "command": {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "--python",
+      "3.13.0",
+      "python",
+      "deployment/gate-0.3/accepted_recovery.py",
+      "run"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\n  \"application_name\": \"gate-0-3-accepted-recovery\",\n  \"assertions\": {\n    \"graft_explicit_compatibility_revision\": true,\n    \"graft_immutable_revision_conflict_rejected\": true,\n    \"graft_matching_executor_revision_restart_succeeded\": true,\n    \"graft_wrong_revision_rejected_before_resume\": true,\n    \"typed_durable_escalation_recorded\": true,\n    \"wrong_executor_rejected_before_resume\": true\n  },\n  \"commands\": {\n    \"immutable_metadata_conflict\": {\n      \"command\": [\n        \"uv\",\n        \"run\",\n        \"--locked\",\n        \"--python\",\n        \"3.13.0\",\n        \"python\",\n        \"deployment/gate-0.3/accepted_recovery.py\",\n        \"worker\",\n        \"--mode\",\n        \"metadata-conflict\",\n        \"--workflow-id\",\n        \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n        \"--graft-tenant-id\",\n        \"graft-tenant-a\",\n        \"--executor-id\",\n        \"gate03-accepted-executor-a\",\n        \"--application-revision\",\n        \"gate03-accepted-revision-wrong\"\n      ],\n      \"returncode\": 0,\n      \"stderr\": \"\",\n      \"stdout\": \"{\\\"error\\\": \\\"immutable application revision conflict: stored='gate03-accepted-revision-2026-09-20' requested='gate03-accepted-revision-wrong'\\\", \\\"graft_event\\\": \\\"immutable_metadata_conflict\\\", \\\"graft_rejected_application_revision\\\": \\\"gate03-accepted-revision-wrong\\\", \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\", \\\"rejected\\\": true}\\n\"\n    },\n    \"matching_executor_revision_restart\": {\n      \"command\": [\n        \"uv\",\n        \"run\",\n        \"--locked\",\n        \"--python\",\n        \"3.13.0\",\n        \"python\",\n        \"deployment/gate-0.3/accepted_recovery.py\",\n        \"worker\",\n        \"--mode\",\n        \"recover\",\n        \"--workflow-id\",\n        \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n        \"--graft-tenant-id\",\n        \"graft-tenant-a\",\n        \"--executor-id\",\n        \"gate03-accepted-executor-a\",\n        \"--application-revision\",\n        \"gate03-accepted-revision-2026-09-20\"\n      ],\n      \"returncode\": 0,\n      \"stderr\": \"10:30:20 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\\n10:30:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\\n10:30:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\\n10:30:20 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-accepted-executor-a\\n10:30:20 [    INFO] (dbos:_dbos.py:550) Application version: gate03-accepted-revision-2026-09-20\\n10:30:20 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-accepted-recovery\\n10:30:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\\n10:30:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\\n10:30:20 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-accepted-revision-2026-09-20\\n10:30:20 [    INFO] (dbos:_dbos.py:735) DBOS launched!\\n10:30:20 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-accepted-recovery\\n10:30:20 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\\n10:30:22 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\\n10:30:23 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\\n\",\n      \"stdout\": \"{\\\"graft_automatic_resume_via_accepted_runtime\\\": true, \\\"graft_event\\\": \\\"matching_executor_restart\\\", \\\"graft_recovery_entry_point\\\": \\\"accepted_runtime_recovery\\\", \\\"graft_requested_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_requested_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_resume_invoked\\\": true, \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\", \\\"status\\\": {\\\"app_version\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"application_name\\\": \\\"gate-0-3-accepted-recovery\\\", \\\"application_version\\\": null, \\\"executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"name\\\": \\\"accepted_workflow\\\", \\\"status\\\": \\\"SUCCESS\\\", \\\"workflow_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\"}}\\n\"\n    },\n    \"operator_escalations\": {\n      \"alive-but-silent\": {\n        \"command\": [\n          \"uv\",\n          \"run\",\n          \"--locked\",\n          \"--python\",\n          \"3.13.0\",\n          \"python\",\n          \"deployment/gate-0.3/accepted_recovery.py\",\n          \"worker\",\n          \"--mode\",\n          \"escalate\",\n          \"--workflow-id\",\n          \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n          \"--graft-tenant-id\",\n          \"graft-tenant-a\",\n          \"--executor-id\",\n          \"gate03-accepted-executor-a\",\n          \"--application-revision\",\n          \"gate03-accepted-revision-2026-09-20\",\n          \"--escalation-state\",\n          \"alive-but-silent\"\n        ],\n        \"returncode\": 0,\n        \"stderr\": \"10:30:19 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\\n10:30:19 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\\n10:30:19 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\\n\",\n        \"stdout\": \"{\\\"graft_durable_escalation\\\": {\\\"graft_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_escalation_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:ALIVE_BUT_SILENT:0c6269caa0d593f8\\\", \\\"graft_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_reason\\\": \\\"accepted runtime observed alive-but-silent\\\", \\\"graft_recorded_at\\\": \\\"2026-09-20 07:30:19.855871+00\\\", \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\", \\\"graft_state\\\": \\\"ALIVE_BUT_SILENT\\\", \\\"graft_tenant_id\\\": \\\"graft-tenant-a\\\"}, \\\"graft_event\\\": \\\"recovery_decision\\\", \\\"graft_expected_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_expected_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_recovery_accepted\\\": false, \\\"graft_recovery_decision\\\": \\\"OPERATOR_ESCALATION\\\", \\\"graft_requested_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_requested_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_resume_invoked\\\": false, \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\"}\\n\"\n      },\n      \"ambiguous\": {\n        \"command\": [\n          \"uv\",\n          \"run\",\n          \"--locked\",\n          \"--python\",\n          \"3.13.0\",\n          \"python\",\n          \"deployment/gate-0.3/accepted_recovery.py\",\n          \"worker\",\n          \"--mode\",\n          \"escalate\",\n          \"--workflow-id\",\n          \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n          \"--graft-tenant-id\",\n          \"graft-tenant-a\",\n          \"--executor-id\",\n          \"gate03-accepted-executor-a\",\n          \"--application-revision\",\n          \"gate03-accepted-revision-2026-09-20\",\n          \"--escalation-state\",\n          \"ambiguous\"\n        ],\n        \"returncode\": 0,\n        \"stderr\": \"10:30:20 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\\n10:30:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\\n10:30:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\\n\",\n        \"stdout\": \"{\\\"graft_durable_escalation\\\": {\\\"graft_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_escalation_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:7e137aa2950df4ea\\\", \\\"graft_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_reason\\\": \\\"accepted runtime observed ambiguous\\\", \\\"graft_recorded_at\\\": \\\"2026-09-20 07:30:20.22578+00\\\", \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\", \\\"graft_state\\\": \\\"AMBIGUOUS\\\", \\\"graft_tenant_id\\\": \\\"graft-tenant-a\\\"}, \\\"graft_event\\\": \\\"recovery_decision\\\", \\\"graft_expected_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_expected_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_recovery_accepted\\\": false, \\\"graft_recovery_decision\\\": \\\"OPERATOR_ESCALATION\\\", \\\"graft_requested_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_requested_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_resume_invoked\\\": false, \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\"}\\n\"\n      },\n      \"stuck\": {\n        \"command\": [\n          \"uv\",\n          \"run\",\n          \"--locked\",\n          \"--python\",\n          \"3.13.0\",\n          \"python\",\n          \"deployment/gate-0.3/accepted_recovery.py\",\n          \"worker\",\n          \"--mode\",\n          \"escalate\",\n          \"--workflow-id\",\n          \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n          \"--graft-tenant-id\",\n          \"graft-tenant-a\",\n          \"--executor-id\",\n          \"gate03-accepted-executor-a\",\n          \"--application-revision\",\n          \"gate03-accepted-revision-2026-09-20\",\n          \"--escalation-state\",\n          \"stuck\"\n        ],\n        \"returncode\": 0,\n        \"stderr\": \"10:30:20 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\\n10:30:20 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\\n10:30:20 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\\n\",\n        \"stdout\": \"{\\\"graft_durable_escalation\\\": {\\\"graft_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_escalation_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:STUCK:d3135c98b1b075e6\\\", \\\"graft_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_reason\\\": \\\"accepted runtime observed stuck\\\", \\\"graft_recorded_at\\\": \\\"2026-09-20 07:30:20.598433+00\\\", \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\", \\\"graft_state\\\": \\\"STUCK\\\", \\\"graft_tenant_id\\\": \\\"graft-tenant-a\\\"}, \\\"graft_event\\\": \\\"recovery_decision\\\", \\\"graft_expected_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_expected_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_recovery_accepted\\\": false, \\\"graft_recovery_decision\\\": \\\"OPERATOR_ESCALATION\\\", \\\"graft_requested_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_requested_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_resume_invoked\\\": false, \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\"}\\n\"\n      }\n    },\n    \"start_and_kill\": [\n      \"uv\",\n      \"run\",\n      \"--locked\",\n      \"--python\",\n      \"3.13.0\",\n      \"python\",\n      \"deployment/gate-0.3/accepted_recovery.py\",\n      \"worker\",\n      \"--mode\",\n      \"start\",\n      \"--workflow-id\",\n      \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n      \"--graft-tenant-id\",\n      \"graft-tenant-a\",\n      \"--executor-id\",\n      \"gate03-accepted-executor-a\",\n      \"--application-revision\",\n      \"gate03-accepted-revision-2026-09-20\"\n    ],\n    \"wrong_executor\": {\n      \"command\": [\n        \"uv\",\n        \"run\",\n        \"--locked\",\n        \"--python\",\n        \"3.13.0\",\n        \"python\",\n        \"deployment/gate-0.3/accepted_recovery.py\",\n        \"worker\",\n        \"--mode\",\n        \"reject\",\n        \"--workflow-id\",\n        \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n        \"--graft-tenant-id\",\n        \"graft-tenant-a\",\n        \"--executor-id\",\n        \"gate03-accepted-executor-b\",\n        \"--application-revision\",\n        \"gate03-accepted-revision-2026-09-20\"\n      ],\n      \"returncode\": 0,\n      \"stderr\": \"10:30:18 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\\n10:30:18 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\\n10:30:18 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\\n\",\n      \"stdout\": \"{\\\"graft_durable_escalation\\\": {\\\"graft_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_escalation_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:2f1278c3743b02e1\\\", \\\"graft_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_reason\\\": \\\"executor_identity_mismatch\\\", \\\"graft_recorded_at\\\": \\\"2026-09-20 07:30:18.704163+00\\\", \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\", \\\"graft_state\\\": \\\"AMBIGUOUS\\\", \\\"graft_tenant_id\\\": \\\"graft-tenant-a\\\"}, \\\"graft_event\\\": \\\"recovery_decision\\\", \\\"graft_expected_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_expected_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_recovery_accepted\\\": false, \\\"graft_recovery_decision\\\": \\\"REJECT_OPERATOR_ESCALATION\\\", \\\"graft_rejection_reasons\\\": [\\\"executor_identity_mismatch\\\"], \\\"graft_requested_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_requested_executor_id\\\": \\\"gate03-accepted-executor-b\\\", \\\"graft_resume_invoked\\\": false, \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\"}\\n\"\n    },\n    \"wrong_revision\": {\n      \"command\": [\n        \"uv\",\n        \"run\",\n        \"--locked\",\n        \"--python\",\n        \"3.13.0\",\n        \"python\",\n        \"deployment/gate-0.3/accepted_recovery.py\",\n        \"worker\",\n        \"--mode\",\n        \"reject\",\n        \"--workflow-id\",\n        \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n        \"--graft-tenant-id\",\n        \"graft-tenant-a\",\n        \"--executor-id\",\n        \"gate03-accepted-executor-a\",\n        \"--application-revision\",\n        \"gate03-accepted-revision-wrong\"\n      ],\n      \"returncode\": 0,\n      \"stderr\": \"10:30:19 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\\n10:30:19 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\\n10:30:19 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact_client'}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 5, 'pool_pre_ping': True}\\n\",\n      \"stdout\": \"{\\\"graft_durable_escalation\\\": {\\\"graft_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_escalation_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:f4e2f6ea00543722\\\", \\\"graft_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_reason\\\": \\\"application_revision_mismatch\\\", \\\"graft_recorded_at\\\": \\\"2026-09-20 07:30:19.487378+00\\\", \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\", \\\"graft_state\\\": \\\"AMBIGUOUS\\\", \\\"graft_tenant_id\\\": \\\"graft-tenant-a\\\"}, \\\"graft_event\\\": \\\"recovery_decision\\\", \\\"graft_expected_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_expected_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_recovery_accepted\\\": false, \\\"graft_recovery_decision\\\": \\\"REJECT_OPERATOR_ESCALATION\\\", \\\"graft_rejection_reasons\\\": [\\\"application_revision_mismatch\\\"], \\\"graft_requested_application_revision\\\": \\\"gate03-accepted-revision-wrong\\\", \\\"graft_requested_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_resume_invoked\\\": false, \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\"}\\n\"\n    }\n  },\n  \"durable_escalation_record\": {\n    \"not_stdout_only\": true,\n    \"table\": \"gate03_operator_escalations\",\n    \"typed_states\": [\n      \"ALIVE_BUT_SILENT\",\n      \"AMBIGUOUS\",\n      \"STUCK\"\n    ],\n    \"workflow_record_count\": 5\n  },\n  \"environment\": {\n    \"connection_topology\": {\n      \"application_metadata_and_escalations\": \"transaction_mode_pgbouncer\",\n      \"dbos_system_database\": \"direct_postgresql\"\n    },\n    \"dbos\": \"3.0.0\",\n    \"evidence_lanes\": {\n      \"private_or_diagnostic\": true,\n      \"private_or_diagnostic_kinds\": [\n        \"application-owned metadata and escalation SQL diagnostics\"\n      ],\n      \"public_api_behaviour\": true\n    },\n    \"metadata_database\": \"PostgreSQL application database via transaction-mode PgBouncer\",\n    \"private_dbos_api_or_system_table_mutation\": false,\n    \"public_api_only\": false,\n    \"python\": \"3.13.0 (main, Oct  7 2024, 05:02:14) [Clang 16.0.0 (clang-1600.0.26.4)]\",\n    \"system_database\": \"PostgreSQL 16 pinned Gate 0.3 image via direct endpoint\"\n  },\n  \"graft_compatibility_revision\": \"gate03-accepted-revision-2026-09-20\",\n  \"graft_different_executor_id\": \"gate03-accepted-executor-b\",\n  \"graft_matching_executor_id\": \"gate03-accepted-executor-a\",\n  \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n  \"graft_tenant_id\": \"graft-tenant-a\",\n  \"graft_tenant_scope_probe\": {\n    \"graft_other_tenant_row_hidden_from_graft_tenant_a\": true,\n    \"graft_other_tenant_row_visible_to_graft_tenant_b\": true,\n    \"graft_tenant_a\": \"graft-tenant-a\",\n    \"graft_tenant_b\": \"graft-tenant-b\"\n  },\n  \"graft_wrong_application_revision\": \"gate03-accepted-revision-wrong\",\n  \"immutable_metadata_conflict\": [\n    {\n      \"error\": \"immutable application revision conflict: stored='gate03-accepted-revision-2026-09-20' requested='gate03-accepted-revision-wrong'\",\n      \"graft_event\": \"immutable_metadata_conflict\",\n      \"graft_rejected_application_revision\": \"gate03-accepted-revision-wrong\",\n      \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n      \"rejected\": true\n    }\n  ],\n  \"matching_executor_revision_restart\": {\n    \"graft_automatic_resume_via_accepted_runtime\": true,\n    \"graft_event\": \"matching_executor_restart\",\n    \"graft_recovery_entry_point\": \"accepted_runtime_recovery\",\n    \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n    \"graft_requested_executor_id\": \"gate03-accepted-executor-a\",\n    \"graft_resume_invoked\": true,\n    \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n    \"status\": {\n      \"app_version\": \"gate03-accepted-revision-2026-09-20\",\n      \"application_name\": \"gate-0-3-accepted-recovery\",\n      \"application_version\": null,\n      \"executor_id\": \"gate03-accepted-executor-a\",\n      \"name\": \"accepted_workflow\",\n      \"status\": \"SUCCESS\",\n      \"workflow_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"\n    }\n  },\n  \"operator_escalations\": {\n    \"alive-but-silent\": {\n      \"graft_durable_escalation\": {\n        \"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n        \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:ALIVE_BUT_SILENT:0c6269caa0d593f8\",\n        \"graft_executor_id\": \"gate03-accepted-executor-a\",\n        \"graft_reason\": \"accepted runtime observed alive-but-silent\",\n        \"graft_recorded_at\": \"2026-09-20 07:30:19.855871+00\",\n        \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n        \"graft_state\": \"ALIVE_BUT_SILENT\",\n        \"graft_tenant_id\": \"graft-tenant-a\"\n      },\n      \"graft_event\": \"recovery_decision\",\n      \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n      \"graft_expected_executor_id\": \"gate03-accepted-executor-a\",\n      \"graft_recovery_accepted\": false,\n      \"graft_recovery_decision\": \"OPERATOR_ESCALATION\",\n      \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n      \"graft_requested_executor_id\": \"gate03-accepted-executor-a\",\n      \"graft_resume_invoked\": false,\n      \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"\n    },\n    \"ambiguous\": {\n      \"graft_durable_escalation\": {\n        \"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n        \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:7e137aa2950df4ea\",\n        \"graft_executor_id\": \"gate03-accepted-executor-a\",\n        \"graft_reason\": \"accepted runtime observed ambiguous\",\n        \"graft_recorded_at\": \"2026-09-20 07:30:20.22578+00\",\n        \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n        \"graft_state\": \"AMBIGUOUS\",\n        \"graft_tenant_id\": \"graft-tenant-a\"\n      },\n      \"graft_event\": \"recovery_decision\",\n      \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n      \"graft_expected_executor_id\": \"gate03-accepted-executor-a\",\n      \"graft_recovery_accepted\": false,\n      \"graft_recovery_decision\": \"OPERATOR_ESCALATION\",\n      \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n      \"graft_requested_executor_id\": \"gate03-accepted-executor-a\",\n      \"graft_resume_invoked\": false,\n      \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"\n    },\n    \"stuck\": {\n      \"graft_durable_escalation\": {\n        \"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n        \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:STUCK:d3135c98b1b075e6\",\n        \"graft_executor_id\": \"gate03-accepted-executor-a\",\n        \"graft_reason\": \"accepted runtime observed stuck\",\n        \"graft_recorded_at\": \"2026-09-20 07:30:20.598433+00\",\n        \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n        \"graft_state\": \"STUCK\",\n        \"graft_tenant_id\": \"graft-tenant-a\"\n      },\n      \"graft_event\": \"recovery_decision\",\n      \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n      \"graft_expected_executor_id\": \"gate03-accepted-executor-a\",\n      \"graft_recovery_accepted\": false,\n      \"graft_recovery_decision\": \"OPERATOR_ESCALATION\",\n      \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n      \"graft_requested_executor_id\": \"gate03-accepted-executor-a\",\n      \"graft_resume_invoked\": false,\n      \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"\n    }\n  },\n  \"report\": \"accepted-matching-executor-recovery\",\n  \"run_metadata\": {\n    \"graft_conflicting_revision_rejected\": true,\n    \"graft_immutable_compatibility_revision\": \"gate03-accepted-revision-2026-09-20\",\n    \"insert_once\": true,\n    \"table\": \"gate03_accepted_run_metadata\"\n  },\n  \"scope_note\": \"Accepted ADR-0078 permits restart only through the matching executor and released application compatibility revision. Wrong identity or revision is rejected before DBOS resume; alive-but-silent, ambiguous and stuck observations are durable operator escalations.\",\n  \"start_after_kill_output\": \"10:30:17 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\\n10:30:17 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-accepted-executor-a\\n10:30:17 [    INFO] (dbos:_dbos.py:550) Application version: gate03-accepted-revision-2026-09-20\\n10:30:17 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3-accepted-recovery\\n10:30:17 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\\n10:30:17 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\\n10:30:18 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version gate03-accepted-revision-2026-09-20\\n10:30:18 [    INFO] (dbos:_dbos.py:735) DBOS launched!\\n10:30:18 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3-accepted-recovery\\n10:30:18 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\\n{\\\"graft_application_revision\\\": \\\"gate03-accepted-revision-2026-09-20\\\", \\\"graft_event\\\": \\\"started\\\", \\\"graft_executor_id\\\": \\\"gate03-accepted-executor-a\\\", \\\"graft_run_id\\\": \\\"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\\\", \\\"metadata_insert_once\\\": true}\\n\",\n  \"verdict\": \"PASS\",\n  \"wrong_executor_recovery\": {\n    \"graft_durable_escalation\": {\n      \"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n      \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:2f1278c3743b02e1\",\n      \"graft_executor_id\": \"gate03-accepted-executor-a\",\n      \"graft_reason\": \"executor_identity_mismatch\",\n      \"graft_recorded_at\": \"2026-09-20 07:30:18.704163+00\",\n      \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n      \"graft_state\": \"AMBIGUOUS\",\n      \"graft_tenant_id\": \"graft-tenant-a\"\n    },\n    \"graft_event\": \"recovery_decision\",\n    \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n    \"graft_expected_executor_id\": \"gate03-accepted-executor-a\",\n    \"graft_recovery_accepted\": false,\n    \"graft_recovery_decision\": \"REJECT_OPERATOR_ESCALATION\",\n    \"graft_rejection_reasons\": [\n      \"executor_identity_mismatch\"\n    ],\n    \"graft_requested_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n    \"graft_requested_executor_id\": \"gate03-accepted-executor-b\",\n    \"graft_resume_invoked\": false,\n    \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"\n  },\n  \"wrong_revision_recovery\": {\n    \"graft_durable_escalation\": {\n      \"graft_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n      \"graft_escalation_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e:AMBIGUOUS:f4e2f6ea00543722\",\n      \"graft_executor_id\": \"gate03-accepted-executor-a\",\n      \"graft_reason\": \"application_revision_mismatch\",\n      \"graft_recorded_at\": \"2026-09-20 07:30:19.487378+00\",\n      \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\",\n      \"graft_state\": \"AMBIGUOUS\",\n      \"graft_tenant_id\": \"graft-tenant-a\"\n    },\n    \"graft_event\": \"recovery_decision\",\n    \"graft_expected_application_revision\": \"gate03-accepted-revision-2026-09-20\",\n    \"graft_expected_executor_id\": \"gate03-accepted-executor-a\",\n    \"graft_recovery_accepted\": false,\n    \"graft_recovery_decision\": \"REJECT_OPERATOR_ESCALATION\",\n    \"graft_rejection_reasons\": [\n      \"application_revision_mismatch\"\n    ],\n    \"graft_requested_application_revision\": \"gate03-accepted-revision-wrong\",\n    \"graft_requested_executor_id\": \"gate03-accepted-executor-a\",\n    \"graft_resume_invoked\": false,\n    \"graft_run_id\": \"gate03-accepted-517f34e5cdd5483ea45c9886faeb311e\"\n  }\n}\n"
+  },
+  "environment": {
+    "application_metadata_and_escalations": "transaction_mode_pgbouncer",
+    "dbos": "3.0.0",
+    "dbos_system_database": "direct_postgresql",
+    "langchain_mcp_adapters": "0.3.2 (locked)",
+    "langgraph": "1.2.11 (locked)",
+    "mcp": "1.28.1 (locked)",
+    "pooler": "transaction-mode PgBouncer",
+    "postgres": "16 pinned Gate 0.3 image",
+    "python": "3.13.0",
+    "python_executable": "/Users/av/Repositories/vikshana/graft-agent-harness/.venv/bin/python3",
+    "required_python": "3.13.0"
+  },
+  "evidence_lanes": {
+    "private_or_diagnostic": true,
+    "private_or_diagnostic_kinds": [
+      "application-owned metadata and escalation SQL is a disposable diagnostic lane"
+    ],
+    "public_api_behaviour": true
+  },
+  "expected": "matching executor identity and revision restart recovery; different executor automatic refusal; typed durable operator escalation for ambiguous/alive-silent/stuck",
+  "private_dbos_api_or_system_table_mutation": false,
+  "public_api_only": false,
+  "report": "alive-silent",
+  "started_at": "2026-09-20T07:30:17.390005+00:00",
+  "verdict": "PASS"
+}

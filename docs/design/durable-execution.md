@@ -27,7 +27,7 @@
 | #       | Decision                                                                                                                                                                                              |
 |---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **E1**  | **Engine: DBOS Transact** — an MIT-licensed library embedded in the worker process, backed by the Postgres we already run. Temporal rejected; option (c) rejected; DBOS Conductor rejected.           |
-| **E2**  | **Work rediscovery is ours to build** — a ~150-line heartbeat + reaper, because Conductor is excluded. Workers are a StatefulSet with stable executor IDs, deployed **blue/green** (see E10).         |
+| **E2**  | **Recovery is identity- and revision-scoped** — a returning matching executor and the immutable released application compatibility revision may restart its own work. Alive-but-silent, ambiguous and stuck Runs produce durable operator escalation; automatic cross-executor takeover is not Phase 1 scope (ADR-0078). |
 | **E3**  | **Pattern B primary** — the run *is* the durable workflow. Pattern A (durable-workflow-as-tool) used **only** for write actions.                                                                      |
 | **E4**  | **LangGraph keeps no checkpointer.** DBOS step checkpoints are the single source of execution truth.                                                                                                  |
 | **E5**  | **Step granularity: one LLM call = one step; one tool call = one step; one sub-agent = one child workflow; one run = one parent workflow.**                                                           |
@@ -35,7 +35,7 @@
 | **E7**  | **Cancellation is at the next step boundary.** No `preemptible` steps in v1.                                                                                                                          |
 | **E8**  | **Budgets: queue partition keys for rate/concurrency, workflow deadlines for wall clock, agent + Tool Gateway for semantic breakers.**                                                                |
 | **E9**  | **ADR-0033's signal table is replaced by DBOS `send`/`recv`.** ADR-0030's event log is unaffected.                                                                                                    |
-| **E10** | **Deploy strategy is blue/green with version pinning**, using DBOS's auto-computed application version. Bounded by E11's approval expiry.                                                             |
+| **E10** | **Deploy strategy is blue/green with version pinning**, using an explicit released application compatibility revision. Every release drains all prior cohorts. Bounded by E11's approval expiry. |
 | **E11** | **All five durable-timer use cases are in v1**, including a **bounded HITL approval window** — which is what makes E10's drain window finite.                                                         |
 | **E12** | **Reversibility is real but bounded, and throughput is not the trigger to watch.** A thin `runtime` seam keeps engine calls out of domain logic. **DBOSify is rejected as a hedge.** See section 10.  |
 
@@ -84,7 +84,7 @@ does not follow for this engine.
 Conductor is DBOS's proprietary, licence-keyed control plane (self-hostable, but still paid — confirmed on
 `/production/hosting-conductor`). Excluding it costs:
 
-1. **Automatic cross-executor failover** — addressed by E2.
+1. **Automatic cross-executor failover** — deliberately excluded from Phase 1 by ADR-0078; unsafe identity or revision combinations are rejected before resume and escalated durably.
 2. **The DBOS Console UI** — dashboards, trace timelines, click-to-fork. The *programmatic* equivalents
    (`list_workflows`, `list_workflow_steps`,
    `fork_workflow`, `resume_workflow`) are all in the MIT library, so this is a convenience loss, not a capability loss.
@@ -105,55 +105,39 @@ upgraded from a recommendation to a hard requirement — see section 4.
 
 ---
 
-## 3. E2 — Work rediscovery without Conductor
+## 3. E2 — Accepted matching-executor recovery
 
-### 3.1 The fact
+### 3.1 Accepted boundary
 
-From `/production/workflow-recovery`, verbatim in substance:
+The accepted mechanism is the narrower boundary recorded by [ADR-0078](../adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md),
+with the released compatibility revision requirement from [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md).
+Run metadata records the expected executor identity and immutable released
+application compatibility revision. The runtime recovery entry point reads that
+metadata and rejects a wrong identity or revision before it calls DBOS resume.
+Only a returning executor with both values matching may restart the Run.
 
-> When self-hosting in a distributed setting without Conductor … assign each
-> executor … an executor ID. Each workflow is tagged with the ID of the executor
-> that started it. When an application with an executor ID restarts, it only
-> recovers pending workflows assigned to that executor ID.
+An alive-but-silent, ambiguous or stuck observation is not converted into a
+heartbeat timeout or a cross-executor takeover. It is a typed durable operator
+escalation. The escalation record is application evidence and is not a
+stdout-only diagnostic.
 
-**Consequence:** on a Deployment with HPA, a pod OOM-killed at minute 22 leaves its investigation `PENDING` and
-unrecovered until a pod bearing the same executor ID happens to start. That is precisely the failure mode the briefing
-says must not happen.
+### 3.2 The mechanism
 
-### 3.2 The design
+The runtime seam owns one accepted recovery entry point. It performs the
+following sequence with public DBOS APIs:
 
-Three parts, all using public MIT-library APIs:
+1. Read insert-once Run metadata containing the expected executor and released
+   application compatibility revision.
+2. Reject a mismatched executor or revision before invoking `resume_workflow`.
+3. For an exact match, invoke the public DBOS resume operation and let the
+   matching executor recover its own checkpointed workflow.
+4. For alive-but-silent, ambiguous or stuck state, insert one typed durable
+   operator escalation record and do not invoke resume.
 
-**1. Stable executor identity.** Workers run as a **StatefulSet**, with
-`executor_id` derived from the pod ordinal. Because E10 requires blue/green, the ID must also carry the colour —
-`blue-0`, `green-0` — so that two generations can run concurrently without colliding. A restarting pod reclaims its own
-in-flight runs automatically, which handles the common case (rolling restart, single pod crash-loop) with no custom
-code.
-
-**2. Liveness heartbeat.** Each worker writes `(executor_id, app_version,
-last_seen_at)` to a table **we** own, on a few-second interval. DBOS does not expose executor liveness without
-Conductor, so we supply it.
-
-**3. Reaper.** A scheduled DBOS workflow (dogfooding the engine) that periodically:
-
-- lists `PENDING` workflows,
-- joins them against the heartbeat table,
-- for any whose executor's heartbeat is stale, calls `resume_workflow(id)`, which resumes from the last completed step.
-
-**Version constraint (important).** DBOS only recovers workflows whose application version matches the executor's. The
-reaper therefore cannot resume an old-version workflow onto a new-version worker — it must resume it onto a live worker
-**of the matching colour**. This couples E2 and E10 tightly: the reaper is version-aware, and a colour cannot be retired
-while it still owns `PENDING` work.
-
-**Safety argument.** The dangerous outcome is double execution. It is prevented by the conjunction of: executor pinning
-(only one executor owns a run), our heartbeat (we do not resume a run whose owner is alive), version matching, and step
-checkpointing (a resumed run replays completed steps from checkpoints rather than re-executing them). E6's idempotency
-keys are the backstop for the residual window.
-
-**Scale-down caveat.** Scaling a StatefulSet from 8 to 4 pods orphans runs owned by ordinals 4–7 permanently — the
-heartbeat goes stale and never returns. The reaper handles this correctly by design (stale heartbeat → resume
-elsewhere), but it means **the reaper is load-bearing for normal scale-down, not just for crashes.** It cannot be
-treated as a rarely-exercised safety net; it needs a test.
+This does not provide automatic cross-executor recovery and does not treat a
+stale heartbeat as permission to take over a Run. StatefulSet identity and
+blue/green deployment remain operational placement and drain concerns, not a
+cross-executor recovery fence.
 
 ### 3.3 Always enqueue, never start directly
 
@@ -439,46 +423,38 @@ so ≥72h) and is the effective upper bound on how long a deployment colour must
 
 ## 7. E10 — Deploy strategy and what "version" means
 
-### 7.1 What DBOS versions actually are
+### 7.1 Explicit compatibility revisions
 
-An **application version** is, by default, **automatically computed from a hash of your workflow source code**. It can
-be overridden explicitly via the
-`application_version` config key. Every workflow is tagged with the version it started on, and **DBOS only recovers
-workflows whose version matches the current application version** — deliberately preventing a half-finished run from
-resuming against code whose step sequence no longer matches its checkpoints.
+The release boundary is an **explicit released application compatibility revision**. It is a compatibility identifier
+owned by the release process, not a Git commit SHA, image tag, or DBOS's automatic source hash. Every mutually versioned
+release receives a new revision, including a release whose workflow source appears unchanged. This is the accepted
+ADR-0077 all-release-drain policy: a helper or dependency change must not be able to masquerade as compatible merely
+because DBOS's automatic diagnostic value stayed the same.
 
-So "the old version" is not a release tag we invent; it is the identity of the code generation a run was born under.
+Every workflow is tagged with the explicit revision it started on, and **DBOS only recovers workflows whose revision
+matches the current application revision**. The matching-revision guard is necessary but is not a selective drain
+exception: every prior cohort is drained before retirement.
 
-### 7.2 Auto-hash, not git SHA
-
-It is tempting to pin `application_version` to the git SHA or image tag. **We should not.** Pinning to the SHA means
-*every* deploy creates a new version and therefore requires a full drain, including deploys that change nothing about
-workflow structure.
-
-The default auto-computed hash changes only when **workflow source code** changes — that is, when what steps run or in
-what order changes, which is precisely when draining is necessary. A prompt-text edit inside a step, a model swap, or a
-bug-fix within a step body does not alter step ordering and so does not force a drain. Given how frequently prompts will
-change, this distinction is the difference between draining on most deploys and draining on few.
-
-**Recommendation: use the default auto-computed version**, and treat any deploy that changes it as a structural deploy
-requiring blue/green.
-
-### 7.3 Blue/green, as DBOS recommends
+### 7.2 Blue/green and all-prior-cohort drain
 
 For versioning, DBOS explicitly recommends blue/green: launch processes on the new version, keep processes on the old
 version running, direct new traffic to the new version, and let the old drain.
 
 Concretely for us:
 
-1. New work is enqueued pinned to the latest version, via
-   `get_latest_application_version()` + `SetEnqueueOptions(app_version=…)`. Scheduled workflows (E11 b, c) are
-   automatically enqueued to the latest version, so they need no special handling.
-2. The old colour keeps running, executing only its own in-flight runs.
-3. Retirement is gated on `list_workflows(app_version=…, status=["ENQUEUED",
-   "PENDING"])` returning empty — a check our deploy pipeline must perform, not a human eyeball.
-4. E11 (d)'s approval expiry bounds how long step 3 can take.
+1. New work is enqueued pinned to the released compatibility revision. Scheduled workflows are also assigned that
+   revision by the release controller.
+2. Capacity for **every prior cohort** remains available while the new release is introduced. No prior cohort is
+   selectively exempted because a source hash appears unchanged.
+3. The drain controller checks `PENDING`, `ENQUEUED`, and `DELAYED` work for every prior revision and retains the old
+   capacity until all three states are empty.
+4. The controller alerts on an orphaned cohort or revision with active work but no live executor. An orphan alert is not
+   permission to discard or silently reassign the work.
+5. A rollback from B to A is a **reverse drain**: restore A capacity, route new work to A, apply the same three-state
+   drain and orphan checks, and retire B only after its work is drained.
+6. E11 (d)'s approval expiry bounds how long each drain can take.
 
-**Patching** (`DBOS.patch()` / `deprecate_patch()`) is available as the alternative strategy and is the better tool for
+**Patching** (`DBOS.patch()` / `deprecate_patch()`) is available as an alternative strategy and is the better tool for
 an urgent fix that must reach already-running investigations. It is not the default, because it accumulates conditionals
 in workflow code. v1 default is versioning + blue/green; patching is the documented escape hatch.
 
@@ -489,7 +465,7 @@ in workflow code. v1 default is versioning + blue/green; patching is the documen
 | #      | Risk                                                                                                                                       | Notes                                                                                                                                                                                                        |
 |--------|--------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **X1** | ~~DBOS's system database falls into PCI-DSS scope.~~ **Confirmed and closed by spike S2 (section 4.5).** | Step inputs/outputs/`send`/`recv` bodies are checkpointed in recoverable plaintext (pickle+base64, not encryption). **Confirmed in PCI-DSS scope** — extends **ADR-0025**. Mitigated structurally by ADR-0041's pointer rule, now a **CI-enforced invariant** (`scripts/check_step_pointer_rule.py`), not merely a convention. |
-| **X2** | The reaper (E2) is load-bearing for routine scale-down, not just crashes — and must be version-aware.                                      | Needs an explicit test, not an assumed-correct safety net.                                                                                                                                                   |
+| **X2** | Matching-executor restart and durable escalation are load-bearing recovery controls.                                                                 | The accepted runtime entry point must reject wrong identity/revision before resume and persist alive-but-silent, ambiguous and stuck escalation states. |
 | **X3** | ~~Workflow code changes break in-flight runs.~~ **Resolved by E10.**                                                                       | Residual: the deploy pipeline must gate colour retirement on a `list_workflows` check, and operators must understand that a structural change plus a long-lived approval keeps a colour alive.               |
 | **X4** | Pattern B demotes LangGraph below the durability boundary, and DBOS's Pattern B references are not LangGraph-based.                        | We are the integration point. Prototype the parent-workflow-drives-LangGraph shape early.                                                                                                                    |
 | **X5** | Worker placement across GCP + AliCloud is unaddressed.                                                                                     | DBOS queues can restrict which workers run which workflows, which is the likely lever, but multi-region Postgres for the system database is an open topology question for the Deployment session.            |
@@ -507,8 +483,8 @@ Verified live against `docs.dbos.dev` and `dbos.dev`:
 - `cancel_workflow` preempts **at the beginning of the next step**; `preemptible`
   steps exist for immediate async interruption.
 - `DBOS.sleep()` is durable; cron schedules are **stored in the database** and can be created, paused, resumed and
-  deleted **at runtime**; each firing executes on **exactly one** worker; scheduled workflows are **automatically
-  enqueued to the latest application version**.
+  deleted **at runtime**; each firing executes on **exactly one** worker. The release controller assigns scheduled
+  workflows the current explicit compatibility revision; DBOS's automatic version value is diagnostic only.
 - `send`/`recv` are persisted with exactly-once delivery from workflows.
 - `fork_workflow` copies history to a **new workflow ID** and re-runs from a chosen step.
 - `dbos.enqueue_workflow` exposes `workflow_id`, `deduplication_id`, `priority`,
@@ -516,9 +492,10 @@ Verified live against `docs.dbos.dev` and `dbos.dev`:
   `authenticated_user`, `authenticated_roles`.
 - `timeout_ms`/`deadline_epoch_ms` cancel **the workflow and all its children**.
 - Partitioned queues apply concurrency and rate limits **per partition**.
-- **Application version defaults to a hash of workflow source code**, overridable via `application_version`; **recovery
-  only matches like versions**; DBOS recommends **blue/green** draining, with `get_latest_application_version()` and
-  `list_workflows(app_version=…)` as the supporting APIs.
+- **The accepted release boundary is an explicit released compatibility revision**; matching-revision recovery remains
+  required. Blue/green retirement drains all prior revisions by checking `PENDING`, `ENQUEUED`, and `DELAYED` work,
+  alerts on orphaned revisions, and uses the same controls for reverse-drain rollback. DBOS's automatic version value is
+  retained only as a diagnostic observation, never as the compatibility boundary.
 - **Patching** (`DBOS.patch`, `DBOS.deprecate_patch`) requires `enable_patching`
   in config and raises `DBOSUnexpectedStepError` when misused.
 - Benchmark claim: **>40K workflows/steps per second** on a single Postgres.
@@ -528,14 +505,16 @@ Verified live against `docs.dbos.dev` and `dbos.dev`:
 - Corroborating **ADR-0030**: DBOS published *"Postgres LISTEN/NOTIFY Can Actually Scale"* (Jul 2026) — 60K writes/sec
   at millisecond latency.
 
-**Not yet verified — do before build:**
+**Current observed evidence and remaining verification:**
 
-1. DBOS Python **async** ergonomics with async LangGraph and `langchain-mcp-adapters`.
-2. Whether `resume_workflow` on a workflow whose executor is alive-but-silent can double-execute — the exact safety
-   envelope of E2's reaper.
-3. Behaviour of `list_workflows` filtering by executor ID without Conductor.
-4. Whether the auto-computed application version is stable across Python versions, dependency upgrades and container
-   rebuilds — E10's "few drains" argument depends on it changing *only* on real workflow-code changes.
+1. The Gate 0.3 runtime lane observed DBOS Python **async** ergonomics with async LangGraph and
+   `langchain-mcp-adapters`; this is bounded synthetic integration evidence, not production completion evidence.
+2. The version comparison observed automatic runtime/source and schema diagnostics, including a helper-only
+   false-compatible result and a DBOS-version difference. These are private/source/schema diagnostics, not public
+   compatibility API evidence and not the release boundary.
+3. Gate 0.3 accepted-scope evidence records the explicit revision contract, matching-revision recovery, metadata and
+   typed escalation behaviour. Operational evidence must separately record all-prior `PENDING`/`ENQUEUED`/`DELAYED`
+   drain checks, orphan alerts, and reverse-drain rollback; the bounded experiment is not a production completion claim.
 
 ~~Interaction of DBOS system-database migrations with our own Postgres migrations and ADR-0051's row-level security
 (DBOS tables are not RLS-aware).~~ **Closed by spike S2** (section 4.5, experiments E3/E6): DBOS's own tables cannot
@@ -596,7 +575,7 @@ Mapping the rest:
 | E11 durable sleep, cron schedules       | Timers, Schedules                                                                                                   | ≈ 1:1                                                                                                                  |
 | E6 `workflow_id` / `deduplication_id`   | Workflow ID + reuse policy                                                                                          | ≈ 1:1                                                                                                                  |
 | E7 deadlines cancelling children        | Workflow timeouts + cancellation scopes                                                                             | ≈ 1:1                                                                                                                  |
-| **E2 heartbeat + reaper**               | **Deleted entirely** — native cluster-side                                                                          | **Negative cost: we delete code**                                                                                      |
+| **E2 matching-executor/revision restart + durable escalation** | **Worker identity plus versioned deployment controls** | **Requires explicit runtime and operator-record implementation** |
 | E10 blue/green version pinning          | Worker versioning / build IDs                                                                                       | Conceptually similar, mechanically different                                                                           |
 | **E8 per-partition queue flow control** | **No direct equivalent** — DBOS's own comparison notes Temporal lacks comparable queueing/flow-control abstractions | **Real rework.** ADR-0044's per-workspace concurrency/rate limits (ADR-0017's ceiling chain) would need reimplementing |
 | **E4 `fork_workflow` for evals**        | Reset is roughly analogous but not identical                                                                        | **Partial rework** of the prompt-comparison eval flow                                                                  |
@@ -656,4 +635,3 @@ substitution. It is hygiene that happens to also cap migration cost — not an a
 **It does not, and is not meant to, make the engine swappable by configuration.**
 The `@DBOS.workflow()` / `@DBOS.step()` decorators stay on our functions. Swapping engines means re-decorating and
 rewriting section 10.3's two rework areas. That is the honest, bounded cost, accepted.
-

@@ -1,0 +1,109 @@
+{
+  "actual": {
+    "assertions": {
+      "comparison_completed": true,
+      "cross_dbos_version_difference_observed": true,
+      "exact_automatic_version_difference_observed": true,
+      "exact_dbos_versions_observed": true,
+      "exact_isolated_dependency_interpreter_matrix": true,
+      "helper_false_compatible_observation": true,
+      "python_variant_versions_stable_within_cohort": true
+    },
+    "observed_runtime_version_comparison": {
+      "dbos_2_31_1": {
+        "automatic_application_version": "c794758e9a435661e8952586635ba345",
+        "dbos_version": "2.31.1",
+        "migration_versions": [
+          {
+            "version": "108"
+          }
+        ],
+        "python": "3.13.0"
+      },
+      "dbos_3_0_0": {
+        "automatic_application_version": "469124d570d40494405ef8ad74749acb",
+        "dbos_version": "3.0.0",
+        "migration_versions": [
+          {
+            "version": "114"
+          }
+        ],
+        "python": "3.13.0"
+      },
+      "exact_difference": {
+        "automatic_application_version_changed": true,
+        "dbos_2_31_1_value": "c794758e9a435661e8952586635ba345",
+        "dbos_3_0_0_value": "469124d570d40494405ef8ad74749acb"
+      },
+      "helper_only_false_compatible_observation": {
+        "automatic_application_version_unchanged": true,
+        "baseline_automatic_application_version": "6291bf83d0ad38ca22f83e659454e749",
+        "baseline_workflow_result": "helper-v1:gate-0-3-version-fingerprint",
+        "changed_automatic_application_version": "6291bf83d0ad38ca22f83e659454e749",
+        "changed_workflow_result": "helper-v2:gate-0-3-version-fingerprint",
+        "classification": "false-compatible observation, not compatibility behaviour",
+        "workflow_result_changed": true
+      }
+    },
+    "policy_requirements_adr_0077": {
+      "graft_all_prior_cohort_drain_required": true,
+      "graft_compatibility_revision": "gate03-accepted-revision-2026-09-20",
+      "graft_compatibility_revision_is_mutable_git_sha_or_image_tag": false,
+      "graft_drain_states": [
+        "PENDING",
+        "ENQUEUED",
+        "DELAYED"
+      ],
+      "graft_matching_revision_recovery_only": true,
+      "graft_orphan_revision_alert_required": true,
+      "graft_rollback_is_reverse_drain": true
+    }
+  },
+  "artefacts": [
+    {
+      "path": "specs/phase-1-walking-skeleton/evidence/gate-0.3/dbos-version-comparison-result.json",
+      "sha256": "41ef6eb1d59c52dc0eca93cb665da0c4c8c1cce55ea47895f373865667e99e46"
+    }
+  ],
+  "command": {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "--python",
+      "3.13.0",
+      "python",
+      "deployment/gate-0.3/version_comparison.py",
+      "run"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  "environment": {
+    "application_metadata_and_escalations": "transaction_mode_pgbouncer",
+    "dbos": "3.0.0",
+    "dbos_system_database": "direct_postgresql",
+    "langchain_mcp_adapters": "0.3.2 (locked)",
+    "langgraph": "1.2.11 (locked)",
+    "mcp": "1.28.1 (locked)",
+    "pooler": "transaction-mode PgBouncer",
+    "postgres": "16 pinned Gate 0.3 image",
+    "python": "3.13.0",
+    "python_executable": "/Users/av/Repositories/vikshana/graft-agent-harness/.venv/bin/python3",
+    "required_python": "3.13.0"
+  },
+  "evidence_lanes": {
+    "private_or_diagnostic": true,
+    "private_or_diagnostic_kinds": [
+      "private DBOS runtime, source and schema diagnostic lane; not public API behaviour"
+    ],
+    "public_api_behaviour": false
+  },
+  "expected": "runtime version comparison observation plus the accepted ADR-0077 policy fields accepted requirements: released compatibility-revision and all-prior-cohort drain",
+  "private_dbos_api_or_system_table_mutation": false,
+  "public_api_only": false,
+  "report": "versioning",
+  "started_at": "2026-09-20T07:30:23.206538+00:00",
+  "verdict": "PASS"
+}

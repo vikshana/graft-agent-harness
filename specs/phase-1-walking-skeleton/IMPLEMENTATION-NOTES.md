@@ -574,3 +574,56 @@ The evidence explicitly does not cover DBOS step trajectories,
 flow control, the DBOS PostgreSQL system-database/pooler topology, or the DBOS
 executor/reaper and released compatibility-revision policy. This is comparison
 evidence only, not a decision to switch engines.
+
+## Gate 0.3 accepted-scope closure repair
+
+> **Date:** 2026-09-20
+
+Repaired only the accepted Gate 0.3 closure defects. The accepted recovery
+experiment now has one `accepted_runtime_recovery` entry point. It reads
+insert-once Run metadata, rejects conflicting application revisions, rejects
+wrong executor identity and released application compatibility revision before
+calling public DBOS resume, and records typed durable `ALIVE_BUT_SILENT`,
+`AMBIGUOUS`, and `STUCK` operator escalation rows. Matching executor and
+revision restart evidence is retained separately from the negative cases.
+This is the accepted [ADR-0078](../../docs/adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md)
+boundary and uses the released-revision requirements of
+[ADR-0077](../../docs/adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md);
+it does not claim automatic cross-executor recovery.
+
+Reports 02, 03, and 04 now distinguish observations from accepted policy
+requirements. Version-comparison cleanup preserves the compose environment
+needed by the main topology, and CI retains both `evidence/dbos/` and
+`evidence/gate-0.3/` for 14 days. `actionlint` and the Gate 0.3 static/report
+tests pass locally. Docker accepted reports and the full local quality checks
+were run against the disposable PostgreSQL 16 and transaction-mode PgBouncer
+topology. GitHub Actions itself has not run here, so CI cannot yet be called
+passing locally. Gate 0.3 remains unchecked in `PLAN.md`.
+
+## Gate 0.3 final accepted-evidence reproducibility repair
+
+> **Date:** 2026-09-20
+
+The accepted report lane now executes the shared async/MCP/listing source
+experiment once for `accepted_scope_reports.py all`, and records the exact
+source-artifact path and SHA-256 in reports 01 and 03. A `PASS` requires the
+actual async `SUCCESS`, the false LangGraph checkpointer, the exact decorated
+step list, a real synthetic streamable-HTTP MCP response, the injected MCP
+failure, and the exact positive/negative executor filters. Partial or blocked
+source evidence is `INCOMPLETE`, never `PASS`.
+
+Report 04 records the observed DBOS 2.31.1 and 3.0.0 automatic-version values,
+the migration observations, and the helper-only false-compatible runtime
+observation. Its lane is explicitly private/source/schema diagnostic evidence,
+not public API behaviour. ADR-0077 requirements are under a separate policy
+field and are not presented as observations.
+
+The isolated comparison now uses Python 3.11.11, 3.12.6 and 3.13.0 and exact
+dependency versions, while the Docker probe uses a digest-pinned interpreter
+image and exact dependency versions. The local Docker rerun completed the four
+accepted reports with `PASS`; the retained canonical reports and raw Gate 0.3
+artefacts cross-link the shared result and version-comparison evidence.
+`uv run pytest -m gate_0_3 tests/gate_0_3` passed all 15 tests, Ruff format and
+lint passed for the Gate 0.3 scope, and `actionlint .github/workflows/gate-0-3.yml`
+passed. The workflow runs both Gate 0.3 test modules and retains both evidence
+directories. No plan task was checked.

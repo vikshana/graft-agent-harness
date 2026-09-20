@@ -31,7 +31,7 @@ def test_gate_0_3_files_are_local_only_and_reproducible() -> None:
     assert "docker" in recovery
     assert "container" in recovery
     assert "winning_executor_is_scenario_b" in recovery
-    assert "wrong_revision_reaper_probe" in recovery
+    assert "graft_wrong_compatibility_revision_reaper_probe" in recovery
     assert "graft_gate03_recovery_reservations_v3" in recovery
     assert "reservation_cas_lost" in recovery
     assert "_recover_pending_workflows" not in recovery
@@ -71,8 +71,19 @@ def test_runtime_boundary_and_revision_selection_are_explicit() -> None:
     recovery = RECOVERY_RACE.read_text()
     assert "DBOSClient.resume_workflow" in recovery
     assert "_recover_pending_workflows" not in recovery
-    assert "wrong_revision_reaper_probe" in recovery
+    assert "graft_wrong_compatibility_revision_reaper_probe" in recovery
     assert "application_db_via_transaction_mode_pgbouncer" in recovery
+
+
+def test_synthetic_postgres_tables_use_prefixed_tenant_scope_and_rls() -> None:
+    recovery = (ROOT / "deployment/gate-0.3/accepted_recovery.py").read_text()
+    race = RECOVERY_RACE.read_text()
+    for source in (recovery, race):
+        assert "graft_tenant_id" in source
+        assert "SET LOCAL graft.tenant_id" in source
+        assert "FORCE ROW LEVEL SECURITY" in source
+    assert "localhost:56432/gate03_app" in recovery
+    assert "pgbouncer:6432/gate03_app" in race
 
 
 def test_synthetic_effect_service_enforces_run_step_key_contract(tmp_path: Path) -> None:

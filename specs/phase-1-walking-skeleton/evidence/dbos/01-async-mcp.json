@@ -1,0 +1,90 @@
+{
+  "actual": {
+    "assertions": {
+      "async_step_result_is_success": true,
+      "exact_decorated_dbos_steps": true,
+      "expected_injected_failure": true,
+      "langgraph_checkpointer_is_false": true,
+      "real_mcp_successful_response": true
+    },
+    "async_and_mcp_observations": {
+      "async_dbos_steps": {
+        "result": "step:synthetic",
+        "status": {
+          "app_version": "12de7e353fc7d1f7ffefbc953c21dc95",
+          "application_version": null,
+          "executor_id": "gate03-executor-a",
+          "name": "async_workflow",
+          "status": "SUCCESS",
+          "workflow_id": "1c8fb3b6-1e17-4b2d-9461-0313e7d4e5f9"
+        }
+      },
+      "langgraph_no_checkpointer": {
+        "checkpointer_configured": false,
+        "decorated_step_boundaries": [
+          "graph_step",
+          "mcp_step",
+          "mcp_failure_step"
+        ],
+        "result": {
+          "graph": "graph:synthetic",
+          "mcp": "[{'type': 'text', 'text': 'mcp:synthetic', 'id': 'lc_6d74e882-01bb-49e8-8b3a-d69b50609531'}]",
+          "mcp_failure": "injected_failure:_MCPToolExecutionError"
+        }
+      },
+      "streamable_http_mcp": {
+        "capability": "streamable_http_client_constructed",
+        "client_type": "MultiServerMCPClient",
+        "endpoint": "http://127.0.0.1:59999/mcp"
+      }
+    },
+    "runner_result": "passed"
+  },
+  "artefacts": [
+    {
+      "path": "specs/phase-1-walking-skeleton/evidence/gate-0.3/result.json",
+      "sha256": "783e5ea685974a7c08990d66c568ee95382d63e3936838add00a0ce6f3950819"
+    }
+  ],
+  "command": {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "--python",
+      "3.13.0",
+      "python",
+      "deployment/gate-0.3/run_experiment.py",
+      "run"
+    ],
+    "returncode": 0,
+    "stderr": "10:30:16 [    INFO] (dbos:_dbos.py:509) Initializing DBOS (v3.0.0)\n10:30:16 [    INFO] (dbos:_dbos.py:549) Executor ID: gate03-executor-a\n10:30:16 [    INFO] (dbos:_dbos.py:550) Application version: 12de7e353fc7d1f7ffefbc953c21dc95\n10:30:16 [    INFO] (dbos:_dbos.py:551) Application name: gate-0-3\n10:30:16 [    INFO] (dbos:_sys_db.py:675) Initializing DBOS system database with URL: postgresql://gate03@localhost:55433/gate03_system?password=[REDACTED] (schema: dbos)\n10:30:16 [    INFO] (dbos:_sys_db.py:683) DBOS system database engine parameters: {'connect_args': {'application_name': 'dbos_transact', 'connect_timeout': 10}, 'pool_timeout': 30, 'max_overflow': 0, 'pool_size': 20, 'pool_pre_ping': True}\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 1\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 2\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 3\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 4\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 5\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 6\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 7\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 8\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 9\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 10\n10:30:16 [    INFO] (dbos:_migration.py:258) Migration 10 skipped, primary key already exists\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 11\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 12\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 13\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 14\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 15\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 16\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 17\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 18\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 19\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 20\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 21\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 22\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 23\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 24\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 25\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 26\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 27\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 28\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 29\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 30\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 31\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 32\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 33\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 34\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 35\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 36\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 37\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 38\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 39\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 40\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 41\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 42\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 43\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 44\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 45\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 46\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 47\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 100\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 101\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 102\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 103\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 104\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 105\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 106\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 107\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 108\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 109\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 110\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 111\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 112\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 113\n10:30:16 [    INFO] (dbos:_migration.py:225) Applying DBOS system database schema migration 114\n10:30:16 [    INFO] (dbos:_dbos.py:634) No workflows to recover from application version 12de7e353fc7d1f7ffefbc953c21dc95\n10:30:16 [    INFO] (dbos:_dbos.py:735) DBOS launched!\n10:30:16 [    INFO] (dbos:_dbos.py:743) To view and manage workflows, connect to DBOS Conductor at: https://console.dbos.dev/self-host?appname=gate-0-3\n10:30:17 [    INFO] (dbos:_queue.py:944) Listening to 0 queues:\n10:30:17 [    INFO] (dbos:_queue.py:882) Stopping queue manager, joining all worker threads...\n10:30:17 [    INFO] (dbos:_dbos.py:422) DBOS successfully shut down\n",
+    "stdout": ""
+  },
+  "environment": {
+    "application_metadata_and_escalations": "transaction_mode_pgbouncer",
+    "dbos": "3.0.0",
+    "dbos_system_database": "direct_postgresql",
+    "langchain_mcp_adapters": "0.3.2 (locked)",
+    "langgraph": "1.2.11 (locked)",
+    "mcp": "1.28.1 (locked)",
+    "pooler": "transaction-mode PgBouncer",
+    "postgres": "16 pinned Gate 0.3 image",
+    "python": "3.13.0",
+    "python_executable": "/Users/av/Repositories/vikshana/graft-agent-harness/.venv/bin/python3",
+    "required_python": "3.13.0"
+  },
+  "evidence_lanes": {
+    "private_or_diagnostic": true,
+    "private_or_diagnostic_kinds": [
+      "DBOS runtime/source-version diagnostics in the retained experiment result"
+    ],
+    "public_api_behaviour": true
+  },
+  "expected": "async DBOS step, no-checkpointer LangGraph, real synthetic streamable-HTTP MCP and injected failure boundary",
+  "private_dbos_api_or_system_table_mutation": false,
+  "public_api_only": false,
+  "report": "async-mcp",
+  "started_at": "2026-09-20T07:30:17.388920+00:00",
+  "verdict": "PASS"
+}

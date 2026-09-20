@@ -61,6 +61,7 @@ ENGINEERING_EFFORT = {
 }
 TERMINAL_STATUSES = {"SUCCESS", "ERROR", "CANCELLED", "MAX_RECOVERY_ATTEMPTS_EXCEEDED"}
 REDACTED = "[REDACTED]"
+GRAFT_TENANT_ID = "graft-tenant-gate03"
 
 
 def durable_effect_key(graft_run_id: str, durable_step_id: str) -> str:
@@ -69,6 +70,12 @@ def durable_effect_key(graft_run_id: str, durable_step_id: str) -> str:
     if not graft_run_id or not durable_step_id:
         raise ValueError("graft_run_id and durable_step_id are required")
     return f"{graft_run_id}:{durable_step_id}"
+
+
+def _set_tenant_scope(connection: psycopg.Connection[object]) -> None:
+    """Apply the synthetic probe's transaction-local Tenant scope."""
+
+    connection.execute("SET LOCAL graft.tenant_id = 'graft-tenant-gate03'")
 
 
 def _redact(value: object) -> object:
@@ -128,6 +135,7 @@ class EffectState:
             """
             CREATE TABLE IF NOT EXISTS effect_calls (
                 raw_call_number INTEGER PRIMARY KEY AUTOINCREMENT,
+                graft_tenant_id TEXT NOT NULL,
                 effect_key TEXT NOT NULL,
                 graft_run_id TEXT NOT NULL,
                 durable_step_id TEXT NOT NULL,
@@ -135,6 +143,7 @@ class EffectState:
             );
             CREATE TABLE IF NOT EXISTS applied_effects (
                 effect_key TEXT PRIMARY KEY,
+                graft_tenant_id TEXT NOT NULL,
                 graft_run_id TEXT NOT NULL,
                 durable_step_id TEXT NOT NULL,
                 first_raw_call_number INTEGER NOT NULL
@@ -160,6 +169,7 @@ class EffectState:
     def record_effect(self, body: dict[str, object]) -> tuple[int, bool]:
         graft_run_id = str(body.get("graft_run_id", ""))
         durable_step_id = str(body.get("durable_step_id", ""))
+        graft_tenant_id = str(body.get("graft_tenant_id", GRAFT_TENANT_ID))
         effect_key = str(body.get("effect_key", ""))
         expected_key = durable_effect_key(graft_run_id, durable_step_id)
         if (
@@ -179,9 +189,15 @@ class EffectState:
             raise ValueError("synthetic effect key contract violation")
         with self.condition:
             cursor = self.connection.execute(
-                "INSERT INTO effect_calls(effect_key, graft_run_id, durable_step_id, executor_id) "
-                "VALUES (?, ?, ?, ?)",
-                (effect_key, graft_run_id, durable_step_id, body.get("executor_id")),
+                "INSERT INTO effect_calls(graft_tenant_id, effect_key, graft_run_id, "
+                "durable_step_id, executor_id) VALUES (?, ?, ?, ?, ?)",
+                (
+                    graft_tenant_id,
+                    effect_key,
+                    graft_run_id,
+                    durable_step_id,
+                    body.get("executor_id"),
+                ),
             )
             raw_call_number = int(cursor.lastrowid or 0)
             if not raw_call_number:
@@ -189,9 +205,15 @@ class EffectState:
             applied = (
                 self.connection.execute(
                     "INSERT OR IGNORE INTO applied_effects "
-                    "(effect_key, graft_run_id, durable_step_id, first_raw_call_number) "
-                    "VALUES (?, ?, ?, ?)",
-                    (effect_key, graft_run_id, durable_step_id, raw_call_number),
+                    "(effect_key, graft_tenant_id, graft_run_id, durable_step_id, "
+                    "first_raw_call_number) VALUES (?, ?, ?, ?, ?)",
+                    (
+                        effect_key,
+                        graft_tenant_id,
+                        graft_run_id,
+                        durable_step_id,
+                        raw_call_number,
+                    ),
                 ).rowcount
                 == 1
             )
@@ -205,16 +227,24 @@ class EffectState:
             calls = [
                 {
                     "raw_call_number": int(raw_call_number),
+                    "graft_tenant_id": graft_tenant_id,
                     "effect_key": effect_key,
                     "graft_run_id": graft_run_id,
                     "durable_step_id": durable_step_id,
                     "executor_id": executor_id,
                     "expected_effect_key": durable_effect_key(graft_run_id, durable_step_id),
                 }
-                for raw_call_number, effect_key, graft_run_id, durable_step_id, executor_id in (
+                for (
+                    raw_call_number,
+                    graft_tenant_id,
+                    effect_key,
+                    graft_run_id,
+                    durable_step_id,
+                    executor_id,
+                ) in (
                     self.connection.execute(
-                        "SELECT raw_call_number, effect_key, graft_run_id, durable_step_id, "
-                        "executor_id FROM effect_calls ORDER BY raw_call_number"
+                        "SELECT raw_call_number, graft_tenant_id, effect_key, graft_run_id, "
+                        "durable_step_id, executor_id FROM effect_calls ORDER BY raw_call_number"
                     )
                 )
             ]
@@ -350,80 +380,82 @@ def _reaper_lease(args: argparse.Namespace) -> dict[str, object]:
     """Acquire the application-owned CAS lease through transaction PgBouncer."""
 
     database_url = os.environ.get("G03_APP_DATABASE_URL", HOST_APP_DATABASE_URL)
-    with psycopg.connect(database_url) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
+    with (
+        psycopg.connect(database_url) as connection,
+        connection.transaction(),
+        connection.cursor() as cursor,
+    ):
+        _set_tenant_scope(connection)
+        cursor.execute(
+            """
                 SELECT graft_application_revision
                 FROM graft_gate03_run_metadata_v3
-                WHERE graft_run_id = %s
+                WHERE graft_tenant_id = %s AND graft_run_id = %s
                 """,
-                (args.workflow_id,),
-            )
-            metadata = cursor.fetchone()
-            if metadata is None:
-                connection.rollback()
-                return {"acquired": False, "reason": "run_metadata_not_found"}
-            if metadata[0] != args.application_revision:
-                connection.rollback()
-                return {
-                    "acquired": False,
-                    "reason": "application_revision_mismatch",
-                    "recorded_revision": metadata[0],
-                    "requested_revision": args.application_revision,
-                }
-            cursor.execute(
-                """
+            (GRAFT_TENANT_ID, args.workflow_id),
+        )
+        metadata = cursor.fetchone()
+        if metadata is None:
+            return {"acquired": False, "reason": "run_metadata_not_found"}
+        if metadata[0] != args.application_revision:
+            return {
+                "acquired": False,
+                "reason": "application_revision_mismatch",
+                "graft_recorded_compatibility_revision": metadata[0],
+                "graft_requested_compatibility_revision": args.application_revision,
+            }
+        cursor.execute(
+            """
                 SELECT graft_reservation_generation, graft_recovery_state
                 FROM graft_gate03_recovery_reservations_v3
-                WHERE graft_run_id = %s AND graft_application_revision = %s
+                WHERE graft_tenant_id = %s
+                  AND graft_run_id = %s
+                  AND graft_application_revision = %s
                 FOR UPDATE
                 """,
-                (args.workflow_id, args.application_revision),
-            )
-            row = cursor.fetchone()
-            if row is None:
-                connection.rollback()
-                return {"acquired": False, "reason": "reservation_not_found"}
-            generation, state = int(row[0]), str(row[1])
-            if state not in {"AVAILABLE", "RECOVERY_REQUIRED"}:
-                connection.rollback()
-                return {
-                    "acquired": False,
-                    "reason": "reservation_not_selectable",
-                    "reservation_state": state,
-                    "owner_generation": generation,
-                }
-            next_generation = generation + 1
-            cursor.execute(
-                """
+            (GRAFT_TENANT_ID, args.workflow_id, args.application_revision),
+        )
+        row = cursor.fetchone()
+        if row is None:
+            return {"acquired": False, "reason": "reservation_not_found"}
+        generation, state = int(row[0]), str(row[1])
+        if state not in {"AVAILABLE", "RECOVERY_REQUIRED"}:
+            return {
+                "acquired": False,
+                "reason": "reservation_not_selectable",
+                "reservation_state": state,
+                "owner_generation": generation,
+            }
+        next_generation = generation + 1
+        cursor.execute(
+            """
                 UPDATE graft_gate03_recovery_reservations_v3
                 SET graft_reservation_generation = %s,
                     graft_reservation_owner = %s,
                     graft_recovery_state = 'RESERVED'
                 WHERE graft_run_id = %s
+                  AND graft_tenant_id = %s
                   AND graft_application_revision = %s
                   AND graft_reservation_generation = %s
                   AND graft_recovery_state = %s
                 """,
-                (
-                    next_generation,
-                    args.reaper_id,
-                    args.workflow_id,
-                    args.application_revision,
-                    generation,
-                    state,
-                ),
-            )
-            if cursor.rowcount != 1:
-                connection.rollback()
-                return {"acquired": False, "reason": "reservation_cas_lost"}
-        connection.commit()
+            (
+                next_generation,
+                args.reaper_id,
+                args.workflow_id,
+                GRAFT_TENANT_ID,
+                args.application_revision,
+                generation,
+                state,
+            ),
+        )
+        if cursor.rowcount != 1:
+            return {"acquired": False, "reason": "reservation_cas_lost"}
     return {
         "acquired": True,
         "lease_owner": args.reaper_id,
         "owner_generation": next_generation,
-        "application_revision": args.application_revision,
+        "graft_compatibility_revision": args.application_revision,
         "reservation_state": "RESERVED",
         "lease_backend": "application_db_via_transaction_mode_pgbouncer",
     }
@@ -440,23 +472,33 @@ def _wrong_revision_probe(workflow_id: str) -> dict[str, object]:
 
 def _release_reaper_lease(args: argparse.Namespace, generation: int) -> None:
     database_url = os.environ.get("G03_APP_DATABASE_URL", HOST_APP_DATABASE_URL)
-    with psycopg.connect(database_url) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
+    with (
+        psycopg.connect(database_url) as connection,
+        connection.transaction(),
+        connection.cursor() as cursor,
+    ):
+        _set_tenant_scope(connection)
+        cursor.execute(
+            """
                 UPDATE graft_gate03_recovery_reservations_v3
                 SET graft_reservation_owner = NULL,
                     graft_recovery_state = 'TERMINAL',
                     graft_terminal_result = 'SUCCESS'
                 WHERE graft_run_id = %s
+                  AND graft_tenant_id = %s
                   AND graft_application_revision = %s
                   AND graft_reservation_owner = %s
                   AND graft_reservation_generation = %s
                   AND graft_recovery_state = 'RESERVED'
                 """,
-                (args.workflow_id, args.application_revision, args.reaper_id, generation),
-            )
-        connection.commit()
+            (
+                args.workflow_id,
+                GRAFT_TENANT_ID,
+                args.application_revision,
+                args.reaper_id,
+                generation,
+            ),
+        )
 
 
 def _mark_recovery_required(
@@ -465,23 +507,27 @@ def _mark_recovery_required(
     """Trusted operator/death detector CAS transition; no clock/TTL is used."""
 
     database_url = os.environ.get("G03_APP_DATABASE_URL", HOST_APP_DATABASE_URL)
-    with psycopg.connect(database_url) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
+    with (
+        psycopg.connect(database_url) as connection,
+        connection.transaction(),
+        connection.cursor() as cursor,
+    ):
+        _set_tenant_scope(connection)
+        cursor.execute(
+            """
                 UPDATE graft_gate03_recovery_reservations_v3
                 SET graft_reservation_owner = NULL,
                     graft_recovery_state = 'RECOVERY_REQUIRED'
                 WHERE graft_run_id = %s
+                  AND graft_tenant_id = %s
                   AND graft_application_revision = %s
                   AND graft_reservation_generation = %s
                   AND graft_reservation_owner = %s
                   AND graft_recovery_state = 'RESERVED'
                 """,
-                (workflow_id, application_revision, generation, owner),
-            )
-            updated = cursor.rowcount
-        connection.commit()
+            (workflow_id, GRAFT_TENANT_ID, application_revision, generation, owner),
+        )
+        updated = cursor.rowcount
     return {
         "cas_succeeded": updated == 1,
         "from_owner": owner,
@@ -495,21 +541,25 @@ def _stale_terminal_probe(
     workflow_id: str, application_revision: str, stale_generation: int
 ) -> dict[str, object]:
     database_url = os.environ.get("G03_APP_DATABASE_URL", HOST_APP_DATABASE_URL)
-    with psycopg.connect(database_url) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
+    with (
+        psycopg.connect(database_url) as connection,
+        connection.transaction(),
+        connection.cursor() as cursor,
+    ):
+        _set_tenant_scope(connection)
+        cursor.execute(
+            """
                 UPDATE graft_gate03_recovery_reservations_v3
                 SET graft_recovery_state = 'TERMINAL', graft_terminal_result = 'STALE_PROBE'
                 WHERE graft_run_id = %s
+                  AND graft_tenant_id = %s
                   AND graft_application_revision = %s
                   AND graft_reservation_generation = %s
                   AND graft_recovery_state = 'RESERVED'
                 """,
-                (workflow_id, application_revision, stale_generation),
-            )
-            updated = cursor.rowcount
-        connection.rollback()
+            (workflow_id, GRAFT_TENANT_ID, application_revision, stale_generation),
+        )
+        updated = cursor.rowcount
     return {
         "cas_succeeded": updated == 1,
         "stale_generation": stale_generation,
@@ -540,6 +590,7 @@ def _post_effect(graft_run_id: str, executor_id: str, barrier_mode: str) -> str:
         EFFECT_URL,
         {
             "workflow_id": graft_run_id,
+            "graft_tenant_id": GRAFT_TENANT_ID,
             "graft_run_id": graft_run_id,
             "durable_step_id": STEP_ID,
             "effect_key": durable_effect_key(graft_run_id, STEP_ID),
@@ -801,49 +852,98 @@ def _reset_effect() -> dict[str, object]:
 
 def _prepare_reservation(workflow_id: str, application_revision: str) -> dict[str, object]:
     database_url = os.environ.get("G03_APP_DATABASE_URL", HOST_APP_DATABASE_URL)
-    with psycopg.connect(database_url) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
+    with (
+        psycopg.connect(database_url) as connection,
+        connection.transaction(),
+        connection.cursor() as cursor,
+    ):
+        _set_tenant_scope(connection)
+        cursor.execute(
+            """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_name = 'graft_gate03_run_metadata_v3'
+                      AND column_name = 'workflow_id'
+                )
                 """
+        )
+        legacy_schema = cursor.fetchone()
+        if legacy_schema and bool(legacy_schema[0]):
+            cursor.execute("DROP TABLE IF EXISTS graft_gate03_recovery_reservations_v3 CASCADE")
+            cursor.execute("DROP TABLE IF EXISTS graft_gate03_run_metadata_v3 CASCADE")
+        cursor.execute(
+            """
                 CREATE TABLE IF NOT EXISTS graft_gate03_run_metadata_v3 (
-                    graft_run_id TEXT PRIMARY KEY,
-                    graft_application_revision TEXT NOT NULL
+                    graft_tenant_id TEXT NOT NULL,
+                    graft_run_id TEXT NOT NULL,
+                    graft_application_revision TEXT NOT NULL,
+                    PRIMARY KEY (graft_tenant_id, graft_run_id)
                 );
                 CREATE TABLE IF NOT EXISTS graft_gate03_recovery_reservations_v3 (
+                    graft_tenant_id TEXT NOT NULL,
                     graft_run_id TEXT NOT NULL,
                     graft_application_revision TEXT NOT NULL,
                     graft_reservation_generation INTEGER NOT NULL DEFAULT 0,
                     graft_reservation_owner TEXT,
                     graft_recovery_state TEXT NOT NULL DEFAULT 'AVAILABLE',
                     graft_terminal_result TEXT,
-                    PRIMARY KEY (graft_run_id, graft_application_revision)
+                    PRIMARY KEY (graft_tenant_id, graft_run_id, graft_application_revision)
                 )
                 """
-            )
-            cursor.execute(
+        )
+        cursor.execute("ALTER TABLE graft_gate03_run_metadata_v3 ENABLE ROW LEVEL SECURITY")
+        cursor.execute("ALTER TABLE graft_gate03_run_metadata_v3 FORCE ROW LEVEL SECURITY")
+        cursor.execute(
+            "ALTER TABLE graft_gate03_recovery_reservations_v3 ENABLE ROW LEVEL SECURITY"
+        )
+        cursor.execute("ALTER TABLE graft_gate03_recovery_reservations_v3 FORCE ROW LEVEL SECURITY")
+        cursor.execute(
+            "DROP POLICY IF EXISTS graft_gate03_metadata_tenant ON graft_gate03_run_metadata_v3"
+        )
+        cursor.execute(
+            "DROP POLICY IF EXISTS graft_gate03_reservations_tenant ON "
+            "graft_gate03_recovery_reservations_v3"
+        )
+        cursor.execute(
+            """
+                CREATE POLICY graft_gate03_metadata_tenant
+                ON graft_gate03_run_metadata_v3
+                USING (graft_tenant_id = current_setting('graft.tenant_id', true))
+                WITH CHECK (graft_tenant_id = current_setting('graft.tenant_id', true))
                 """
+        )
+        cursor.execute(
+            """
+                CREATE POLICY graft_gate03_reservations_tenant
+                ON graft_gate03_recovery_reservations_v3
+                USING (graft_tenant_id = current_setting('graft.tenant_id', true))
+                WITH CHECK (graft_tenant_id = current_setting('graft.tenant_id', true))
+                """
+        )
+        cursor.execute(
+            """
                 INSERT INTO graft_gate03_run_metadata_v3
-                    (graft_run_id, graft_application_revision)
-                VALUES (%s, %s)
-                ON CONFLICT (graft_run_id) DO UPDATE
+                    (graft_tenant_id, graft_run_id, graft_application_revision)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (graft_tenant_id, graft_run_id) DO UPDATE
                 SET graft_application_revision = EXCLUDED.graft_application_revision
                 """,
-                (workflow_id, application_revision),
-            )
-            cursor.execute(
-                """
+            (GRAFT_TENANT_ID, workflow_id, application_revision),
+        )
+        cursor.execute(
+            """
                 INSERT INTO graft_gate03_recovery_reservations_v3
-                    (graft_run_id, graft_application_revision)
-                VALUES (%s, %s)
+                    (graft_tenant_id, graft_run_id, graft_application_revision)
+                VALUES (%s, %s, %s)
                 ON CONFLICT DO NOTHING
                 """,
-                (workflow_id, application_revision),
-            )
-        connection.commit()
+            (GRAFT_TENANT_ID, workflow_id, application_revision),
+        )
     return {
         "created": True,
         "workflow_id": workflow_id,
-        "application_revision": application_revision,
+        "graft_compatibility_revision": application_revision,
         "metadata_backend": "application_db_via_transaction_mode_pgbouncer",
     }
 
@@ -980,8 +1080,12 @@ def _run_scenario(scenario: str, barrier_mode: str, *, network_cut: bool) -> dic
     reaper_containers: list[str] = []
     try:
         _reset_effect()
-        result["application_revision_metadata"] = _prepare_reservation(workflow_id, APP_VERSION)
-        result["wrong_revision_reaper_probe"] = _wrong_revision_probe(workflow_id)
+        result["graft_compatibility_revision_metadata"] = _prepare_reservation(
+            workflow_id, APP_VERSION
+        )
+        result["graft_wrong_compatibility_revision_reaper_probe"] = _wrong_revision_probe(
+            workflow_id
+        )
         _start_worker_container(names["a"], workflow_id, executor_a, barrier_mode, migrate=True)
         commands["executor_a"] = names["a"]
         _wait_container_event(names["a"], "started")
@@ -1091,8 +1195,9 @@ def _run_scenario(scenario: str, barrier_mode: str, *, network_cut: bool) -> dic
             "crashed_before_terminal": bool(
                 status_after_accept and status_after_accept.get("status") not in TERMINAL_STATUSES
             ),
-            "application_revision_scoped_selection": any(
-                event.get("acquired") is True and event.get("application_revision") == APP_VERSION
+            "graft_compatibility_revision_scoped_selection": any(
+                event.get("acquired") is True
+                and event.get("graft_compatibility_revision") == APP_VERSION
                 for event in lease_events
             ),
             "application_db_cas_lease_backend": any(
@@ -1162,7 +1267,9 @@ def _run_scenario(scenario: str, barrier_mode: str, *, network_cut: bool) -> dic
             "winning_executor_b_outcome_observed": reaper_result_observed,
             "reaper_lease_selection_observed": bool(
                 isinstance(result["reaper_crash_retry"], dict)
-                and result["reaper_crash_retry"].get("application_revision_scoped_selection")
+                and result["reaper_crash_retry"].get(
+                    "graft_compatibility_revision_scoped_selection"
+                )
             ),
             "single_reservation_winner": sum(
                 event.get("acquired") is True for event in lease_events

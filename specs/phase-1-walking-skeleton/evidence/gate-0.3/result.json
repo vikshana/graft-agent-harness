@@ -3,12 +3,12 @@
     "async_dbos_steps": {
       "result": "step:synthetic",
       "status": {
-        "app_version": "8a6824d7af661e48e656237cae55dc35",
+        "app_version": "12de7e353fc7d1f7ffefbc953c21dc95",
         "application_version": null,
         "executor_id": "gate03-executor-a",
         "name": "async_workflow",
         "status": "SUCCESS",
-        "workflow_id": "ecde2968-a7f3-4a01-872d-feb17e1754ae"
+        "workflow_id": "1c8fb3b6-1e17-4b2d-9461-0313e7d4e5f9"
       }
     },
     "langgraph_no_checkpointer": {
@@ -20,7 +20,7 @@
       ],
       "result": {
         "graph": "graph:synthetic",
-        "mcp": "[{'type': 'text', 'text': 'mcp:synthetic', 'id': 'lc_eb856313-4243-4e5e-b27a-1ef18f55e0ea'}]",
+        "mcp": "[{'type': 'text', 'text': 'mcp:synthetic', 'id': 'lc_6d74e882-01bb-49e8-8b3a-d69b50609531'}]",
         "mcp_failure": "injected_failure:_MCPToolExecutionError"
       }
     },
@@ -32,32 +32,34 @@
   },
   "G03-B": {
     "alive_but_silent_recovery": "unresolved_public_api_not_safe_to_prove",
-    "isolated_idempotent_synthetic": {
-      "attempt_count": 1,
-      "first_result": "idempotent:once",
-      "note": "Repeated identical workflow ID/input was used; this is not alive-but-silent recovery proof.",
-      "second_result": "idempotent:once"
-    },
     "timeout_is_not_recovery_proof": true
   },
   "G03-C": {
+    "filter": {
+      "api": "DBOS.list_workflows_async",
+      "executor_id": "gate03-executor-a"
+    },
     "matching_count": 2,
     "matching_executor_ids": [
       "gate03-executor-a"
     ],
+    "negative_filter": {
+      "api": "DBOS.list_workflows_async",
+      "executor_id": "does-not-exist"
+    },
     "nonmatching_count": 0
   },
   "G03-D": {
     "changed_source_differs": true,
-    "changed_source_recomputed": "3f2a6c36bac7096dfb19d6cc60ce2738",
+    "changed_source_recomputed": "2fe3d1af4a9879905c846a04a626bd2d",
     "registered": {
       "application_name": "gate-0-3",
-      "created_at": 1789763206854,
-      "version_id": "fc5be7ee-965c-43f2-acba-d3b246d724b0",
-      "version_name": "8a6824d7af661e48e656237cae55dc35",
-      "version_timestamp": 1789763206854
+      "created_at": 1789889417060,
+      "version_id": "ed51cb7b-b036-429a-b2f9-0fd4e87435f3",
+      "version_name": "12de7e353fc7d1f7ffefbc953c21dc95",
+      "version_timestamp": 1789889417060
     },
-    "same_source_recomputed": "8a6824d7af661e48e656237cae55dc35",
+    "same_source_recomputed": "12de7e353fc7d1f7ffefbc953c21dc95",
     "same_source_stable": true,
     "source_change": {
       "changed_source_hash": "440af4ede6bdd21ddd2d685dd496533f2833204e0dbc0377f58bebbcfd25b2b0",
@@ -86,9 +88,9 @@
     "system_database": "synthetic_local_postgresql_16"
   },
   "experiment": "gate-0.3",
-  "finished_at": "2026-09-18T20:26:48.781198+00:00",
-  "result": "partial_evidence_with_explicit_unresolved_questions",
-  "started_at": "2026-09-18T20:26:34.859394+00:00",
+  "finished_at": "2026-09-20T07:30:17.201937+00:00",
+  "result": "passed",
+  "started_at": "2026-09-20T07:30:16.148552+00:00",
   "versions": {
     "compose": {
       "command": [
@@ -181,7 +183,7 @@
         "stdout": "postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94\n"
       }
     },
-    "platform": "macOS-26.6.2-arm64-arm-64bit",
-    "python": "3.12.6 (main, Sep  9 2024, 21:36:32) [Clang 18.1.8 ]"
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "python": "3.13.0 (main, Oct  7 2024, 05:02:14) [Clang 16.0.0 (clang-1600.0.26.4)]"
   }
 }

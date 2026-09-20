@@ -348,7 +348,7 @@ def run_test_2() -> tuple[dict[str, object], list[dict[str, object]]]:
                 "system_database": "PostgreSQL 16 container",
                 "pooler": "transaction-mode PgBouncer container",
                 "process_isolation": "separate host processes; reduced-fidelity legacy lane",
-                "explicit_application_revisions": {"old": old_version, "new": new_version},
+                "graft_compatibility_revisions": {"old": old_version, "new": new_version},
                 "customer_system_access": False,
             },
             "forward": forward,
@@ -376,15 +376,15 @@ def run_test_2() -> tuple[dict[str, object], list[dict[str, object]]]:
             ],
             "criterion": criterion,
             "operational_drain_evidence": {
-                "forward_old_revision": old_version,
+                "graft_forward_old_compatibility_revision": old_version,
                 "forward_states_observed": ["PENDING", "ENQUEUED", "DELAYED"],
                 "forward_orphan_alert": bool(forward_orphan["flags_orphan"]),
-                "forward_matching_revision_recovery": bool(forward_replacement["drained"]),
-                "reverse_new_revision": new_version,
+                "graft_forward_matching_revision_recovery": bool(forward_replacement["drained"]),
+                "graft_reverse_new_compatibility_revision": new_version,
                 "reverse_states_observed": ["PENDING", "ENQUEUED", "DELAYED"],
                 "reverse_orphan_alert": bool(rollback_orphan["flags_orphan"]),
-                "reverse_matching_revision_recovery": bool(rollback_replacement["drained"]),
-                "revision_selection_safe": False,
+                "graft_reverse_matching_revision_recovery": bool(rollback_replacement["drained"]),
+                "graft_revision_selection_safe": False,
                 "blocker": (
                     "DBOS public resume API cannot condition on expected "
                     "executor/application revision."
@@ -609,7 +609,7 @@ def run_test_3() -> tuple[dict[str, object], list[dict[str, object]]]:
                 for name, result in dependency_results.items()
                 if result.get("status") != "passed"
             },
-            "verdict": "PASS_WITH_ADR_0077_MITIGATION",
+            "verdict": "DIAGNOSTIC_ONLY_WITH_ADR_0077_POLICY",
             "limitations": [
                 "The dependency-upgrade probes were blocked by the resolver, so no "
                 "cross-DBOS-version observation is claimed.",

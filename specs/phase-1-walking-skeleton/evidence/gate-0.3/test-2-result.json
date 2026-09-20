@@ -8,7 +8,7 @@
   "environment": {
     "application_database": "PostgreSQL 16 container",
     "customer_system_access": false,
-    "explicit_application_revisions": {
+    "graft_compatibility_revisions": {
       "new": "release-compat-new-2026-09-19",
       "old": "release-compat-old-2026-09-19"
     },
@@ -386,23 +386,23 @@
   ],
   "operational_drain_evidence": {
     "blocker": "DBOS public resume API cannot condition on expected executor/application revision.",
-    "forward_matching_revision_recovery": true,
-    "forward_old_revision": "release-compat-old-2026-09-19",
     "forward_orphan_alert": true,
     "forward_states_observed": [
       "PENDING",
       "ENQUEUED",
       "DELAYED"
     ],
-    "reverse_matching_revision_recovery": true,
-    "reverse_new_revision": "release-compat-new-2026-09-19",
+    "graft_forward_matching_revision_recovery": true,
+    "graft_forward_old_compatibility_revision": "release-compat-old-2026-09-19",
+    "graft_reverse_matching_revision_recovery": true,
+    "graft_reverse_new_compatibility_revision": "release-compat-new-2026-09-19",
+    "graft_revision_selection_safe": false,
     "reverse_orphan_alert": true,
     "reverse_states_observed": [
       "PENDING",
       "ENQUEUED",
       "DELAYED"
-    ],
-    "revision_selection_safe": false
+    ]
   },
   "report_disposition": "REDUCED_FIDELITY",
   "rollback": {
