@@ -1,0 +1,24 @@
+{
+  "cleanup": [
+    "docker",
+    "compose",
+    "-f",
+    "deployment/gate-0.3/docker-compose.yml",
+    "down",
+    "-v"
+  ],
+  "compose_config": [
+    "docker",
+    "compose",
+    "-f",
+    "deployment/gate-0.3/docker-compose.yml",
+    "config"
+  ],
+  "runner": [
+    "uv",
+    "run",
+    "python",
+    "deployment/gate-0.3/run_experiment.py",
+    "run"
+  ]
+}

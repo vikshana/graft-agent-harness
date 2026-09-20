@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://graft.example/contracts/harness-mcp-v1.schema.json",
+  "title": "Graft Harness MCP capability manifest v1",
+  "description": "Schema for the harness-owned streamable-HTTP MCP surface. The manifest envelope and existing Tool/Resource declarations are closed; additions are limited to new declarations or the explicit extension-safe metadata object. Closed input/output and pointer/reference shapes do not gain inline payload fields in v1. This is an MCP v1 capability declaration, not the Tool Gateway registry. MCP inputs and outputs are semantically identical to the REST contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "$id": {"type": "string"},
+    "graft_manifest_version": {"const": "v1"},
+    "mcp_protocol_version": {"type": "string", "minLength": 1},
+    "transport": {"const": "streamable-http"},
+    "server": {"type": "object", "additionalProperties": false, "required": ["name", "version", "description"], "properties": {"name": {"const": "graft-harness"}, "version": {"type": "string"}, "description": {"type": "string"}}},
+    "authentication": {"type": "object", "additionalProperties": false, "required": ["required", "profile", "status"], "properties": {"required": {"const": true}, "profile": {"const": "future-authority-service-mcp-profile"}, "status": {"const": "placeholder-required"}, "audience": {"const": "harness-mcp"}, "dynamic_client_registration": {"const": "undecided"}, "description": {"type": "string"}}},
+    "capabilities": {"type": "object", "additionalProperties": false, "required": ["tools", "resources"], "properties": {"tools": {"type": "object", "additionalProperties": true}, "resources": {"type": "object", "additionalProperties": true}}},
+    "tools": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/Tool"}, "uniqueItems": true},
+    "resources": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/Resource"}, "uniqueItems": true},
+    "compatibility": {"type": "object", "additionalProperties": false, "required": ["additive_rules", "breaking_rules", "unknown_field_policy", "unknown_event_policy", "mcp_declaration_policy", "pointer_reference_policy"], "properties": {"additive_rules": {"type": "string"}, "breaking_rules": {"type": "string"}, "unknown_field_policy": {"const": "ignore"}, "unknown_event_policy": {"const": "ignore"}, "mcp_declaration_policy": {"type": "string"}, "pointer_reference_policy": {"type": "string"}}}
+  },
+  "required": ["graft_manifest_version", "mcp_protocol_version", "transport", "server", "authentication", "capabilities", "tools", "resources", "compatibility"],
+  "$defs": {
+    "Tool": {"type": "object", "additionalProperties": false, "required": ["name", "description", "inputSchema", "outputSchema", "x-graft-authority-operation", "x-graft-rest-operation", "x-graft-idempotency", "x-graft-cursor", "x-graft-error-codes", "x-graft-provider-supported-errors"], "properties": {"name": {"type": "string", "pattern": "^graft_[a-z0-9_]+$"}, "description": {"type": "string"}, "inputSchema": {"type": "object"}, "outputSchema": {"type": "object"}, "x-graft-authority-operation": {"enum": ["create_run", "get_run", "cancel_run", "replay_run_events"]}, "x-graft-rest-operation": {"type": "string", "pattern": "^(GET|POST) /v1/"}, "x-graft-idempotency": {"type": "string"}, "x-graft-cursor": {"type": "string"}, "x-graft-error-codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}, "x-graft-provider-supported-errors": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}, "x-graft-extension-metadata": {"$ref": "#/$defs/ExtensionMetadata"}}},
+    "Resource": {"type": "object", "additionalProperties": false, "required": ["uri", "name", "description", "mimeType", "x-graft-resource-kind"], "properties": {"uri": {"type": "string", "pattern": "^graft://runs/"}, "name": {"type": "string"}, "description": {"type": "string"}, "mimeType": {"type": "string"}, "x-graft-resource-kind": {"enum": ["run", "run_events"]}, "x-graft-authority-operation": {"enum": ["get_run", "replay_run_events"]}, "x-graft-extension-metadata": {"$ref": "#/$defs/ExtensionMetadata"}}},
+    "ExtensionMetadata": {"type": "object", "additionalProperties": false, "properties": {"graft_label": {"type": "string", "maxLength": 256}, "graft_origin": {"type": "string", "maxLength": 256}}}
+  },
+  "examples": [
+    {"method": "tools/call", "params": {"name": "graft_create_run", "arguments": {"graft_trigger": {"graft_source": "alertmanager", "graft_alert_id": "alert-1", "graft_summary": "CPU is high", "graft_fingerprint": "fingerprint-1"}, "graft_idempotency_key": "mcp-1"}}},
+    {"method": "tools/call", "params": {"name": "graft_get_run", "arguments": {"graft_run_id": "run-01"}}},
+    {"method": "tools/call", "params": {"name": "graft_cancel_run", "arguments": {"graft_run_id": "run-01", "graft_reason": "operator requested stop", "graft_contract_version": "v1"}}},
+    {"method": "tools/call", "params": {"name": "graft_replay_run_events", "arguments": {"graft_run_id": "run-01", "after_graft_event_id": 0}}},
+    {"method": "tools/call/result", "params": {"name": "graft_create_run"}, "result": {"graft_run_id": "run-01", "graft_tenant_id": "tenant-01", "graft_principal_id": "principal-01", "graft_status": "completed", "graft_terminal_outcome": "finding", "graft_finding_ref": {"graft_ref_kind": "finding", "graft_uri": "graft://artifacts/finding-01"}, "graft_tool_classes": ["read"], "graft_created_at": "2026-09-20T10:00:00Z", "graft_updated_at": "2026-09-20T10:00:05Z", "graft_contract_version": "v1"}},
+    {"method": "tools/call/result", "params": {"name": "graft_get_run"}, "result": {"graft_run_id": "run-01", "graft_tenant_id": "tenant-01", "graft_principal_id": "principal-01", "graft_status": "completed", "graft_terminal_outcome": "finding", "graft_tool_classes": ["read"], "graft_created_at": "2026-09-20T10:00:00Z", "graft_updated_at": "2026-09-20T10:00:05Z", "graft_contract_version": "v1"}},
+    {"method": "tools/call/result", "params": {"name": "graft_cancel_run"}, "result": {"graft_run_id": "run-01", "graft_outcome": "accepted", "graft_status": "cancellation_requested", "graft_contract_version": "v1"}},
+    {"method": "tools/call/result", "params": {"name": "graft_replay_run_events"}, "result": {"graft_run_id": "run-01", "graft_events": [{"graft_event_id": 1, "graft_run_id": "run-01", "graft_tenant_id": "tenant-01", "graft_event_type": "status", "graft_event_version": 1, "graft_payload": {"graft_status": "queued"}, "graft_created_at": "2026-09-20T10:00:00Z", "graft_contract_version": "v1"}], "graft_next_after_event_id": 1, "graft_has_more": false, "graft_contract_version": "v1"}},
+    {"method": "resources/read", "params": {"uri": "graft://runs/run-01"}},
+    {"method": "resources/read", "params": {"uri": "graft://runs/run-01/events"}},
+    {"method": "resources/read/result", "params": {"uri": "graft://runs/run-01"}, "result": {"contents": [{"uri": "graft://runs/run-01", "mimeType": "application/json", "text": "{\"graft_run_id\":\"run-01\",\"graft_tenant_id\":\"tenant-01\",\"graft_principal_id\":\"principal-01\",\"graft_status\":\"completed\",\"graft_tool_classes\":[\"read\"],\"graft_created_at\":\"2026-09-20T10:00:00Z\",\"graft_updated_at\":\"2026-09-20T10:00:05Z\",\"graft_contract_version\":\"v1\"}"}]}},
+    {"method": "resources/read/result", "params": {"uri": "graft://runs/run-01/events"}, "result": {"contents": [{"uri": "graft://runs/run-01/events", "mimeType": "application/json", "text": "{\"graft_run_id\":\"run-01\",\"graft_events\":[],\"graft_next_after_event_id\":0,\"graft_has_more\":false,\"graft_contract_version\":\"v1\"}"}]}},
+    {"code": -32602, "message": "invalid request", "data": {"graft_code": "invalid_request", "graft_message": "graft_idempotency_key is required", "graft_request_id": "request-01", "graft_details": {}, "graft_contract_version": "v1"}},
+    {"method": "tools/call/error", "params": {"name": "graft_get_run"}, "error": {"code": -32004, "message": "Run was not found", "data": {"graft_code": "not_found", "graft_message": "Run was not found", "graft_request_id": "request-02", "graft_details": {}, "graft_contract_version": "v1"}}},
+    {"graft_event_id": 1, "graft_run_id": "run-01", "graft_tenant_id": "tenant-01", "graft_event_type": "status", "graft_event_version": 1, "graft_payload": {"graft_status": "queued"}, "graft_created_at": "2026-09-20T10:00:00Z", "graft_contract_version": "v1"}
+  ]
+}

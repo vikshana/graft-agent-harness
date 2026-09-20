@@ -1,0 +1,189 @@
+{
+  "G03-A": {
+    "async_dbos_steps": {
+      "result": "step:synthetic",
+      "status": {
+        "app_version": "12de7e353fc7d1f7ffefbc953c21dc95",
+        "application_version": null,
+        "executor_id": "gate03-executor-a",
+        "name": "async_workflow",
+        "status": "SUCCESS",
+        "workflow_id": "1c8fb3b6-1e17-4b2d-9461-0313e7d4e5f9"
+      }
+    },
+    "langgraph_no_checkpointer": {
+      "checkpointer_configured": false,
+      "decorated_step_boundaries": [
+        "graph_step",
+        "mcp_step",
+        "mcp_failure_step"
+      ],
+      "result": {
+        "graph": "graph:synthetic",
+        "mcp": "[{'type': 'text', 'text': 'mcp:synthetic', 'id': 'lc_6d74e882-01bb-49e8-8b3a-d69b50609531'}]",
+        "mcp_failure": "injected_failure:_MCPToolExecutionError"
+      }
+    },
+    "streamable_http_mcp": {
+      "capability": "streamable_http_client_constructed",
+      "client_type": "MultiServerMCPClient",
+      "endpoint": "http://127.0.0.1:59999/mcp"
+    }
+  },
+  "G03-B": {
+    "alive_but_silent_recovery": "unresolved_public_api_not_safe_to_prove",
+    "timeout_is_not_recovery_proof": true
+  },
+  "G03-C": {
+    "filter": {
+      "api": "DBOS.list_workflows_async",
+      "executor_id": "gate03-executor-a"
+    },
+    "matching_count": 2,
+    "matching_executor_ids": [
+      "gate03-executor-a"
+    ],
+    "negative_filter": {
+      "api": "DBOS.list_workflows_async",
+      "executor_id": "does-not-exist"
+    },
+    "nonmatching_count": 0
+  },
+  "G03-D": {
+    "changed_source_differs": true,
+    "changed_source_recomputed": "2fe3d1af4a9879905c846a04a626bd2d",
+    "registered": {
+      "application_name": "gate-0-3",
+      "created_at": 1789889417060,
+      "version_id": "ed51cb7b-b036-429a-b2f9-0fd4e87435f3",
+      "version_name": "12de7e353fc7d1f7ffefbc953c21dc95",
+      "version_timestamp": 1789889417060
+    },
+    "same_source_recomputed": "12de7e353fc7d1f7ffefbc953c21dc95",
+    "same_source_stable": true,
+    "source_change": {
+      "changed_source_hash": "440af4ede6bdd21ddd2d685dd496533f2833204e0dbc0377f58bebbcfd25b2b0",
+      "identical_source_hash": "e3cfd022d0e1f7f618bdae42ab5829ed8c25952be4f4c44887308aaf8146bc53",
+      "result": "requires_second_process/reloaded_workflow_to_measure_DBOS_version_change",
+      "source_change_differs": true
+    }
+  },
+  "environment": {
+    "application_database": "synthetic_local_postgresql_16",
+    "customer_system_access": false,
+    "database_probes": {
+      "application": {
+        "connected": true,
+        "database": "gate03_app",
+        "user": "gate03"
+      },
+      "transaction_mode_pooler": {
+        "connected": true,
+        "database": "gate03_app",
+        "user": "gate03"
+      }
+    },
+    "embedded_real_secrets": false,
+    "pooler": "transaction_mode_pgbouncer",
+    "system_database": "synthetic_local_postgresql_16"
+  },
+  "experiment": "gate-0.3",
+  "finished_at": "2026-09-20T07:30:17.201937+00:00",
+  "result": "passed",
+  "started_at": "2026-09-20T07:30:16.148552+00:00",
+  "versions": {
+    "compose": {
+      "command": [
+        "docker",
+        "compose",
+        "version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Docker Compose version v2.40.3-desktop.1\n"
+    },
+    "dbos": "3.0.0",
+    "dbos_api_signatures": {
+      "destroy": "(*, destroy_registry: 'bool' = False, workflow_completion_timeout_sec: 'int' = 0) -> 'None'",
+      "get_latest_application_version": "() -> 'VersionInfo'",
+      "launch": "() -> 'None'",
+      "list_workflows": "(*, workflow_ids: 'Optional[List[str]]' = None, status: 'Optional[str | list[str]]' = None, start_time: 'Optional[str]' = None, end_time: 'Optional[str]' = None, completed_after: 'Optional[str]' = None, completed_before: 'Optional[str]' = None, dequeued_after: 'Optional[str]' = None, dequeued_before: 'Optional[str]' = None, name: 'Optional[str | list[str]]' = None, app_version: 'Optional[str | list[str]]' = None, forked_from: 'Optional[str | list[str]]' = None, parent_workflow_id: 'Optional[str | list[str]]' = None, user: 'Optional[str | list[str]]' = None, queue_name: 'Optional[str | list[str]]' = None, limit: 'Optional[int]' = None, offset: 'Optional[int]' = None, sort_desc: 'bool' = False, workflow_id_prefix: 'Optional[str | list[str]]' = None, load_input: 'bool' = True, load_output: 'bool' = True, executor_id: 'Optional[str | list[str]]' = None, queues_only: 'bool' = False, was_forked_from: 'Optional[bool]' = None, has_parent: 'Optional[bool]' = None, attributes: 'Optional[Dict[str, Any]]' = None, schedule_name: 'Optional[str | list[str]]' = None, application_name: 'Optional[str | list[str]]' = None) -> 'List[WorkflowStatus]'",
+      "start_workflow_async": "(func: 'Callable[P, Coroutine[Any, Any, R]]', *args: 'P.args', **kwargs: 'P.kwargs') -> 'WorkflowHandleAsync[R]'",
+      "step": "(*, name: 'Optional[str]' = None, retries_allowed: 'bool' = False, interval_seconds: 'float' = 1.0, max_attempts: 'int' = 3, backoff_rate: 'float' = 2.0, should_retry: 'Optional[Callable[[BaseException], Union[bool, Awaitable[bool]]]]' = None, preemptible: 'bool' = False, timeout_seconds: 'Optional[float]' = None) -> 'Callable[[Callable[P, R]], Callable[P, R]]'",
+      "workflow": "(*, name: 'Optional[str]' = None, max_recovery_attempts: 'Optional[int]' = 100, serialization_type: 'Optional[WorkflowSerializationFormat]' = None, validate_args: \"Optional['ValidateArgsCallable']\" = None) -> 'Callable[[Callable[P, R]], Callable[P, R]]'"
+    },
+    "dbos_config_annotations": [
+      "application_version",
+      "conductor_executor_metadata",
+      "conductor_key",
+      "conductor_url",
+      "console_log_level",
+      "db_engine_kwargs",
+      "dbos_system_schema",
+      "enable_otlp",
+      "enable_patching",
+      "executor_id",
+      "kafka_queue_polling_interval_sec",
+      "log_level",
+      "max_executor_threads",
+      "name",
+      "notification_coalesce_sec",
+      "notification_listener_polling_interval_sec",
+      "observability_query_timeout_sec",
+      "otel_attribute_format",
+      "otlp_attributes",
+      "otlp_log_level",
+      "otlp_logs_endpoints",
+      "otlp_traces_endpoints",
+      "run_migrations",
+      "scheduler_polling_interval_sec",
+      "serializer",
+      "sys_db_polling_concurrency",
+      "sys_db_pool_size",
+      "system_database_engine",
+      "system_database_url",
+      "use_listen_notify"
+    ],
+    "docker": {
+      "command": [
+        "docker",
+        "version",
+        "--format",
+        "{{.Server.Version}}"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "29.5.2\n"
+    },
+    "images": {
+      "pgbouncer": {
+        "command": [
+          "docker",
+          "image",
+          "inspect",
+          "edoburu/pgbouncer:latest",
+          "--format",
+          "{{index .RepoDigests 0}}"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "edoburu/pgbouncer@sha256:4c1ca296ef525f108f5d3552cc337c0c09587cf8dae7f0067fd93349e47dc1cd\n"
+      },
+      "postgres": {
+        "command": [
+          "docker",
+          "image",
+          "inspect",
+          "postgres:16",
+          "--format",
+          "{{index .RepoDigests 0}}"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94\n"
+      }
+    },
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "python": "3.13.0 (main, Oct  7 2024, 05:02:14) [Clang 16.0.0 (clang-1600.0.26.4)]"
+  }
+}

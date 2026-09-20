@@ -1,0 +1,192 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+extensions:
+  health_check:
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+  batch:
+    send_batch_size: 512
+    send_batch_max_size: 1024
+    timeout: 5s
+  transform/scrub:
+    error_mode: propagate
+    trace_statements:
+      - context: resource
+        statements:
+          - delete_key(attributes, "authorization")
+          - delete_key(attributes, "proxy-authorization")
+          - delete_key(attributes, "api-key")
+          - delete_key(attributes, "api_key")
+          - delete_key(attributes, "apikey")
+          - delete_key(attributes, "x-api-key")
+          - delete_key(attributes, "x-auth-token")
+          - delete_key(attributes, "access-token")
+          - delete_key(attributes, "access_token")
+          - delete_key(attributes, "refresh-token")
+          - delete_key(attributes, "refresh_token")
+          - delete_key(attributes, "client-secret")
+          - delete_key(attributes, "client_secret")
+          - delete_key(attributes, "password")
+          - delete_key(attributes, "passwd")
+          - delete_key(attributes, "secret")
+          - delete_key(attributes, "credential")
+          - delete_key(attributes, "credentials")
+          - delete_key(attributes, "token")
+          - delete_key(attributes, "private-key")
+          - delete_key(attributes, "private_key")
+          - delete_key(attributes, "signing-key")
+          - delete_key(attributes, "signing_key")
+          - delete_key(attributes, "cookie")
+          - delete_key(attributes, "set-cookie")
+      - context: span
+        statements:
+          - delete_key(attributes, "authorization")
+          - delete_key(attributes, "proxy-authorization")
+          - delete_key(attributes, "api-key")
+          - delete_key(attributes, "api_key")
+          - delete_key(attributes, "apikey")
+          - delete_key(attributes, "x-api-key")
+          - delete_key(attributes, "x-auth-token")
+          - delete_key(attributes, "access-token")
+          - delete_key(attributes, "access_token")
+          - delete_key(attributes, "refresh-token")
+          - delete_key(attributes, "refresh_token")
+          - delete_key(attributes, "client-secret")
+          - delete_key(attributes, "client_secret")
+          - delete_key(attributes, "password")
+          - delete_key(attributes, "passwd")
+          - delete_key(attributes, "secret")
+          - delete_key(attributes, "credential")
+          - delete_key(attributes, "credentials")
+          - delete_key(attributes, "token")
+          - delete_key(attributes, "private-key")
+          - delete_key(attributes, "private_key")
+          - delete_key(attributes, "signing-key")
+          - delete_key(attributes, "signing_key")
+          - delete_key(attributes, "cookie")
+          - delete_key(attributes, "set-cookie")
+      - context: spanevent
+        statements:
+          - delete_key(attributes, "authorization")
+          - delete_key(attributes, "proxy-authorization")
+          - delete_key(attributes, "api-key")
+          - delete_key(attributes, "api_key")
+          - delete_key(attributes, "apikey")
+          - delete_key(attributes, "x-api-key")
+          - delete_key(attributes, "x-auth-token")
+          - delete_key(attributes, "access-token")
+          - delete_key(attributes, "access_token")
+          - delete_key(attributes, "refresh-token")
+          - delete_key(attributes, "refresh_token")
+          - delete_key(attributes, "client-secret")
+          - delete_key(attributes, "client_secret")
+          - delete_key(attributes, "password")
+          - delete_key(attributes, "passwd")
+          - delete_key(attributes, "secret")
+          - delete_key(attributes, "credential")
+          - delete_key(attributes, "credentials")
+          - delete_key(attributes, "token")
+          - delete_key(attributes, "private-key")
+          - delete_key(attributes, "private_key")
+          - delete_key(attributes, "signing-key")
+          - delete_key(attributes, "signing_key")
+          - delete_key(attributes, "cookie")
+          - delete_key(attributes, "set-cookie")
+    log_statements:
+      - context: log
+        statements:
+          - delete_key(attributes, "authorization")
+          - delete_key(attributes, "proxy-authorization")
+          - delete_key(attributes, "api-key")
+          - delete_key(attributes, "api_key")
+          - delete_key(attributes, "apikey")
+          - delete_key(attributes, "x-api-key")
+          - delete_key(attributes, "x-auth-token")
+          - delete_key(attributes, "access-token")
+          - delete_key(attributes, "access_token")
+          - delete_key(attributes, "refresh-token")
+          - delete_key(attributes, "refresh_token")
+          - delete_key(attributes, "client-secret")
+          - delete_key(attributes, "client_secret")
+          - delete_key(attributes, "password")
+          - delete_key(attributes, "passwd")
+          - delete_key(attributes, "secret")
+          - delete_key(attributes, "credential")
+          - delete_key(attributes, "credentials")
+          - delete_key(attributes, "token")
+          - delete_key(attributes, "private-key")
+          - delete_key(attributes, "private_key")
+          - delete_key(attributes, "signing-key")
+          - delete_key(attributes, "signing_key")
+          - delete_key(attributes, "cookie")
+          - delete_key(attributes, "set-cookie")
+          - set(body, "[REDACTED]")
+
+exporters:
+  otlphttp/operational:
+    endpoint: ${env:OTEL_OPERATIONAL_OTLP_ENDPOINT}
+    headers:
+      Authorization: ${env:OTEL_OPERATIONAL_OTLP_AUTHORIZATION}
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 1000
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+  otlphttp/langfuse:
+    endpoint: ${env:LANGFUSE_OTLP_ENDPOINT}
+    headers:
+      Authorization: ${env:LANGFUSE_OTLP_AUTHORIZATION}
+      x-langfuse-public-key: ${env:LANGFUSE_PUBLIC_KEY}
+    sending_queue:
+      enabled: true
+      num_consumers: 2
+      queue_size: 500
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+service:
+  extensions:
+    - health_check
+  pipelines:
+    traces:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - transform/scrub
+        - batch
+      exporters:
+        - otlphttp/operational
+        - otlphttp/langfuse
+    metrics:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - batch
+      exporters:
+        - otlphttp/operational
+    logs:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - transform/scrub
+        - batch
+      exporters:
+        - otlphttp/operational

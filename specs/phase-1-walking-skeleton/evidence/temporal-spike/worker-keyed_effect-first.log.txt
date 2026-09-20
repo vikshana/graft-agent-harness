@@ -1,0 +1,3 @@
+{"worker": "ready", "identity": "graft-temporal-keyed_effect-first", "task_queue": "graft-temporal-spike", "crash_first": true}
+[2m2026-09-19T19:49:54.834083Z[0m [33m WARN[0m [2mtemporalio_sdk_core::worker::heartbeat[0m[2m:[0m Worker heartbeating configured for runtime, but server version does not support it.
+hard worker death after synthetic external effect

@@ -1,0 +1,311 @@
+{
+  "$schema": "https://graft.example/contracts/harness-mcp-v1.schema.json",
+  "$id": "https://graft.example/contracts/harness-mcp-v1.manifest.json",
+  "graft_manifest_version": "v1",
+  "mcp_protocol_version": "2025-06-18",
+  "transport": "streamable-http",
+  "server": {
+    "name": "graft-harness",
+    "version": "v1",
+    "description": "Harness-owned MCP access to Runs and their event streams. This server is not the Tool Gateway and exposes no customer-system Tools."
+  },
+  "authentication": {
+    "required": true,
+    "profile": "future-authority-service-mcp-profile",
+    "status": "placeholder-required",
+    "audience": "harness-mcp",
+    "dynamic_client_registration": "undecided",
+    "description": "Clients must authenticate. The production profile, credential forwarding and registration decision are pending the Gate 2 inbound MCP threat-model review; no authentication or DCR policy is claimed by this manifest."
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    },
+    "resources": {
+      "subscribe": false,
+      "listChanged": false
+    }
+  },
+  "tools": [
+    {
+      "name": "graft_create_run",
+      "description": "Create a private, system-initiated, read-only Run. The graft_idempotency_key argument has the same semantics as REST X-Graft-Idempotency-Key; identity is never caller-supplied.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "graft_trigger",
+          "graft_idempotency_key"
+        ],
+        "properties": {
+          "graft_trigger": {
+            "$ref": "https://graft.example/contracts/harness-v1.openapi.json#/components/schemas/AlertTrigger"
+          },
+          "graft_trigger_kind": {
+            "const": "system_initiated"
+          },
+          "graft_visibility": {
+            "const": "private"
+          },
+          "graft_tool_classes": {
+            "type": "array",
+            "const": [
+              "read"
+            ]
+          },
+          "graft_contract_version": {
+            "const": "v1"
+          },
+          "graft_idempotency_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "graft_tenant_id"
+              ]
+            },
+            {
+              "required": [
+                "graft_principal_id"
+              ]
+            },
+            {
+              "required": [
+                "graft_identity"
+              ]
+            }
+          ]
+        }
+      },
+      "outputSchema": {
+        "$ref": "https://graft.example/contracts/harness-v1.openapi.json#/components/schemas/Run"
+      },
+      "x-graft-authority-operation": "create_run",
+      "x-graft-rest-operation": "POST /v1/runs",
+      "x-graft-idempotency": "graft_idempotency_key is equivalent to X-Graft-Idempotency-Key and is required for create",
+      "x-graft-cursor": "not applicable",
+      "x-graft-error-codes": [
+        "authentication_required",
+        "authentication_failed",
+        "authorisation_denied",
+        "invalid_request",
+        "unsupported_contract_version",
+        "idempotency_conflict",
+        "throttled",
+        "request_timeout",
+        "service_unavailable",
+        "internal_error"
+      ],
+      "x-graft-provider-supported-errors": [
+        "invalid_request",
+        "unsupported_contract_version",
+        "idempotency_conflict"
+      ]
+    },
+    {
+      "name": "graft_get_run",
+      "description": "Retrieve one Run in the verified Tenant scope.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "graft_run_id"
+        ],
+        "properties": {
+          "graft_run_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "graft_contract_version": {
+            "const": "v1"
+          }
+        }
+      },
+      "outputSchema": {
+        "$ref": "https://graft.example/contracts/harness-v1.openapi.json#/components/schemas/Run"
+      },
+      "x-graft-authority-operation": "get_run",
+      "x-graft-rest-operation": "GET /v1/runs/{graft_run_id}",
+      "x-graft-idempotency": "not applicable",
+      "x-graft-cursor": "not applicable",
+      "x-graft-error-codes": [
+        "authentication_required",
+        "authentication_failed",
+        "authorisation_denied",
+        "not_found",
+        "throttled",
+        "request_timeout",
+        "service_unavailable",
+        "internal_error"
+      ],
+      "x-graft-provider-supported-errors": [
+        "not_found"
+      ]
+    },
+    {
+      "name": "graft_cancel_run",
+      "description": "Request cancellation at the next Run step boundary. Repeated calls are idempotent and return accepted, already_requested, or already_terminal.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "graft_run_id"
+        ],
+        "properties": {
+          "graft_run_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "graft_reason": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "graft_contract_version": {
+            "const": "v1"
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "graft_tenant_id"
+              ]
+            },
+            {
+              "required": [
+                "graft_principal_id"
+              ]
+            },
+            {
+              "required": [
+                "graft_identity"
+              ]
+            }
+          ]
+        }
+      },
+      "outputSchema": {
+        "$ref": "https://graft.example/contracts/harness-v1.openapi.json#/components/schemas/CancelOutcome"
+      },
+      "x-graft-authority-operation": "cancel_run",
+      "x-graft-rest-operation": "POST /v1/runs/{graft_run_id}/cancel",
+      "x-graft-idempotency": "not applicable; repeated cancellation is idempotent",
+      "x-graft-cursor": "not applicable",
+      "x-graft-error-codes": [
+        "authentication_required",
+        "authentication_failed",
+        "authorisation_denied",
+        "invalid_request",
+        "unsupported_contract_version",
+        "not_found",
+        "state_conflict",
+        "throttled",
+        "request_timeout",
+        "service_unavailable",
+        "internal_error"
+      ],
+      "x-graft-provider-supported-errors": [
+        "invalid_request",
+        "unsupported_contract_version",
+        "not_found"
+      ]
+    },
+    {
+      "name": "graft_replay_run_events",
+      "description": "Replay ordered Run events after an exclusive cursor, or request a follow stream through the MCP transport.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "graft_run_id"
+        ],
+        "properties": {
+          "graft_run_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "after_graft_event_id": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "graft_event_limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 100
+          },
+          "graft_replay_mode": {
+            "enum": [
+              "replay",
+              "follow"
+            ],
+            "default": "replay",
+            "type": "string"
+          },
+          "graft_contract_version": {
+            "const": "v1"
+          }
+        }
+      },
+      "outputSchema": {
+        "$ref": "https://graft.example/contracts/harness-v1.openapi.json#/components/schemas/EventReplayPage"
+      },
+      "x-graft-authority-operation": "replay_run_events",
+      "x-graft-rest-operation": "GET /v1/runs/{graft_run_id}/events",
+      "x-graft-idempotency": "not applicable",
+      "x-graft-cursor": "after_graft_event_id is an exclusive cursor; graft_event_limit bounds replay pages; follow is pending transport support",
+      "x-graft-error-codes": [
+        "authentication_required",
+        "authentication_failed",
+        "authorisation_denied",
+        "invalid_request",
+        "not_found",
+        "state_conflict",
+        "cursor_invalid",
+        "replay_cursor_expired",
+        "throttled",
+        "request_timeout",
+        "service_unavailable",
+        "internal_error",
+        "unsupported_contract_version"
+      ],
+      "x-graft-provider-supported-errors": [
+        "invalid_request",
+        "cursor_invalid",
+        "not_found"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "uri": "graft://runs/{graft_run_id}",
+      "name": "Run",
+      "description": "The current Run representation.",
+      "mimeType": "application/json",
+      "x-graft-resource-kind": "run",
+      "x-graft-authority-operation": "get_run"
+    },
+    {
+      "uri": "graft://runs/{graft_run_id}/events",
+      "name": "Run events",
+      "description": "Ordered, replayable Run events. The URI identifies the stream; the exclusive cursor is supplied as a resource-read argument or through graft_replay_run_events.",
+      "mimeType": "application/json",
+      "x-graft-resource-kind": "run_events",
+      "x-graft-authority-operation": "replay_run_events"
+    }
+  ],
+  "compatibility": {
+    "additive_rules": "Within v1, the global event envelope, unknown event types, and additive fields on non-sensitive payloads are tolerant. New Tool or Resource entries are additive. Existing Tool/Resource declarations and closed input/output or pointer/reference payload shapes are not open-ended additive surfaces; safe metadata may use only the explicit extension-safe metadata object and pointer metadata extension.",
+    "breaking_rules": "Removing or renaming an operation, changing an input or output meaning/type, adding a field to a closed Tool/Resource declaration or output/reference shape, requiring a new input, changing resource URI templates, or changing cursor/idempotency/cancellation semantics requires an explicit reviewed schema change and, where incompatible, a new major manifest version.",
+    "mcp_declaration_policy": "Additions to existing Tool/Resource declarations and their closed input/output fields are breaking; additions to new Tool/Resource entries are additive. Existing declarations may gain only x-graft-extension-metadata through the reviewed extension mechanism.",
+    "pointer_reference_policy": "ToolCallResultPayload, PointerPayload, EvidencePayload, and every pointer/reference artifact shape are closed pointer-only objects in v1. Inline raw, large, blob, content, or result fields are forbidden. The graft_pointer_metadata safe pointer metadata field requires an explicit reviewed schema additive change or the defined extension mechanism.",
+    "unknown_field_policy": "ignore",
+    "unknown_event_policy": "ignore"
+  }
+}

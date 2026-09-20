@@ -1,0 +1,51 @@
+[
+  {
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "deployment/gate-0.3/run_experiment.py",
+      "prepare"
+    ],
+    "note": "generated the ignored synthetic runtime environment before this run"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "--env-file",
+      "deployment/gate-0.3/.env",
+      "-f",
+      "deployment/gate-0.3/docker-compose.yml",
+      "up",
+      "-d"
+    ],
+    "note": "started the two PostgreSQL 16 containers and transaction-mode PgBouncer"
+  },
+  {
+    "command": "separate host processes using deployment/gate-0.3/matrix_worker.py",
+    "topology": "two PostgreSQL containers plus transaction-mode PgBouncer"
+  },
+  {
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "deployment/gate-0.3/matrix_runner.py",
+      "2"
+    ]
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "--env-file",
+      "deployment/gate-0.3/.env",
+      "-f",
+      "deployment/gate-0.3/docker-compose.yml",
+      "down",
+      "-v"
+    ],
+    "note": "removed containers, volumes, network, and the generated runtime environment after the run"
+  }
+]

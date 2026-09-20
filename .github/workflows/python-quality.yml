@@ -1,0 +1,158 @@
+name: python-quality # GitHub-owned actions are SHA-pinned under the selected-actions policy.
+
+on:
+  pull_request:
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "README.md"
+      - "AGENTS.md"
+      - "scripts/**"
+      - "contracts/**"
+      - "authority/**"
+      - "harness/authority_client.py"
+      - "harness/run_initiation.py"
+      - "scripts/check_authority_contracts.py"
+      - "harness/contracts.py"
+      - "harness/http_api.py"
+      - "harness/service.py"
+      - "tests/contracts/**"
+      - "tests/consumer/**"
+      - "tests/provider/**"
+      - "tests/fixtures/**"
+      - "tests/**"
+      - ".github/workflows/python-quality.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "README.md"
+      - "AGENTS.md"
+      - "scripts/**"
+      - "contracts/**"
+      - "authority/**"
+      - "harness/authority_client.py"
+      - "harness/run_initiation.py"
+      - "scripts/check_authority_contracts.py"
+      - "harness/contracts.py"
+      - "harness/http_api.py"
+      - "harness/service.py"
+      - "tests/contracts/**"
+      - "tests/consumer/**"
+      - "tests/provider/**"
+      - "tests/fixtures/**"
+      - "tests/**"
+      - ".github/workflows/python-quality.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (Node 24)
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6 (Node 24)
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: python -m pip install --disable-pip-version-check "uv==0.5.8"
+
+      - name: Install locked dependencies
+        run: uv sync --locked --all-groups
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run mypy
+
+      - name: Test
+        run: uv run pytest -m "unit or contract"
+
+      - name: Contract artefact check
+        run: uv run python scripts/check_contracts.py
+
+      - name: Authority contract check
+        run: uv run python scripts/check_authority_contracts.py
+
+      - name: Step-pointer architecture check
+        run: uv run python scripts/check_step_pointer_rule.py harness
+
+      - name: Architecture boundary check
+        run: uv run python scripts/check_architecture.py harness
+
+      - name: Documentation check
+        run: uv run python scripts/check_docs.py
+
+      - name: Vulnerability audit
+        run: |
+          uv export --locked --no-dev --no-emit-project --format requirements-txt \
+            --output-file "${RUNNER_TEMP}/graft-locked-requirements.txt"
+          test -s "${RUNNER_TEMP}/graft-locked-requirements.txt"
+          uv run pip-audit --strict --requirement "${RUNNER_TEMP}/graft-locked-requirements.txt"
+
+      - name: Licence inventory
+        run: |
+          uv run pip-licenses --format=markdown --with-urls \
+            > "${RUNNER_TEMP}/graft-licence-inventory.md"
+          test -s "${RUNNER_TEMP}/graft-licence-inventory.md"
+
+      - name: Retain licence inventory
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6 (Node 24)
+        with:
+          name: licence-inventory-${{ matrix.python-version }}
+          path: ${{ runner.temp }}/graft-licence-inventory.md
+
+  python-314-compatibility:
+    name: Python 3.14 compatibility probe (non-required)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (Node 24)
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6 (Node 24)
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        run: python -m pip install --disable-pip-version-check "uv==0.8.17"
+
+      - name: Export locked compatibility dependencies
+        run: |
+          uv export --locked --all-groups --no-emit-project --format requirements-txt \
+            --output-file "${RUNNER_TEMP}/graft-locked-compatibility-requirements.txt"
+          test -s "${RUNNER_TEMP}/graft-locked-compatibility-requirements.txt"
+
+      - name: Install locked compatibility dependencies
+        run: |
+          uv pip install --python "$(command -v python)" \
+            --requirement "${RUNNER_TEMP}/graft-locked-compatibility-requirements.txt"
+
+      - name: Import compatibility probe
+        run: python -c "import authority, harness; print('authority and harness imports passed')"
+
+      - name: Compatibility tests
+        run: python -m pytest -m "unit or contract"
+
+      - name: Compatibility contract check
+        run: |
+          python scripts/check_contracts.py
+          python scripts/check_authority_contracts.py
