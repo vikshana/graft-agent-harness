@@ -1,4 +1,4 @@
-name: python-quality
+name: python-quality # GitHub-owned actions are SHA-pinned under the selected-actions policy.
 
 on:
   pull_request:

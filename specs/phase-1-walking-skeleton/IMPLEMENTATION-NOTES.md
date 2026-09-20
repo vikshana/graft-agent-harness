@@ -837,3 +837,16 @@ passed. The checker applies mutations to actual signatures: ordinary optional
 Run output fields shared through MCP are additive, while closed pointer/reference
 payload changes, removed required fields, and transport drift fail. The Task 1
 checkbox is updated pending the matching remote Python-quality CI evidence.
+
+## Gate 1 Task 1 CI policy remediation
+
+> **Date:** 2026-09-20
+
+The first remote `python-quality` run for the contract commit failed before any
+job started because repository Actions policy allowed only `vikshana`-owned
+actions. It was not a workflow or contract-test failure: GitHub rejected the
+already SHA-pinned `actions/checkout`, `actions/setup-python`, and
+`actions/upload-artifact` actions at startup. The project owner changed the
+repository policy to permit GitHub-created actions while retaining full-commit
+SHA pinning. The failed run cannot be retried, so Task 1 remains unchecked until
+a fresh Python-quality run provides retained evidence.
