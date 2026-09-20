@@ -1016,3 +1016,20 @@ The capability issuer is explicitly labelled **test-only opaque token service**.
 Added `contracts/authority-internal-v1.openapi.json` and `scripts/check_authority_contracts.py` for the closed two-call mTLS contract. The tests generate ephemeral certificates in temporary directories and cover valid peer, missing/untrusted/expired TLS failure without an application response, valid TLS wrong-peer typed denial, bearer/plain HTTP rejection, exact whitespace/Unicode credential repeat, no credential leakage in responses or test audit intent, order-independent and semantic webhook fingerprints, replay taxonomy, changed valid identity conflict, TTL expiry, and mint retry without a second Run.
 
 Local bounded validation passed for the new authority/harness tests (11 selected tests), authority contract check, Ruff formatting/linting and lock consistency. The parent validation owner must run the full repository quality suite and must not check Gate 1 Task 2: PostgreSQL durable replay/RLS/audit Tasks 3/4 and production signing/JWKS isolation remain outstanding.
+
+## CI runtime upgrade — Node 24 Actions and Python 3.14 probe
+
+> **Date:** 2026-09-20
+
+Updated every GitHub Actions usage in `.github/workflows/` to the requested
+verified Node 24 action commits: `actions/checkout` v5,
+`actions/setup-python` v6, and `actions/upload-artifact` v6. Full commit SHA
+pinning remains in force and comments identify the Node 24 major versions.
+
+Added a non-required, `continue-on-error` Python 3.14 compatibility job to
+`python-quality.yml`. It uses the locked environment for dependency
+installation, imports the Authority and Harness packages, runs the unit and
+contract tests, and checks both contract artefacts. The supported matrix remains
+Python 3.11–3.13. `requires-python` was deliberately not expanded: the project
+still declares `<3.14`, and locked LangGraph 1.2.11 has no explicit Python 3.14
+classifier; the new job is a compatibility probe rather than a support claim.

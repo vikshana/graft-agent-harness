@@ -10,6 +10,10 @@ authority, and observability gates are complete.
 ## Supported baseline
 
 - Python 3.11, 3.12, and 3.13.
+- GitHub Actions also runs a non-required Python 3.14 compatibility probe. Python
+  3.14 is not in the supported baseline: `requires-python` remains `<3.14`, and
+  locked LangGraph 1.2.11 has no explicit Python 3.14 classifier. The probe is
+  therefore compatibility evidence only, not support or release evidence.
 - Runtime dependencies are locked in `uv.lock` and constrained in
   `pyproject.toml`.
 - The immediate DBOS experiment also has the runtime constraint
