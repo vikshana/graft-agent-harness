@@ -538,6 +538,24 @@ trial key, vendor response, production entitlement, or Conductor deployment.
 Official source URLs in the record were checked on 2026-09-19. No ADR, design,
 roadmap, PLAN, SPEC, code, or workflow file was changed for this evidence lane.
 
+## Gate 0.3 closure
+
+> **Date:** 2026-09-20
+
+The accepted-scope report suite passed locally and in GitHub Actions after the
+accepted ADR-0078 recovery boundary was applied. The retained workflow is
+[`Gate 0.3 container recovery matrix`](https://github.com/vikshana/graft-agent-harness/actions/runs/35497301859)
+for commit `6c859b9b0b5fb32aabed7ad4822df640f0183943`: its pinned Python 3.13.0
+job passed PostgreSQL/PgBouncer startup, all four canonical reports, the Gate
+0.3 test suite, quality checks, and redacted evidence upload.
+
+Canonical reports are retained in `evidence/dbos/`: async LangGraph/MCP,
+matching-executor/revision restart plus durable operator escalation,
+executor-filtered listing, and explicit compatibility-revision/versioning.
+Cross-executor recovery remains deferred research only and is not interpreted
+as Phase 1 evidence. Gate 0.3 is checked; Gate 1 begins with the contract
+authority task.
+
 ## Bounded Temporal comparison spike
 
 > **Date:** 2026-09-19
