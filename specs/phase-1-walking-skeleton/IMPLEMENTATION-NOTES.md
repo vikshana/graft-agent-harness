@@ -881,3 +881,126 @@ and 3.13 all passed formatting, linting, strict typing, tests, the executable
 contract artefact/compatibility checker, pointer and architecture checks,
 documentation, vulnerability audit, and retained licence inventory. Gate 1
 Task 1 is checked on that retained CI evidence.
+
+## Gate 1 Task 2 — proposed internal identity-resolution decision
+
+> **Date:** 2026-09-20
+
+Added proposed [ADR-0079](../../docs/adr/identity/0079-internal-surface-credential-resolution-uses-mtls-and-typed-decisions.md)
+for the concrete Harness API → Authority Service Token Service boundary. It
+requires an mTLS-only internal endpoint, verbatim forwarding of the opaque raw
+surface credential, an explicit surface discriminator, and a canonical
+normalised webhook envelope that is separate from the credential. The Token
+Service, rather than the Harness API, resolves and returns verified
+`graft_principal_id`, `graft_tenant_id`, effective Role attributes,
+`graft_initiation_mode`, and audit actor attributes through typed `allow`,
+`deny`, or `duplicate` outcomes. Valid webhook replay keys have an atomic
+Tenant-scoped duplicate disposition and return the original `graft_run_id`;
+raw secrets are excluded from decisions and audit records.
+
+The proposal deliberately leaves provider-specific HMAC canonicalisation and
+certificate PKI details to explicit integration/configuration contracts. It
+also records the required design companion and mTLS peer, replay-race, typed
+identity, Authority Service separation, and audit-redaction evidence. The
+Authority Service remains one deployable with logically distinct Token
+Service/Authorisation Server, Tool Gateway, and Tool Registry modules.
+
+This is a proposed decision prerequisite for Gate 1 Task 2, not production
+implementation or verification evidence. The plan task and all Gate 1/Phase 1
+completion claims remain under parent validation and are intentionally
+unchanged.
+
+## Gate 1 Task 2 — ADR-0079 owner-selected two-call revision
+
+> **Date:** 2026-09-20
+
+ADR-0079 remains **proposed** and records the explicit owner-selected model:
+the first mTLS call sends the raw opaque surface credential to the Token
+Service and returns only a typed `allow` or `deny` identity decision. It does
+not return a Token-Service-native duplicate/replay disposition, a token, a
+`graft_run_id`, or a signed/server-generated resolution handle. The
+`graft_run_id` does not exist at that point.
+
+After a first-call `allow`, the Harness API generates the
+`graft_harness_replay_key` and owns one atomic webhook replay/idempotency and
+Run-creation operation in the Harness Run repository. That operation returns
+an existing or new `graft_run_id`. There is no distributed transaction
+between Token Service identity/replay state and the Harness Run store.
+
+The second mTLS call receives the raw credential again and the
+Harness-created or Harness-returned `graft_run_id`. The Token Service
+re-verifies the raw credential, accepts the Run identifier only from the
+authenticated first-party Harness API mTLS peer, and mints the run-scoped
+capability token without looking up the Harness Run store. Caller-provided
+identity is not trusted. The ADR also specifies TLS-handshake failure with no
+application response, application-layer typed denial for a valid but
+non-allow-listed peer, raw-credential no-leakage requirements, and
+second-call credential/Run binding and replay tests.
+
+This revision remains a proposed decision prerequisite for Gate 1 Task 2,
+pending owner/parent acceptance and the companion design. It is not
+implementation or verification evidence, does not complete Task 2, and does
+not change any Gate 1 or Phase 1 completion claim.
+
+The preceding Task 2 entry is retained unchanged because these notes are
+append-only; where it describes the earlier one-call/Token-Service duplicate
+model, this immediately following owner-selected revision is the current
+proposal.
+
+## Gate 1 Task 2 — ADR-0079 clarification finalisation
+
+> **Date:** 2026-09-20
+
+The owner-approved clarifications are now recorded in the proposed ADR and its
+living companion. ADR-0079 remains **proposed**; this entry does not accept
+the ADR, implement Authority Service identity resolution, or claim Gate 1 or
+Phase 1 completion.
+
+The current proposal requires the Harness to persist the first verified
+identity binding with an immutable Run/replay record before the mint call.
+The second call resubmits the raw surface credential verbatim for every
+surface, repeats the canonical normalised webhook envelope when applicable,
+and re-verifies credential signature and freshness. Before using the token,
+the Harness compares the fresh verified identity, service identity,
+initiation mode and webhook fingerprint to that persisted binding. The Token
+Service trusts `graft_run_id` only from the authenticated first-party Harness
+peer and does not query the Harness Run store; the calls and Run transaction
+are not a distributed transaction.
+
+The Harness replay repository taxonomy is exactly `new`, `existing`, or
+`conflict`. Equivalent duplicate deliveries return `existing` and the
+original Run; the same Tenant and replay key with a changed fingerprint,
+verified identity, service identity or initiation mode returns `conflict`,
+not a duplicate or generic denial. The webhook fingerprint is the SHA-256 of
+deterministic, order-independent canonical JSON over configured semantic
+source, event, delivery and alert fields. Transport-only receipt time, raw
+provider payload and raw provider secret are excluded. Its canonicalisation
+revision and field configuration are versioned in the design/integration
+entry and are separate from provider HMAC canonicalisation.
+
+The first resolution is bound to minting by a configured short TTL. Expiry
+is a typed denial with no token. This supports immediate Run-start minting
+only; delayed tool use and later run-token renewal require a separate design.
+mTLS handshake failure has no application response, while a successfully
+handshaken but non-allow-listed peer receives a typed denial. All internal
+calls are mTLS-only with no fallback. Identity-provider provisioning,
+account linking and external-identity mapping are explicitly non-decisions.
+More than one Token Service caller invalidates the first-party mTLS trust
+assumption and requires a new ADR.
+
+## Gate 1 Task 2 — ADR-0079 formal acceptance
+
+> **Date:** 2026-09-20
+
+The project owner formally accepted [ADR-0079](../../docs/adr/identity/0079-internal-surface-credential-resolution-uses-mtls-and-typed-decisions.md)
+on 2026-09-20. This records acceptance of the architectural decision and
+design boundary only. It does not claim Authority Service implementation,
+verification or release evidence, Task 2 completion, Gate 1 completion, or
+Phase 1 completion.
+
+ADR-0079 section 5 remains mandatory follow-on implementation and release
+evidence. Its verification matrix is not a precondition to accepting the
+architectural decision, but every required guarantee and test remains
+outstanding until the implementation and release work produces the specified
+evidence. Task 2 implementation/evidence remains pending and parent
+validation owns the Gate 1 decision.

@@ -5,7 +5,7 @@
 > Conventions: [`README.md`](./README.md). Vocabulary: [`../GLOSSARY.md`](../GLOSSARY.md), which wins on conflict.
 
 
-**78 decisions · 76 accepted · 2 superseded/other**
+**79 decisions · 77 accepted · 2 superseded/other**
 
 
 ---
@@ -109,6 +109,8 @@ Mechanism: [`../design/tool-registry-and-authority.md`](../design/tool-registry-
 
 Mechanism: [`../design/external-identity-mapping.md`](../design/external-identity-mapping.md)
 
+Mechanism: [`../design/mcp-authorization-server.md`](../design/mcp-authorization-server.md)
+
 | ADR | Title | Status | Date | Links |
 |---|---|---|---|---|
 | [ADR-0009](identity/0009-grafana-identity-forwarding-via-x-grafana-id-is-the-primary-inbound-au.md) | Grafana identity forwarding via X-Grafana-Id is the primary inbound authn | 🟢 accepted | 2026-09-12 | supersedes ; **superseded by** ; amends ; amended by  |
@@ -126,6 +128,7 @@ Mechanism: [`../design/external-identity-mapping.md`](../design/external-identit
 | [ADR-0060](identity/0060-external-references-are-modelled-in-three-layers.md) | External references are modelled in three layers | 🟢 accepted | 2026-09-13 | supersedes ; **superseded by** ; amends ; amended by  |
 | [ADR-0061](identity/0061-identity-linking-is-mandatory-and-verified.md) | Identity linking is mandatory and verified | 🟢 accepted | 2026-09-13 | supersedes ; **superseded by** ; amends ; amended by  |
 | [ADR-0065](identity/0065-approval-authority-follows-the-driver.md) | Approval authority follows the driver | 🟢 accepted | 2026-09-13 | supersedes [ADR-0055](tenancy/0055-approval-authority-is-initiator-only.md); **superseded by** ; amends ; amended by  |
+| [ADR-0079](identity/0079-internal-surface-credential-resolution-uses-mtls-and-typed-decisions.md) | Internal surface credential resolution uses mTLS and typed decisions | 🟢 accepted | 2026-09-20 |  |
 
 ---
 

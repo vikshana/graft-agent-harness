@@ -1,7 +1,8 @@
 # Delivery roadmap
 
-> **Status: 🟡 Proposed.** Rewritten 2026-09-13 and updated 2026-09-19 against
-> ADR-0001–ADR-0078.
+> **Status: 🟡 Proposed.** Rewritten 2026-09-13 and updated 2026-09-20 against
+> ADR-0001–ADR-0079; ADR-0079 was accepted on 2026-09-20, while its Task 2
+> implementation and evidence remain pending and Gate 1 is not complete.
 > Supersedes the pre-decision phase plan (in git history only).
 >
 > Phases 1–4 together deliver **v1**. Phase 5 is post-v1.
@@ -83,6 +84,7 @@ ADR-0043 · ADR-0048 · ADR-0030 · ADR-0006 · ADR-0029 · ADR-0031 · ADR-0034
 ADR-0010 · ADR-0013 · ADR-0004 · ADR-0063 (L1/L2/L4) · ADR-0050 · ADR-0051 · ADR-0052 · ADR-0059 · ADR-0005 · ADR-0008 ·
 ADR-0071 · ADR-0015 (chain, not yet WORM-anchored) · ADR-0054 (private runs only) · ADR-0062 · ADR-0067 (read class)
 ADR-0074 (eval sink) · ADR-0075 (organisation-policy model selection; routing deferred to Phase 2)
+· ADR-0079 (accepted Gate 1 Task 2 architectural decision; implementation and evidence remain pending)
 
 **Gate 0.3 safety follow-ups:** [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md)
 records the owner-selected at-least-once recovery model and remains proposed
@@ -105,6 +107,23 @@ research and is not a foundation for future cross-executor recovery. Gate 0.3
 implementation/effect evidence and Gate 1 remain subject to their respective
 remaining checks; this does not claim completion or alter other phase
 commitments.
+
+**Gate 1 Task 2 identity-resolution decision:** accepted
+[ADR-0079](../adr/identity/0079-internal-surface-credential-resolution-uses-mtls-and-typed-decisions.md)
+was formally accepted by the project owner on 2026-09-20 and defines the
+Harness API → Authority Service Token Service contract:
+two mTLS-only calls, verbatim raw surface credentials on both calls, a
+separate canonical normalised webhook envelope, typed first-call allow/deny
+identity decisions, Harness-owned atomic webhook replay/idempotency and Run
+creation with an immutable first verified identity binding and formal `new`,
+`existing`, or `conflict` replay results, and second-call raw reverification
+with trusted `graft_run_id` binding and Harness-side fresh-result comparison.
+The companion design and the required implementation/release evidence,
+including mTLS peer evidence, positive duplicate and negative conflict
+fixtures, second-call binding tests, and audit guarantees, remain pending.
+No implementation or release evidence is claimed. The architectural decision
+is accepted, but Task 2 implementation/evidence remains pending and Gate 1 is
+not complete.
 
 **Explicitly deferred:** every write path, approval, Slack, run sharing and the driver model, Schedules, second region,
 blue/green and its all-release drain policy, quota ceilings, PAN scrubbing.
@@ -215,6 +234,7 @@ ADR-0074, and S4 by ADR-0075. The remaining items are later-phase sessions with 
 | **S8** | Quota numbers; Schedule defaults (proposed 10 / 1 h); ITSM vs deep link | **Phase 2 / 4** | Needs real cost data — deliberately deferred until there is some                                                                                                                                        |        |
 | **S9** | Tenant Directory substrate                                              | **Phase 4**     | Single region until then                                                                                                                                                                                |        |
 | **Gate 0.3 safety follow-ups** | [ADR-0076](../adr/agent/0076-recovery-is-at-least-once-with-durable-effect-idempotency.md) — **proposed**; [ADR-0078](../adr/agent/0078-phase-1-disables-automatic-cross-executor-recovery.md) — **accepted 2026-09-19**; [ADR-0077](../adr/agent/0077-auto-versioning-must-account-for-dependency-upgrades.md) — **accepted** | **Gate 1** | ADR-0078 fixes the accepted Phase 1 boundary: automatic restart recovery requires a returning matching executor identity and explicit released compatibility revision; ambiguous or stuck Runs require operator escalation; automatic cross-executor recovery is not claimed. The retained DBOS matrix, partial reaper discovery, Conductor commercial/capability record, and Temporal comparison are indexed in the Phase 1 evidence README. The unresolved custom DBOS Test 2 is not required for this accepted boundary or a post-acceptance Gate 0.3 scope claim; it remains reduced-fidelity research and is not a foundation for future cross-executor recovery. Matching-identity implementation evidence, operator-escalation evidence, receiving-boundary effect classifications, and ADR-0077 operational drain evidence remain outstanding. ADR-0076 remains proposed and is not accepted by this change. | evidence and owner decision |
+| **Gate 1 Task 2 identity-resolution contract** | [ADR-0079](../adr/identity/0079-internal-surface-credential-resolution-uses-mtls-and-typed-decisions.md) — **accepted 2026-09-20** | **Gate 1** | The concrete two-call Harness API → Authority Service Token Service decision is accepted for architectural clarity. Its companion design and mandatory follow-on implementation/release evidence — mTLS peer evidence, first-call typed allow/deny tests, immutable Harness replay tests with positive duplicate and negative conflict fixtures, raw-credential repeat/no-leakage tests, second-call credential/Run-binding and fresh-result comparison tests, and secret-free audit evidence — remain outstanding; Task 2 implementation/evidence is pending, and Gate 1 is not complete. | implementation and evidence pending |
 
 **S2 is closed by [ADR-0073](../adr/platform/0073-dbos-system-database-is-separate-and-pci-scoped.md).** Its findings
 determine the Phase 1 topology, RLS boundary and PCI treatment. **S3 is closed
