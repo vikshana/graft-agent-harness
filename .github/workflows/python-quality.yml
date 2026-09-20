@@ -10,6 +10,13 @@ on:
       - "AGENTS.md"
       - "scripts/**"
       - "contracts/**"
+      - "harness/contracts.py"
+      - "harness/http_api.py"
+      - "harness/service.py"
+      - "tests/contracts/**"
+      - "tests/consumer/**"
+      - "tests/provider/**"
+      - "tests/fixtures/**"
       - "tests/**"
       - ".github/workflows/python-quality.yml"
   push:
@@ -22,6 +29,13 @@ on:
       - "AGENTS.md"
       - "scripts/**"
       - "contracts/**"
+      - "harness/contracts.py"
+      - "harness/http_api.py"
+      - "harness/service.py"
+      - "tests/contracts/**"
+      - "tests/consumer/**"
+      - "tests/provider/**"
+      - "tests/fixtures/**"
       - "tests/**"
       - ".github/workflows/python-quality.yml"
 
@@ -62,6 +76,9 @@ jobs:
 
       - name: Test
         run: uv run pytest -m "unit or contract"
+
+      - name: Contract artefact check
+        run: uv run python scripts/check_contracts.py
 
       - name: Step-pointer architecture check
         run: uv run python scripts/check_step_pointer_rule.py harness

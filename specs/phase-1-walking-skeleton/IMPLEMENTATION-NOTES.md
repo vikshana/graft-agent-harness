@@ -645,3 +645,195 @@ artefacts cross-link the shared result and version-comparison evidence.
 lint passed for the Gate 0.3 scope, and `actionlint .github/workflows/gate-0-3.yml`
 passed. The workflow runs both Gate 0.3 test modules and retains both evidence
 directories. No plan task was checked.
+
+## Bounded Gate 1 Task 1 — contract authority artefacts
+
+> **Date:** 2026-09-20
+
+Implemented the bounded contract task without changing the WSGI adapter,
+service, store, security, design, ADR or specification files, and without
+adding the Gate 2 MCP server. The checked-in contract authority now includes:
+
+- the complete v1 REST operation set for Run creation, retrieval, exclusive
+  event replay/follow semantics, and cancellation;
+- typed standard authentication, authorisation, validation, unsupported
+  version, not-found, idempotency, state, cursor, retention, throttling,
+  timeout, dependency and server-error envelopes;
+- the full v1 event taxonomy from the streaming design, typed payload variants,
+  additive unknown-event/unknown-field rules, exclusive `graft_event_id`
+  cursors, and pointer-only external result references;
+- a versioned harness-owned MCP v1 capability manifest and schema containing
+  only Run tools/resources, the two Run URI templates, declared MCP tools and
+  resources capabilities, and an explicit future authentication placeholder.
+  It declares no Tool Gateway or customer-system capability, no DCR policy,
+  and no production identity implementation;
+- independent provider and transport-neutral consumer tests, every event
+  variant and error example, additive and breaking compatibility fixtures,
+  pointer-only checks, and semantic cursor/idempotency/Tenant tests; and
+- `scripts/check_contracts.py` plus the Python quality workflow invocation.
+
+The reference provider remains deliberately labelled as a synchronous,
+in-memory prototype. Its canonical `to_contract_dict()` representations are
+available for the future Authority Service composition, while its legacy
+`to_dict()` shape remains for the retained WSGI tests. This is not evidence of
+production Authority Service identity resolution: that profile remains
+implementation-pending, as does the Gate 2 streamable-HTTP MCP adapter.
+
+Validation evidence for this bounded task:
+
+| Check | Result |
+|-------|--------|
+| `uv run pytest -m "unit or contract"` | pass; 27 tests |
+| `uv run pytest` | pass; 46 tests |
+| `python3 scripts/check_contracts.py` | pass; REST, event, MCP, examples and compatibility fixtures |
+| JSON parsing for all four contract artefacts | pass |
+| `uv run ruff format --check .` | pass |
+| `uv run ruff check .` | pass |
+| `uv run mypy` | pass; 20 source files |
+| `python3 -m compileall -q harness tests scripts` | pass |
+| `uv run python scripts/check_docs.py` | pass; 0 errors and 0 warnings |
+
+The Gate 1 Task 1 checkbox is intentionally unchanged here. Parent validation
+owns the final decision because production identity authority, the actual
+inbound MCP adapter, and infrastructure-backed transport evidence remain
+future work; this bounded change does not claim those behaviours.
+
+## Gate 1 Task 1 contract defect repair
+
+> **Date:** 2026-09-20
+
+Independent review defects in the bounded contract lane were repaired without
+changing service, store, security, specification, ADR, design, or MCP-server
+implementation files. The contract checker now compares the live REST/event/
+MCP signature against the preserved `tests/fixtures/contract-baseline.json`.
+It executes additive and breaking mutations: required-field removal, type and
+semantic changes, operation removal, URI/cursor changes, and additive fields,
+payloads, events, and resources. JSON Schema validation covers REST examples,
+event examples, MCP manifest examples, and model serialisations when the
+locked `jsonschema` dependency is available.
+
+The reference WSGI provider now accepts canonical graft-prefixed REST inputs
+and emits canonical `EventReplayPage`, Run, cancellation, and error envelopes.
+Its `VerifiedIdentity` value is an explicitly named, test-only, out-of-band
+composition seam; request bodies and HTTP headers cannot supply trusted
+`graft_tenant_id` or `graft_principal_id`. Production Authority Service
+identity resolution remains pending Gate 1 Task 2. MCP is declared
+streamable-HTTP only, with REST-equivalent idempotency and exclusive cursor
+semantics in the manifest. Pointer-only tool-result validation rejects inline
+raw/result/content fields while allowing additive non-sensitive fields.
+
+The Task 1 checkbox remains intentionally unchanged. This repair does not
+claim Authority Service implementation, an inbound MCP transport, production
+authentication, or pending provider operation variants.
+
+Validation evidence for this repair:
+
+| Check | Result |
+|-------|--------|
+| `uv run ruff format --check .` | pass |
+| `uv run ruff check .` | pass |
+| `uv run mypy` | pass; 20 source files |
+| `uv run pytest -m "unit or contract"` | pass; 33 tests |
+| `uv run pytest` | pass; 52 tests |
+| `uv run python scripts/check_contracts.py` | pass; baseline mutations, REST/events/MCP examples, and model-independent checks |
+| `uv run python scripts/check_docs.py` | pass; 0 errors and 0 warnings |
+
+The contract checker emits only a dependency deprecation warning from the
+installed `jsonschema.RefResolver`; it does not affect the passing result.
+Parent validation owns the final Gate 1 decision and must leave the plan task
+unchecked if any future provider or authority claim cannot be verified.
+
+## Gate 1 Task 1 oracle blocker repair
+
+> **Date:** 2026-09-20
+
+Repaired the final Task 1 contract blockers within the permitted contract and
+reference-provider scope. Modified files are the REST/OpenAPI, event, and MCP
+contract artefacts; `harness/contracts.py`, `harness/http_api.py`, and
+`harness/service.py`; the contract checker and compatibility fixtures; the
+contract, consumer, and provider tests; and the Python quality workflow.
+`PLAN.md`, ADRs, design documents, MCP server implementation, and Authority
+Service implementation were not changed.
+
+The canonical REST create requires `X-Graft-Idempotency-Key`; the MCP create
+requires `graft_idempotency_key`; both reject caller identity. MCP input,
+output, supported-error, cursor, cancellation, and resource mappings are
+checked against the REST operation rather than only matching operation names.
+The compatibility signature now follows nested `$ref`, `items`, and composed
+schemas, all MCP input/output schemas, REST parameters/responses/security and
+provider status, and resource template details. Required removals, narrowed
+enums, type/meaning changes, operation removals, and resource changes fail;
+new optional fields, tools, resources, and event types remain additive under
+the documented policy. Fixtures execute these mutations.
+
+The WSGI adapter is explicitly a reference provider. Its canonical create,
+cancel body, replay mode, unsupported-version mapping, cursor errors, and
+request correlation are tested. The old body spelling is retained only for
+the existing synchronous unit adapter and is labelled legacy in the tests;
+canonical requests cannot use it. Live follow streaming and unimplemented
+standard infrastructure error outcomes remain declared implementation-pending
+or outside provider-supported coverage rather than being falsely claimed.
+MCP examples now validate call inputs, every tool output, protocol/tool
+errors, resources, resource results, and event examples. Tool-call result
+payloads and external references are closed pointer-only schemas; inline
+`graft_blob`, raw, result, and content fields are rejected while additive
+fields/events elsewhere remain tolerated.
+
+Final local validation for this repair: `uv run pytest` passed (56 tests),
+`uv run python scripts/check_contracts.py` passed, Ruff format and lint passed,
+strict mypy passed (20 source files), compileall passed, and
+`uv run python scripts/check_docs.py` passed with 0 errors and 0 warnings.
+The Gate 1 Task 1 checkbox remains intentionally unchecked for parent review.
+
+## Gate 1 Task 1 pointer and additive-policy closure
+
+> **Date:** 2026-09-20
+
+The final contract repair closes every pointer-bearing event payload shape:
+`ToolCallResultPayload`, `PointerPayload`, `EvidencePayload`, and the shared
+external-reference shape reject inline raw, large, blob, content, and result
+fields in both JSON Schema and the dependency-free Python models. They retain
+only identifiers, external pointers, and the explicitly defined safe pointer
+metadata extension. Event examples and consumer/provider tests exercise the
+closed boundary and reject representative inline fields.
+
+The v1 compatibility policy is deliberately asymmetric. The global event
+envelope, unknown event types, and additive fields on tolerant non-sensitive
+payloads remain forward-compatible and are ignored by consumers. Closed,
+security-sensitive pointer/reference payloads cannot gain inline payload fields
+within v1. Adding a safe pointer metadata field requires an explicit reviewed
+schema additive change or the defined `graft_pointer_metadata` extension
+mechanism; it is not a generic additive-field exception.
+
+The MCP manifest follows the same policy. Existing Tool and Resource
+declarations and their closed input/output/reference shapes are not generic
+additive surfaces. New Tool or Resource entries are additive, and an existing
+declaration may use only the explicitly defined extension-safe metadata object.
+The compatibility checker classifies additions to closed pointer/reference
+payloads and existing MCP declarations as breaking rather than generic
+additive changes, while preserving tolerant envelope and unknown-event rules.
+
+The Gate 1 Task 1 checkbox remains intentionally unchecked. This repair closes
+the contract pointer/additive-policy defects only and does not claim the
+separate production identity, PostgreSQL, Authority Service, or inbound MCP
+implementation gates.
+
+## Gate 1 Task 1 contract closure (local evidence)
+
+> **Date:** 2026-09-20
+
+The final independent review found the Task 1 local done condition satisfied.
+The contract foundation covers canonical REST, event and harness-MCP schemas;
+typed pointer-only payloads; complete declared error mappings; executable
+additive and breaking compatibility fixtures; and transport-neutral REST/MCP
+semantic parity. The reference WSGI provider uses only an explicit test verified
+identity seam. Authority Service identity resolution and the inbound
+streamable-HTTP MCP adapter remain later work and are not claimed here.
+
+Local evidence: `uv run pytest` passed 66 tests; `uv run python
+scripts/check_contracts.py`, Ruff, strict mypy, documentation, architecture,
+step-pointer, JSON parsing, locked dependency audit, and licence inventory all
+passed. The checker applies mutations to actual signatures: ordinary optional
+Run output fields shared through MCP are additive, while closed pointer/reference
+payload changes, removed required fields, and transport drift fail. The Task 1
+checkbox is updated pending the matching remote Python-quality CI evidence.

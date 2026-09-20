@@ -1,0 +1,47 @@
+{
+  "classification": "breaking",
+  "change": "removed required graft_run_id and changed the exclusive cursor meaning",
+  "unknown_event_type": "status",
+  "consumer_action": "cannot safely ignore",
+  "ci_action": "fail",
+  "mutations": [
+    {
+      "operation": "remove",
+      "path": "/rest/schemas/Run/required/0"
+    },
+    {
+      "operation": "replace",
+      "path": "/rest/cursor",
+      "value": "after_graft_event_id inclusive"
+    },
+    {
+      "operation": "replace",
+      "path": "/events/payloads/ConfidencePayload/properties/graft_confidence/type",
+      "value": "string"
+    },
+    {
+      "operation": "remove",
+      "path": "/mcp/tools/graft_create_run"
+    },
+    {
+      "operation": "add",
+      "path": "/events/payload_details/PointerPayload/properties/graft_raw_result",
+      "value": {"type": "string"}
+    },
+    {
+      "operation": "add",
+      "path": "/events/payload_details/ToolCallResultPayload/properties/graft_blob",
+      "value": {"type": "string"}
+    },
+    {
+      "operation": "add",
+      "path": "/events/payload_details/EvidencePayload/properties/graft_content",
+      "value": {"type": "string"}
+    },
+    {
+      "operation": "add",
+      "path": "/mcp/tools/graft_get_run/output_schema/properties/graft_finding_ref/anyOf/0/properties/graft_raw_result",
+      "value": {"type": "string"}
+    }
+  ]
+}

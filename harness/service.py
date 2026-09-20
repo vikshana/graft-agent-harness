@@ -7,7 +7,7 @@ import json
 import uuid
 from dataclasses import dataclass
 
-from .contracts import CancelOutcome, Run, RunCreateRequest, RunEvent, utc_now
+from .contracts import CancelOutcome, EventReplayPage, Run, RunCreateRequest, RunEvent, utc_now
 from .security import CapabilityAuthority, CapabilityClaims
 from .store import InMemoryStore
 
@@ -38,6 +38,10 @@ class HarnessService:
         self.model = model or DeterministicChatModel()
 
     def create_run(self, request: RunCreateRequest) -> Run:
+        run, _ = self.create_run_result(request)
+        return run
+
+    def create_run_result(self, request: RunCreateRequest) -> tuple[Run, bool]:
         request.validate()
         graft_run_id = str(uuid.uuid4())
         now = utc_now()
@@ -71,12 +75,12 @@ class HarnessService:
         ).hexdigest()
         run, created = self.store.create_run(run, request.idempotency_key, fingerprint)
         if not created:
-            return run
+            return run, False
         self.store.append_event(
-            request.graft_tenant_id, run.graft_run_id, "status", {"status": "queued"}
+            request.graft_tenant_id, run.graft_run_id, "status", {"graft_status": "queued"}
         )
         self._execute(request, run.graft_run_id)
-        return self.store.get_run(request.graft_tenant_id, run.graft_run_id)
+        return self.store.get_run(request.graft_tenant_id, run.graft_run_id), True
 
     def get_run(self, graft_tenant_id: str, graft_run_id: str) -> Run:
         return self.store.get_run(graft_tenant_id, graft_run_id)
@@ -86,16 +90,36 @@ class HarnessService:
     ) -> list[RunEvent]:
         return self.store.replay(graft_tenant_id, graft_run_id, after_graft_event_id)
 
+    def replay_page(
+        self,
+        graft_tenant_id: str,
+        graft_run_id: str,
+        after_graft_event_id: int = 0,
+        limit: int = 100,
+    ) -> EventReplayPage:
+        if limit < 1 or limit > 1000:
+            raise ValueError("graft_event_limit is outside the contract range")
+        events = self.replay_events(graft_tenant_id, graft_run_id, after_graft_event_id)
+        page_events = tuple(events[:limit])
+        return EventReplayPage(
+            graft_run_id,
+            page_events,
+            page_events[-1].graft_event_id if page_events else after_graft_event_id,
+            len(events) > limit,
+        )
+
     def cancel_run(self, graft_tenant_id: str, graft_run_id: str) -> CancelOutcome:
         run = self.store.get_run(graft_tenant_id, graft_run_id)
         if run.status in {"completed", "cancelled", "failed"}:
             return CancelOutcome(graft_run_id, "already_terminal", run.status)
+        if run.status == "cancellation_requested":
+            return CancelOutcome(graft_run_id, "already_requested", run.status)
         self.store.update_run(graft_tenant_id, graft_run_id, status="cancellation_requested")
         self.store.append_event(
             graft_tenant_id,
             graft_run_id,
             "status",
-            {"status": "cancellation_requested", "effective_at": "next_step_boundary"},
+            {"graft_status": "cancellation_requested", "graft_effective_at": "next_step_boundary"},
         )
         return CancelOutcome(graft_run_id, "accepted", "cancellation_requested")
 
@@ -110,12 +134,12 @@ class HarnessService:
     def _execute(self, request: RunCreateRequest, graft_run_id: str) -> None:
         self.store.update_run(request.graft_tenant_id, graft_run_id, status="running")
         self.store.append_event(
-            request.graft_tenant_id, graft_run_id, "status", {"status": "running"}
+            request.graft_tenant_id, graft_run_id, "status", {"graft_status": "running"}
         )
         response = self.model.invoke([{"role": "user", "content": request.trigger.summary}])
         for token in response.finding.split(" "):
             self.store.append_event(
-                request.graft_tenant_id, graft_run_id, "token", {"text": token + " "}
+                request.graft_tenant_id, graft_run_id, "token", {"graft_text": token + " "}
             )
         for evidence in response.evidence:
             self.store.append_event(
@@ -132,5 +156,5 @@ class HarnessService:
             finding=response.finding,
         )
         self.store.append_event(
-            request.graft_tenant_id, graft_run_id, "done", {"outcome": "finding"}
+            request.graft_tenant_id, graft_run_id, "done", {"graft_outcome": "finding"}
         )

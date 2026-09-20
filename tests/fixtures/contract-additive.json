@@ -1,0 +1,34 @@
+{
+  "classification": "additive",
+  "unknown_field": "consumers ignore this field",
+  "unknown_event_type": "diagnostic_snapshot_added",
+  "consumer_action": "ignore",
+  "ci_action": "pass",
+  "mutations": [
+    {
+      "operation": "add",
+      "path": "/rest/schemas/Run/properties/graft_optional_diagnostic",
+      "value": {"type": "string"}
+    },
+    {
+      "operation": "add",
+      "path": "/mcp/tools/graft_create_run/output_schema/properties/graft_optional_diagnostic",
+      "value": {"type": "string"}
+    },
+    {
+      "operation": "add",
+      "path": "/mcp/tools/graft_get_run/output_schema/properties/graft_optional_diagnostic",
+      "value": {"type": "string"}
+    },
+    {
+      "operation": "add",
+      "path": "/events/payloads/StatusPayload/properties/graft_optional_detail",
+      "value": {"type": "string"}
+    },
+    {
+      "operation": "add",
+      "path": "/mcp/resources/2",
+      "value": "graft://runs/{graft_run_id}/diagnostics"
+    }
+  ]
+}
