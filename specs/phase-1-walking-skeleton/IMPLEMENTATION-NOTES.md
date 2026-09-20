@@ -869,3 +869,15 @@ The subsequent Python 3.11–3.13 matrix passed for the initial contract commit.
 Final compatibility and pointer-policy repairs followed that commit, so the
 Task 1 checkbox remains unchecked until a fresh matrix validates the final
 contract state.
+
+## Gate 1 Task 1 contract closure (final CI evidence)
+
+> **Date:** 2026-09-20
+
+The final contract revision was validated by the fresh
+[`python-quality` run](https://github.com/vikshana/graft-agent-harness/actions/runs/35505892089)
+for commit `8c4da115c2026c646365ff5138da7911c6152747`. Python 3.11, 3.12,
+and 3.13 all passed formatting, linting, strict typing, tests, the executable
+contract artefact/compatibility checker, pointer and architecture checks,
+documentation, vulnerability audit, and retained licence inventory. Gate 1
+Task 1 is checked on that retained CI evidence.
