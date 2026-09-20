@@ -838,6 +838,20 @@ Run output fields shared through MCP are additive, while closed pointer/referenc
 payload changes, removed required fields, and transport drift fail. The Task 1
 checkbox is updated pending the matching remote Python-quality CI evidence.
 
+## Gate 1 Task 1 contract closure (CI evidence)
+
+> **Date:** 2026-09-20
+
+The repository Actions policy was updated to permit GitHub-created actions with
+full-commit SHA pinning after the earlier pre-job policy rejection. The fresh
+[`python-quality` run](https://github.com/vikshana/graft-agent-harness/actions/runs/35505627112)
+passed on Python 3.11, 3.12, and 3.13 for commit
+`adb9c4f9322eab103f10db46e36f6dd7479a115e`. Each matrix job passed the
+contract artefact check, formatting, linting, strict typing, unit/contract
+tests, architecture/pointer/documentation checks, strict vulnerability audit,
+and retained licence inventory. Gate 1 Task 1 is checked on that retained CI
+evidence.
+
 ## Gate 1 Task 1 CI policy remediation
 
 > **Date:** 2026-09-20
